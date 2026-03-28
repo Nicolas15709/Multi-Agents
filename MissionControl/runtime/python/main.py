@@ -1,4 +1,8 @@
-"""Mission Control Python runtime entrypoint (working scaffold)."""
+"""Mission Control Python runtime entrypoint (persistent working scaffold)."""
+
+import json
+import time
+from pathlib import Path
 
 from agents import AgentRegistry
 from agent_state import AgentStateManager
@@ -15,6 +19,7 @@ from runtime_state import RuntimeStateHydrator
 from scheduler import Scheduler
 from mission_service import MissionService
 from settings import ProgressSettings
+from storage import ensure_parent
 from task_runner import TaskRunner
 from templates import TemplateRegistry
 from websocket_server import WebSocketPublisher
@@ -23,6 +28,56 @@ from websocket_server import WebSocketPublisher
 def bootstrap_agents(agent_repository: AgentRepository, registry: AgentRegistry) -> None:
     for record in registry.to_records():
         agent_repository.upsert_agent(record)
+
+
+def export_snapshot(snapshot: dict) -> str:
+    output_path = Path(__file__).resolve().parent.parent.parent / 'apps' / 'dashboard' / 'public' / 'snapshot.json'
+    ensure_parent(str(output_path))
+    output_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
+    return str(output_path)
+
+
+def runtime_tick(
+    mission_repository: MissionRepository,
+    task_repository: TaskRepository,
+    agent_repository: AgentRepository,
+    scheduler: Scheduler,
+    state_manager: AgentStateManager,
+    mission_service: MissionService,
+    hydrator: RuntimeStateHydrator,
+    task_runner: TaskRunner,
+    snapshot_api: RuntimeSnapshotAPI,
+    publisher: WebSocketPublisher,
+) -> dict:
+    if not mission_repository.list_missions():
+        result = mission_service.submit_mission(
+            title="Mission Control bootstrap mission",
+            goal="Initialize the orchestrator scaffold and validate core runtime pieces.",
+            mode="software_build",
+            priority="medium",
+            source="system",
+            allow_24x7=True,
+        )
+        state_manager.set_state("agent-0", "planning", mission_id=result["mission_id"])
+
+    rehydration = hydrator.reconcile()
+    top_mission = scheduler.highest_priority_mission()
+    runner_result = None
+    if top_mission:
+        runner_result = task_runner.advance_next_task(top_mission["id"])
+
+    snapshot = snapshot_api.snapshot()
+    snapshot_path = export_snapshot(snapshot)
+    publisher.publish_snapshot(snapshot)
+
+    return {
+        "rehydration": rehydration,
+        "runner": runner_result,
+        "snapshot_path": snapshot_path,
+        "missions": len(mission_repository.list_missions()),
+        "agents": len(agent_repository.list_agents()),
+        "top_mission": top_mission["id"] if top_mission else None,
+    }
 
 
 def main() -> None:
@@ -60,6 +115,7 @@ def main() -> None:
     )
     event_stream = EventStreamService(mission_repository=mission_repository, notification_repository=notification_repository)
     publisher = WebSocketPublisher(config=config)
+    publisher.start()
     hydrator = RuntimeStateHydrator(
         mission_repository=mission_repository,
         task_repository=task_repository,
@@ -78,49 +134,49 @@ def main() -> None:
         event_stream=event_stream,
     )
 
-    if not mission_repository.list_missions():
-        result = mission_service.submit_mission(
-            title="Mission Control bootstrap mission",
-            goal="Initialize the orchestrator scaffold and validate core runtime pieces.",
-            mode="software_build",
-            priority="medium",
-            source="system",
-            allow_24x7=True,
-        )
-        state_manager.set_state("agent-0", "planning", mission_id=result["mission_id"])
-
-    rehydration = hydrator.reconcile()
-    top_mission = scheduler.highest_priority_mission()
-    runner_result = None
-    if top_mission:
-        runner_result = task_runner.advance_next_task(top_mission["id"])
-
-    snapshot = snapshot_api.snapshot()
-    publisher.publish_snapshot(snapshot)
-
     print("Mission Control runtime")
     print({
         "environment": config.environment,
         "db_path": config.db_path,
+        "tick_interval_seconds": config.tick_interval_seconds,
         "websocket_enabled": config.websocket_enabled,
+        "websocket_host": config.websocket_host,
+        "websocket_port": config.websocket_port,
         "telegram_notifications": config.telegram_notifications_enabled,
-        "agents": len(agent_repository.list_agents()),
-        "missions": len(mission_repository.list_missions()),
         "templates": template_registry.summary(),
         "policies": policy_engine.summary(),
         "notifications": notifications.summary(),
         "progress": progress_notifier.summary(),
-        "scheduler": scheduler.summary(),
-        "agent_states": state_manager.summary(),
-        "event_stream": event_stream.summary(),
-        "publisher": publisher.summary(),
         "planner": planner.summary(),
-        "rehydration": rehydration,
-        "runner": runner_result,
-        "snapshot_keys": list(snapshot.keys()),
     })
 
-    db.close()
+    try:
+        while True:
+            tick = runtime_tick(
+                mission_repository=mission_repository,
+                task_repository=task_repository,
+                agent_repository=agent_repository,
+                scheduler=scheduler,
+                state_manager=state_manager,
+                mission_service=mission_service,
+                hydrator=hydrator,
+                task_runner=task_runner,
+                snapshot_api=snapshot_api,
+                publisher=publisher,
+            )
+            print({
+                "scheduler": scheduler.summary(),
+                "agent_states": state_manager.summary(),
+                "event_stream": event_stream.summary(),
+                "publisher": publisher.summary(),
+                "tick": tick,
+            })
+            time.sleep(config.tick_interval_seconds)
+    except KeyboardInterrupt:
+        print("Mission Control runtime stopped")
+    finally:
+        publisher.stop()
+        db.close()
 
 
 if __name__ == "__main__":

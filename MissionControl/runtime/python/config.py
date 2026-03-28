@@ -9,6 +9,7 @@ class RuntimeConfig:
     websocket_enabled: bool
     websocket_host: str
     websocket_port: int
+    tick_interval_seconds: int
     telegram_notifications_enabled: bool
     environment: str
     agents_registry_path: str
@@ -22,6 +23,7 @@ class RuntimeConfig:
             websocket_enabled=os.getenv("MISSION_CONTROL_WEBSOCKET", "true").lower() == "true",
             websocket_host=os.getenv("MISSION_CONTROL_WEBSOCKET_HOST", "127.0.0.1"),
             websocket_port=int(os.getenv("MISSION_CONTROL_WEBSOCKET_PORT", "8765")),
+            tick_interval_seconds=int(os.getenv("MISSION_CONTROL_TICK_INTERVAL_SECONDS", "5")),
             telegram_notifications_enabled=os.getenv("MISSION_CONTROL_TELEGRAM_NOTIFICATIONS", "true").lower() == "true",
             environment=os.getenv("MISSION_CONTROL_ENV", "development"),
             agents_registry_path=os.getenv("MISSION_CONTROL_AGENTS_REGISTRY", str(base_dir / "agents_registry.json")),

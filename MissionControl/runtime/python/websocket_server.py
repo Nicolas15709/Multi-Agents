@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import threading
 from dataclasses import dataclass, field
@@ -18,6 +19,7 @@ class WebSocketPublisher:
     _loop: Optional[asyncio.AbstractEventLoop] = field(default=None, init=False)
     _thread: Optional[threading.Thread] = field(default=None, init=False)
     _started: bool = field(default=False, init=False)
+    _server: Optional[object] = field(default=None, init=False)
 
     async def _handler(self, websocket: WebSocketServerProtocol) -> None:
         self._clients.add(websocket)
@@ -25,7 +27,6 @@ class WebSocketPublisher:
             if self.last_payload is not None:
                 await websocket.send(json.dumps({"type": "snapshot", "payload": self.last_payload}))
             async for _message in websocket:
-                # Read-and-ignore for now; reserved for future commands/pings.
                 pass
         except ConnectionClosed:
             pass
@@ -47,8 +48,8 @@ class WebSocketPublisher:
             self._clients.discard(client)
 
     async def _server_main(self) -> None:
-        async with serve(self._handler, self.config.websocket_host, self.config.websocket_port):
-            await asyncio.Future()
+        self._server = await serve(self._handler, self.config.websocket_host, self.config.websocket_port)
+        await self._server.wait_closed()
 
     def start(self) -> None:
         if not getattr(self.config, "websocket_enabled", False) or self._started:
@@ -61,6 +62,13 @@ class WebSocketPublisher:
             loop.create_task(self._server_main())
             loop.run_forever()
 
+            pending = asyncio.all_tasks(loop)
+            for task in pending:
+                task.cancel()
+            with contextlib.suppress(Exception):
+                loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            loop.close()
+
         self._thread = threading.Thread(target=runner, name="mission-control-ws", daemon=True)
         self._thread.start()
         self._started = True
@@ -71,6 +79,29 @@ class WebSocketPublisher:
 
         if self._loop and self._loop.is_running():
             asyncio.run_coroutine_threadsafe(self._broadcast(payload), self._loop)
+
+    async def _shutdown_async(self) -> None:
+        for client in list(self._clients):
+            with contextlib.suppress(Exception):
+                await client.close()
+        self._clients.clear()
+
+        if self._server is not None:
+            self._server.close()
+            await self._server.wait_closed()
+            self._server = None
+
+    def stop(self) -> None:
+        if not self._loop or not self._loop.is_running():
+            return
+
+        future = asyncio.run_coroutine_threadsafe(self._shutdown_async(), self._loop)
+        with contextlib.suppress(Exception):
+            future.result(timeout=3)
+        self._loop.call_soon_threadsafe(self._loop.stop)
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=3)
+        self._started = False
 
     def summary(self) -> dict:
         return {
