@@ -437,45 +437,50 @@ body {
   overflow: hidden;
 }
 
+.room-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .iso-room {
   position: relative;
-  min-height: 620px;
+  min-height: 640px;
   margin-top: 14px;
   border-radius: 24px;
   overflow: hidden;
+  isolation: isolate;
   background:
-    radial-gradient(circle at 20% 18%, rgba(114, 228, 200, 0.14), transparent 24%),
+    radial-gradient(circle at 20% 18%, rgba(114, 228, 200, 0.12), transparent 24%),
     radial-gradient(circle at 80% 20%, rgba(88, 166, 255, 0.14), transparent 26%),
-    linear-gradient(180deg, rgba(14, 26, 44, 0.98), rgba(8, 15, 27, 0.98));
+    linear-gradient(180deg, rgba(15, 22, 34, 0.98), rgba(8, 15, 27, 0.98));
+}
+
+.iso-floor-texture {
+  position: absolute;
+  inset: auto 5% 6% 5%;
+  height: 80%;
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.04), transparent 35%),
+    linear-gradient(315deg, rgba(255,255,255,0.02), transparent 40%),
+    rgba(255,255,255,0.02);
+  transform: perspective(1100px) rotateX(61deg);
+  transform-origin: center top;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 .iso-grid {
   position: absolute;
-  inset: 5% 5%;
+  inset: 8% 8% 10% 8%;
   background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 44px 44px;
-  transform: perspective(900px) rotateX(60deg);
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 42px 42px;
+  transform: perspective(1100px) rotateX(61deg);
   transform-origin: center top;
-  opacity: 0.45;
-}
-
-.iso-platform {
-  position: absolute;
-  z-index: 1;
-  min-width: 120px;
-  padding: 12px 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(20, 32, 52, 0.92);
-  color: #eef5ff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
-  box-shadow: 0 18px 36px rgba(0,0,0,0.28);
+  opacity: 0.28;
 }
 
 .ambient-glow {
@@ -502,45 +507,97 @@ body {
   background: radial-gradient(circle, rgba(140,124,255,0.18), transparent 68%);
 }
 
-.iso-prop {
+.scene-asset {
   position: absolute;
-  z-index: 1;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.06);
-  background: rgba(255,255,255,0.05);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+  image-rendering: pixelated;
+  user-select: none;
+  pointer-events: none;
 }
 
-.prop-command-screen { top: 18%; left: 27%; width: 92px; height: 54px; }
-.prop-research-board { top: 28%; right: 24%; width: 80px; height: 48px; }
-.prop-design-wall { top: 61%; left: 31%; width: 88px; height: 50px; }
-.prop-build-rack { top: 56%; right: 24%; width: 82px; height: 58px; }
-.prop-qa-console { bottom: 14%; left: 54%; width: 86px; height: 44px; }
+.wall {
+  z-index: 1;
+  opacity: 0.96;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.3));
+}
 
-.platform-command { top: 12%; left: 8%; }
-.platform-research { top: 20%; right: 10%; }
-.platform-design { top: 56%; left: 12%; }
-.platform-build { top: 52%; right: 10%; }
-.platform-qa { bottom: 10%; left: 40%; }
+.wall-north {
+  top: 6%;
+  left: 28%;
+  width: 270px;
+}
+
+.wall-west {
+  top: 12%;
+  left: 8%;
+  width: 180px;
+}
+
+.prop {
+  z-index: 2;
+  filter: drop-shadow(0 12px 18px rgba(0,0,0,0.32));
+}
+
+.asset-command-desk { top: 16%; left: 19%; width: 148px; }
+.asset-research-shelves { top: 17%; right: 17%; width: 150px; }
+.asset-design-table { top: 52%; left: 23%; width: 146px; }
+.asset-build-table { top: 45%; right: 18%; width: 146px; }
+.asset-qa-counter { bottom: 11%; left: 49%; width: 112px; }
+.asset-lounge-chair { bottom: 20%; left: 30%; width: 72px; }
+.asset-carpet { top: 37%; left: 36%; width: 118px; opacity: 0.8; }
+
+.station-plaque {
+  position: absolute;
+  z-index: 3;
+  min-width: 128px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(8, 16, 28, 0.86);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.28);
+  backdrop-filter: blur(12px);
+}
+
+.station-plaque strong,
+.station-plaque span {
+  display: block;
+}
+
+.station-plaque strong {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.station-plaque span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.plaque-command { top: 8%; left: 8%; }
+.plaque-research { top: 13%; right: 8%; }
+.plaque-design { top: 50%; left: 9%; }
+.plaque-build { top: 44%; right: 8%; }
+.plaque-qa { bottom: 5%; left: 38%; }
 
 .connection {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   height: 2px;
-  background: linear-gradient(90deg, rgba(114,228,200,0.1), rgba(140,124,255,0.5), rgba(88,166,255,0.1));
+  background: linear-gradient(90deg, rgba(114,228,200,0.08), rgba(140,124,255,0.55), rgba(88,166,255,0.08));
   transform-origin: left center;
   opacity: 0.7;
 }
 
-.connection-a { top: 26%; left: 23%; width: 46%; transform: rotate(8deg); }
-.connection-b { top: 43%; left: 22%; width: 48%; transform: rotate(-10deg); }
-.connection-c { top: 63%; left: 24%; width: 38%; transform: rotate(14deg); }
-.connection-d { top: 68%; left: 45%; width: 26%; transform: rotate(-18deg); }
+.connection-a { top: 26%; left: 24%; width: 40%; transform: rotate(8deg); }
+.connection-b { top: 42%; left: 25%; width: 43%; transform: rotate(-10deg); }
+.connection-c { top: 61%; left: 25%; width: 34%; transform: rotate(14deg); }
+.connection-d { top: 71%; left: 45%; width: 20%; transform: rotate(-18deg); }
 
 .agent-sprite {
   position: absolute;
-  z-index: 2;
-  width: 160px;
+  z-index: 4;
+  width: 176px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -569,24 +626,22 @@ body {
   font-size: 0.85rem;
 }
 
-.agent-avatar {
-  position: relative;
-  width: 84px;
-  height: 84px;
+.agent-figure {
   display: grid;
   place-items: center;
 }
 
-.portrait-avatar {
-  width: 96px;
-  height: 112px;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  overflow: visible;
+.figure-standing {
+  width: 108px;
+  height: 132px;
 }
 
-.agent-portrait {
+.figure-seated {
+  width: 118px;
+  height: 128px;
+}
+
+.agent-character {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -605,12 +660,23 @@ body {
 }
 
 .station-marker {
-  padding: 6px 10px;
-  border-radius: 999px;
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 16px;
   background: rgba(255,255,255,0.06);
   color: #dde7ff;
-  font-size: 0.8rem;
   border: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+}
+
+.station-marker strong {
+  font-size: 0.8rem;
+}
+
+.station-marker span {
+  color: var(--muted);
+  font-size: 0.74rem;
 }
 
 .state-blocked .activity-ring { background: radial-gradient(circle, rgba(255,107,138,0.55), rgba(255,107,138,0.12) 60%, transparent 70%); }
