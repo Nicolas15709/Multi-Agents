@@ -16,6 +16,7 @@ from notifications import NotificationService
 from planner import Planner
 from policies import PolicyEngine
 from progress import ProgressNotifier
+from progress_summary import ProgressSummaryService
 from repository import AgentRepository, MissionRepository, NotificationRepository, PolicyRepository, TaskRepository
 from runtime_state import RuntimeStateHydrator
 from scheduler import Scheduler
@@ -140,11 +141,13 @@ def main() -> None:
         agent_state_manager=state_manager,
         progress_notifier=progress_notifier,
     )
+    progress_summary = ProgressSummaryService(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
         task_repository=task_repository,
         agent_repository=agent_repository,
         event_stream=event_stream,
+        progress_summary=progress_summary,
     )
 
     print("Mission Control runtime")

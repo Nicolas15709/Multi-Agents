@@ -105,6 +105,7 @@ export default function App() {
   const [entered] = useState(true)
   const { snapshot, status, connection } = useSnapshot()
   const { activeMission, agents = [], tasks = [], meta = {}, stream = { events: [], notifications: [] } } = snapshot
+  const progress = snapshot?.progress || null
 
   if (!entered) {
     return <LoginGate />
@@ -189,7 +190,7 @@ export default function App() {
             <MissionLauncher />
             <ThoughtLogPanel events={stream.events} />
             <TaskPanel tasks={tasks} />
-            <SystemPanel stream={stream} />
+            <SystemPanel stream={stream} progress={progress} />
           </aside>
         </div>
       </main>

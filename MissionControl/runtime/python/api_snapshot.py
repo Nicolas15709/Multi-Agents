@@ -3,6 +3,7 @@ from typing import Dict
 
 from event_stream import EventStreamService
 from repository import AgentRepository, MissionRepository, TaskRepository
+from progress_summary import ProgressSummaryService
 from utils import utc_now
 
 
@@ -12,6 +13,7 @@ class RuntimeSnapshotAPI:
     task_repository: TaskRepository
     agent_repository: AgentRepository
     event_stream: EventStreamService
+    progress_summary: ProgressSummaryService | None = None
 
     def snapshot(self) -> Dict:
         missions = self.mission_repository.list_missions()
@@ -25,8 +27,10 @@ class RuntimeSnapshotAPI:
         blocked_tasks = [task for task in active_tasks if task.get("status") == "blocked"]
         running_task = next((task for task in active_tasks if task.get("status") == "running"), None)
 
+        progress = self.progress_summary.latest() if self.progress_summary else {"mission": None, "progress": {"total": 0, "done": 0, "running": 0, "blocked": 0, "percent": 0}}
         return {
             "generatedAt": utc_now(),
+            "progress": progress,
             "meta": {
                 "missionCount": len(missions),
                 "agentCount": len(agents),
