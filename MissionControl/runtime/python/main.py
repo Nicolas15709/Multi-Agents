@@ -96,7 +96,12 @@ def main() -> None:
     template_registry = TemplateRegistry(config.templates_path)
     bootstrap_agents(agent_repository, agent_registry)
 
-    planner = Planner(config=config, mission_repository=mission_repository, task_repository=task_repository)
+    planner = Planner(
+        config=config,
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        template_registry=template_registry,
+    )
     notifications = NotificationService(config=config, repository=notification_repository)
     progress_notifier = ProgressNotifier(
         mission_repository=mission_repository,

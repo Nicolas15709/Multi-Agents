@@ -1,9 +1,26 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from models import Mission, Task
 from repository import MissionRepository, TaskRepository
+from templates import TemplateRegistry
 from utils import new_id
+
+DEFAULT_WORKFLOW = [
+    ("agent-0", "Plan mission"),
+    ("agent-1", "Research mission context"),
+    ("agent-2", "Produce design/prototype guidance"),
+    ("agent-3", "Implement deliverable"),
+    ("agent-4", "Review and harden output"),
+]
+
+TASK_TITLE_BY_AGENT = {
+    "agent-0": "Plan mission",
+    "agent-1": "Research mission context",
+    "agent-2": "Produce design/prototype guidance",
+    "agent-3": "Implement deliverable",
+    "agent-4": "Review and harden output",
+}
 
 
 @dataclass
@@ -11,6 +28,7 @@ class Planner:
     config: object
     mission_repository: MissionRepository
     task_repository: TaskRepository
+    template_registry: Optional[TemplateRegistry] = None
 
     def create_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False) -> Mission:
         mission = Mission(
@@ -30,14 +48,22 @@ class Planner:
         })
         return mission
 
+    def _workflow_for_mode(self, mode: str) -> List[tuple]:
+        if self.template_registry:
+            try:
+                template = self.template_registry.get_template(mode)
+                agents = template.get("primaryAgents", [])
+                workflow = []
+                for agent_id in agents:
+                    workflow.append((agent_id, TASK_TITLE_BY_AGENT.get(agent_id, f"Execute {mode} task")))
+                if workflow:
+                    return workflow
+            except KeyError:
+                pass
+        return DEFAULT_WORKFLOW
+
     def seed_base_workflow(self, mission: Mission) -> List[Task]:
-        workflow = [
-            ("agent-0", "Plan mission"),
-            ("agent-1", "Research mission context"),
-            ("agent-2", "Produce design/prototype guidance"),
-            ("agent-3", "Implement deliverable"),
-            ("agent-4", "Review and harden output"),
-        ]
+        workflow = self._workflow_for_mode(mission.mode)
         tasks: List[Task] = []
         for agent_id, title in workflow:
             task = Task(
@@ -51,7 +77,9 @@ class Planner:
             self.task_repository.create_task(task)
             tasks.append(task)
         self.mission_repository.add_event(mission.id, "workflow_seeded", "planner", "Base workflow seeded", {
-            "tasks": [task.id for task in tasks]
+            "tasks": [task.id for task in tasks],
+            "mode": mission.mode,
+            "agents": [task.agent_id for task in tasks],
         })
         return tasks
 
@@ -66,6 +94,7 @@ class Planner:
                 "cooldowns",
                 "future_planning",
                 "conflict_resolution",
+                "template_seeded_workflows",
             ],
             "missions": len(self.mission_repository.list_missions()),
         }
