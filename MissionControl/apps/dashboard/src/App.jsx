@@ -3,6 +3,8 @@ import { useSnapshot } from './useSnapshot'
 import { TaskPanel } from './components/TaskPanel'
 import { SystemPanel } from './components/SystemPanel'
 import { LoginGate } from './components/LoginGate'
+import { MissionInspector } from './components/MissionInspector'
+import { TimelinePanel } from './components/TimelinePanel'
 
 function AgentCard({ agent }) {
   return (
@@ -160,20 +162,24 @@ export default function App() {
             )}
           </section>
 
-          <section className="panel room">
-            <div className="room-header">
-              <div>
-                <h2 className="section-title">Mission room</h2>
-                <p className="muted room-copy">Mapa visual del equipo activo y su distribución operativa.</p>
+          <section className="center-stack">
+            <section className="panel room">
+              <div className="room-header">
+                <div>
+                  <h2 className="section-title">Mission room</h2>
+                  <p className="muted room-copy">Mapa visual del equipo activo y su distribución operativa.</p>
+                </div>
+                <div className="meta-chip">{meta?.activeAgentCount ?? agents.length} active</div>
               </div>
-              <div className="meta-chip">{meta?.activeAgentCount ?? agents.length} active</div>
-            </div>
-            <div className="room-grid" />
-            <div className="room-glow room-glow-a" />
-            <div className="room-glow room-glow-b" />
-            <div className="stage">
-              {agents.map((agent, index) => <AgentNode key={agent.agent_id} agent={agent} index={index} />)}
-            </div>
+              <div className="room-grid" />
+              <div className="room-glow room-glow-a" />
+              <div className="room-glow room-glow-b" />
+              <div className="stage">
+                {agents.map((agent, index) => <AgentNode key={agent.agent_id} agent={agent} index={index} />)}
+              </div>
+            </section>
+
+            <TimelinePanel events={stream.events} />
           </section>
 
           <aside className="right-stack">
@@ -191,22 +197,8 @@ export default function App() {
               </div>
             </section>
 
+            <MissionInspector mission={activeMission} tasks={tasks} agents={agents} />
             <TaskPanel tasks={tasks} />
-
-            <section className="panel panel-section">
-              <div className="stack-head">
-                <h2 className="section-title">Event feed</h2>
-                <span className="section-count">{meta?.eventCount ?? stream.events.length}</span>
-              </div>
-              {stream.events.length === 0 ? (
-                <p className="muted">Sin eventos todavía.</p>
-              ) : (
-                stream.events.map((event) => (
-                  <div key={event.id} className="event-item">{event.summary}</div>
-                ))
-              )}
-            </section>
-
             <SystemPanel stream={stream} />
           </aside>
         </div>

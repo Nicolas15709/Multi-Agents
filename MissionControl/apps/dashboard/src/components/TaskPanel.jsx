@@ -1,7 +1,10 @@
 export function TaskPanel({ tasks = [] }) {
   return (
     <div className="panel-section">
-      <h2 className="section-title">Tasks</h2>
+      <div className="stack-head">
+        <h2 className="section-title">Tasks</h2>
+        <span className="section-count">{tasks.length}</span>
+      </div>
       {tasks.length === 0 ? (
         <p className="muted">No hay tareas todavía.</p>
       ) : (

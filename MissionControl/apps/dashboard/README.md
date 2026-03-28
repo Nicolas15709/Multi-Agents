@@ -25,6 +25,6 @@ Frontend placeholder for the visual dashboard.
 
 ## Next implementation steps
 1. keep the WebSocket server alive as a dedicated runtime process instead of in-process bootstrap only
-2. add mission inspector and task timeline drilldown
+2. connect the new mission inspector/timeline to richer event payloads and filtering
 3. implement Supabase auth/login-first flow
 4. replace mock-only visual room state with real runtime positioning/activity
