@@ -23,6 +23,7 @@ class RuntimeSnapshotAPI:
         active_agents = [agent for agent in agents if agent.get("state") and agent.get("state") != "idle"]
         completed_tasks = [task for task in active_tasks if task.get("status") in {"done", "completed"}]
         blocked_tasks = [task for task in active_tasks if task.get("status") == "blocked"]
+        running_task = next((task for task in active_tasks if task.get("status") == "running"), None)
 
         return {
             "generatedAt": utc_now(),
@@ -35,6 +36,8 @@ class RuntimeSnapshotAPI:
                 "blockedTaskCount": len(blocked_tasks),
                 "eventCount": len(stream.get("events", [])),
                 "notificationCount": len(stream.get("notifications", [])),
+                "runningTaskId": running_task.get("id") if running_task else None,
+                "runningTaskTitle": running_task.get("title") if running_task else None,
             },
             "missions": missions,
             "activeMission": active_mission,

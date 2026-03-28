@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from db import Database
 from models import AgentRecord, Mission, NotificationRecord, PolicyRecord, Task
@@ -53,11 +53,21 @@ class MissionRepository:
 
     def recent_events(self, mission_id: Optional[str] = None, limit: int = 20) -> List[Dict]:
         if mission_id:
-            return self.db.fetchall(
+            rows = self.db.fetchall(
                 "SELECT * FROM mission_events WHERE mission_id = ? ORDER BY id DESC LIMIT ?",
                 (mission_id, limit),
             )
-        return self.db.fetchall("SELECT * FROM mission_events ORDER BY id DESC LIMIT ?", (limit,))
+        else:
+            rows = self.db.fetchall("SELECT * FROM mission_events ORDER BY id DESC LIMIT ?", (limit,))
+        return [self._decode_payload(row) for row in rows]
+
+    def _decode_payload(self, row: Dict) -> Dict:
+        payload = row.get("payload_json")
+        try:
+            row["payload"] = json.loads(payload) if payload else {}
+        except json.JSONDecodeError:
+            row["payload"] = {}
+        return row
 
 
 class TaskRepository:
@@ -86,13 +96,25 @@ class TaskRepository:
         )
 
     def list_tasks_for_mission(self, mission_id: str) -> List[Dict]:
-        return self.db.fetchall("SELECT * FROM tasks WHERE mission_id = ? ORDER BY created_at ASC", (mission_id,))
+        rows = self.db.fetchall("SELECT * FROM tasks WHERE mission_id = ? ORDER BY created_at ASC", (mission_id,))
+        return [self._decode_fields(row) for row in rows]
 
     def update_task_status(self, task_id: str, status: str) -> None:
         self.db.execute(
             "UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?",
             (status, utc_now(), task_id),
         )
+
+    def _decode_fields(self, row: Dict) -> Dict:
+        try:
+            row["depends_on"] = json.loads(row.get("depends_on") or "[]")
+        except json.JSONDecodeError:
+            row["depends_on"] = []
+        try:
+            row["details"] = json.loads(row.get("details_json") or "{}")
+        except json.JSONDecodeError:
+            row["details"] = {}
+        return row
 
 
 class AgentRepository:
@@ -181,4 +203,13 @@ class NotificationRepository:
         )
 
     def recent_notifications(self, limit: int = 20) -> List[Dict]:
-        return self.db.fetchall("SELECT * FROM notifications ORDER BY id DESC LIMIT ?", (limit,))
+        rows = self.db.fetchall("SELECT * FROM notifications ORDER BY id DESC LIMIT ?", (limit,))
+        return [self._decode_payload(row) for row in rows]
+
+    def _decode_payload(self, row: Dict) -> Dict:
+        payload = row.get("payload_json")
+        try:
+            row["payload"] = json.loads(payload) if payload else {}
+        except json.JSONDecodeError:
+            row["payload"] = {}
+        return row

@@ -5,7 +5,7 @@ function formatTime(value) {
   return date.toLocaleString()
 }
 
-export function MissionInspector({ mission, tasks = [], agents = [] }) {
+export function MissionInspector({ mission, tasks = [], agents = [], meta = {} }) {
   const assignedAgents = agents.filter((agent) => agent.active_mission_id === mission?.id || tasks.some((task) => task.agent_id === agent.agent_id))
   const runningTask = tasks.find((task) => task.status === 'running')
   const blockedTasks = tasks.filter((task) => task.status === 'blocked')
@@ -43,7 +43,7 @@ export function MissionInspector({ mission, tasks = [], agents = [] }) {
           <div className="inspector-list">
             <div className="inspector-row">
               <span className="muted">Running now</span>
-              <strong>{runningTask ? runningTask.title : 'No running task'}</strong>
+              <strong>{runningTask ? runningTask.title : meta?.runningTaskTitle || 'No running task'}</strong>
             </div>
             <div className="inspector-row">
               <span className="muted">Assigned agents</span>

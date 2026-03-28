@@ -197,7 +197,7 @@ export default function App() {
               </div>
             </section>
 
-            <MissionInspector mission={activeMission} tasks={tasks} agents={agents} />
+            <MissionInspector mission={activeMission} tasks={tasks} agents={agents} meta={meta} />
             <TaskPanel tasks={tasks} />
             <SystemPanel stream={stream} />
           </aside>

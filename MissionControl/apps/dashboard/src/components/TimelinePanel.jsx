@@ -9,6 +9,13 @@ function formatTime(value) {
   return date.toLocaleTimeString()
 }
 
+function payloadSummary(payload) {
+  if (!payload || typeof payload !== 'object') return null
+  const keys = Object.keys(payload).slice(0, 3)
+  if (keys.length === 0) return null
+  return keys.map((key) => `${key}: ${Array.isArray(payload[key]) ? payload[key].length + ' items' : String(payload[key])}`).join(' · ')
+}
+
 export function TimelinePanel({ events = [] }) {
   return (
     <section className="panel panel-section">
@@ -30,6 +37,9 @@ export function TimelinePanel({ events = [] }) {
                   <span className="meta-chip">{formatTime(event.created_at)}</span>
                 </div>
                 <div className="muted">{prettyEventType(event.event_type)} · {event.actor || 'system'}</div>
+                {payloadSummary(event.payload) ? (
+                  <div className="timeline-payload">{payloadSummary(event.payload)}</div>
+                ) : null}
               </div>
             </div>
           ))}
