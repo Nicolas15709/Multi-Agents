@@ -1,4 +1,15 @@
 {
+  "generatedAt": "2026-03-28T04:09:42+00:00",
+  "meta": {
+    "missionCount": 1,
+    "agentCount": 5,
+    "activeAgentCount": 1,
+    "taskCount": 5,
+    "completedTaskCount": 3,
+    "blockedTaskCount": 0,
+    "eventCount": 9,
+    "notificationCount": 5
+  },
   "missions": [
     {
       "id": "mission-1079d9c3e089",

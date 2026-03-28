@@ -1,4 +1,15 @@
 export const mockSnapshot = {
+  generatedAt: '2026-03-28T04:00:00+00:00',
+  meta: {
+    missionCount: 1,
+    agentCount: 5,
+    activeAgentCount: 5,
+    taskCount: 0,
+    completedTaskCount: 0,
+    blockedTaskCount: 0,
+    eventCount: 3,
+    notificationCount: 1,
+  },
   activeMission: {
     id: 'mission-bootstrap',
     title: 'Bootstrap Mission Control',
@@ -44,6 +55,7 @@ export const mockSnapshot = {
       personality: 'Critical, supportive, perfectionist and reliability-focused.'
     }
   ],
+  tasks: [],
   stream: {
     events: [
       { id: 1, summary: 'Supervisor inició la planificación de la misión.' },

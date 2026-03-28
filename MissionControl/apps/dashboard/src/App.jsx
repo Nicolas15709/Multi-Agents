@@ -48,20 +48,28 @@ function StatCard({ label, value, tone = 'neutral', hint }) {
   )
 }
 
-function MissionHighlights({ activeMission, agents, tasks, events }) {
+function formatTimestamp(value) {
+  if (!value) return 'Unknown'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString()
+}
+
+function MissionHighlights({ activeMission, agents, tasks, events, meta }) {
   const stats = useMemo(() => {
-    const activeAgents = agents.filter((agent) => agent.state !== 'idle').length
-    const completedTasks = tasks.filter((task) => task.status === 'done' || task.status === 'completed').length
+    const activeAgents = meta?.activeAgentCount ?? agents.filter((agent) => agent.state !== 'idle').length
+    const completedTasks = meta?.completedTaskCount ?? tasks.filter((task) => task.status === 'done' || task.status === 'completed').length
     const missionStatus = activeMission?.status || 'idle'
 
     return {
       activeAgents,
       completedTasks,
-      totalTasks: tasks.length,
-      eventCount: events.length,
-      missionStatus
+      totalTasks: meta?.taskCount ?? tasks.length,
+      eventCount: meta?.eventCount ?? events.length,
+      missionStatus,
+      blockedTasks: meta?.blockedTaskCount ?? tasks.filter((task) => task.status === 'blocked').length,
     }
-  }, [activeMission, agents, tasks, events])
+  }, [activeMission, agents, tasks, events, meta])
 
   return (
     <section className="hero-panel panel">
@@ -75,11 +83,12 @@ function MissionHighlights({ activeMission, agents, tasks, events }) {
           <span className="state-pill">{stats.missionStatus}</span>
           <span className="meta-chip">Mode: {activeMission?.mode || 'n/a'}</span>
           <span className="meta-chip">Priority: {activeMission?.priority || 'normal'}</span>
+          <span className="meta-chip">Blocked tasks: {stats.blockedTasks}</span>
         </div>
       </div>
 
       <div className="stats-grid">
-        <StatCard label="Agents active" value={stats.activeAgents} tone="accent" hint={`${agents.length} total`} />
+        <StatCard label="Agents active" value={stats.activeAgents} tone="accent" hint={`${meta?.agentCount ?? agents.length} total`} />
         <StatCard label="Tasks done" value={stats.completedTasks} tone="success" hint={`${stats.totalTasks} tracked`} />
         <StatCard label="Feed events" value={stats.eventCount} tone="info" hint="Live mission log" />
       </div>
@@ -89,8 +98,8 @@ function MissionHighlights({ activeMission, agents, tasks, events }) {
 
 export default function App() {
   const [entered] = useState(true)
-  const snapshot = useSnapshot()
-  const { activeMission, agents = [], tasks = [], stream = { events: [], notifications: [] } } = snapshot
+  const { snapshot, status } = useSnapshot()
+  const { activeMission, agents = [], tasks = [], meta = {}, stream = { events: [], notifications: [] } } = snapshot
 
   if (!entered) {
     return <LoginGate />
@@ -105,23 +114,34 @@ export default function App() {
         </div>
         <div className="topbar-actions">
           <div className="badge">Dashboard scaffold</div>
-          <div className="live-pill">Live snapshot</div>
+          <div className={`live-pill ${status.source === 'runtime' ? 'is-live' : 'is-fallback'}`}>
+            {status.source === 'runtime' ? 'Runtime snapshot' : 'Mock snapshot'}
+          </div>
+          <div className="meta-chip">Updated: {formatTimestamp(status.lastUpdated)}</div>
         </div>
       </header>
 
       <main className="dashboard-shell">
+        {status.error ? (
+          <section className="panel warning-banner">
+            <strong>Snapshot fallback:</strong> no se pudo leer `/snapshot.json`. Mostrando el último estado disponible o mock data.
+            <div className="muted">{status.error}</div>
+          </section>
+        ) : null}
+
         <MissionHighlights
           activeMission={activeMission}
           agents={agents}
           tasks={tasks}
           events={stream.events}
+          meta={meta}
         />
 
         <div className="dashboard-grid">
           <section className="panel left-stack">
             <div className="stack-head">
               <h2 className="section-title">Agents</h2>
-              <span className="section-count">{agents.length}</span>
+              <span className="section-count">{meta?.agentCount ?? agents.length}</span>
             </div>
             {agents.length === 0 ? (
               <p className="muted">No hay agentes activos.</p>
@@ -136,7 +156,7 @@ export default function App() {
                 <h2 className="section-title">Mission room</h2>
                 <p className="muted room-copy">Mapa visual del equipo activo y su distribución operativa.</p>
               </div>
-              <div className="meta-chip">{agents.length} nodes</div>
+              <div className="meta-chip">{meta?.activeAgentCount ?? agents.length} active</div>
             </div>
             <div className="room-grid" />
             <div className="room-glow room-glow-a" />
@@ -157,6 +177,7 @@ export default function App() {
               <div className="meta-list">
                 <span className="meta-chip">Mode: {activeMission?.mode || 'n/a'}</span>
                 <span className="meta-chip">Priority: {activeMission?.priority || 'normal'}</span>
+                <span className="meta-chip">Notifications: {meta?.notificationCount ?? stream.notifications.length}</span>
               </div>
             </section>
 
@@ -165,7 +186,7 @@ export default function App() {
             <section className="panel panel-section">
               <div className="stack-head">
                 <h2 className="section-title">Event feed</h2>
-                <span className="section-count">{stream.events.length}</span>
+                <span className="section-count">{meta?.eventCount ?? stream.events.length}</span>
               </div>
               {stream.events.length === 0 ? (
                 <p className="muted">Sin eventos todavía.</p>
