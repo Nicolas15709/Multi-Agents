@@ -6,6 +6,7 @@ import { LoginGate } from './components/LoginGate'
 import { MissionInspector } from './components/MissionInspector'
 import { TimelinePanel } from './components/TimelinePanel'
 import { MissionLauncher } from './components/MissionLauncher'
+import { MissionRoomScene } from './components/MissionRoomScene'
 
 function AgentCard({ agent }) {
   return (
@@ -164,22 +165,7 @@ export default function App() {
           </section>
 
           <section className="center-stack">
-            <section className="panel room">
-              <div className="room-header">
-                <div>
-                  <h2 className="section-title">Mission room</h2>
-                  <p className="muted room-copy">Mapa visual del equipo activo y su distribución operativa.</p>
-                </div>
-                <div className="meta-chip">{meta?.activeAgentCount ?? agents.length} active</div>
-              </div>
-              <div className="room-grid" />
-              <div className="room-glow room-glow-a" />
-              <div className="room-glow room-glow-b" />
-              <div className="stage">
-                {agents.map((agent, index) => <AgentNode key={agent.agent_id} agent={agent} index={index} />)}
-              </div>
-            </section>
-
+            <MissionRoomScene agents={agents} />
             <TimelinePanel events={stream.events} />
           </section>
 
