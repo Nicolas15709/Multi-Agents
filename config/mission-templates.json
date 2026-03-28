@@ -1,0 +1,24 @@
+{
+  "templates": [
+    {"id": "software_build", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"]},
+    {"id": "prototype_to_build", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"]},
+    {"id": "landing_launch", "category": "development", "primaryAgents": ["agent-0", "agent-2", "agent-3", "agent-4"]},
+    {"id": "feature_extension", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
+    {"id": "bugfix_debug", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
+    {"id": "documentation_pack", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
+    {"id": "security_review", "category": "security", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
+    {"id": "qa_hardening", "category": "security", "primaryAgents": ["agent-0", "agent-3", "agent-4"]},
+    {"id": "post_build_audit", "category": "security", "primaryAgents": ["agent-0", "agent-1", "agent-4"]},
+    {"id": "marketing_campaign", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
+    {"id": "brand_growth", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
+    {"id": "content_engine", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
+    {"id": "social_presence_audit", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
+    {"id": "business_audit_proposal", "category": "business", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"]},
+    {"id": "competitor_intelligence", "category": "business", "primaryAgents": ["agent-0", "agent-1", "agent-4"]},
+    {"id": "offer_design", "category": "business", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
+    {"id": "research_only", "category": "research", "primaryAgents": ["agent-0", "agent-1"]},
+    {"id": "monitor_and_report", "category": "operations", "primaryAgents": ["agent-0", "agent-1", "agent-4"]},
+    {"id": "launch_mode", "category": "operations", "primaryAgents": ["agent-0", "agent-2", "agent-3", "agent-4"]},
+    {"id": "maintenance_cycle", "category": "operations", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]}
+  ]
+}

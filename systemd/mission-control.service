@@ -1,0 +1,17 @@
+[Unit]
+Description=Mission Control Multi-Agent Orchestrator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/Projects/MissionControl
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /home/ubuntu/Projects/MissionControl/src/main_orchestrator.js --goal "Resume pending queue"
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

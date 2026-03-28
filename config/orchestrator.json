@@ -1,0 +1,14 @@
+{
+  "maxRetries": 3,
+  "workflow": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"],
+  "qaFailureLoopsBackTo": "agent-3",
+  "context": {
+    "maxChars": 280000,
+    "recentMessages": 18,
+    "keepPinnedTypes": ["goal", "plan", "qa_feedback", "fatal_error", "artifact"]
+  },
+  "timeouts": {
+    "agentCallMs": 120000,
+    "toolCallMs": 90000
+  }
+}
