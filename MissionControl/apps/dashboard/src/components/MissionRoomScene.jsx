@@ -35,11 +35,11 @@ function avatarAsset(role) {
 
 function AgentSprite({ agent, index }) {
   const positions = [
-    { top: '14%', left: '10%' },
-    { top: '26%', left: '60%' },
-    { top: '58%', left: '18%' },
-    { top: '50%', left: '66%' },
-    { top: '72%', left: '44%' },
+    { top: '16%', left: '12%' },
+    { top: '22%', left: '66%' },
+    { top: '56%', left: '18%' },
+    { top: '48%', left: '70%' },
+    { top: '74%', left: '45%' },
   ]
 
   return (
@@ -70,11 +70,20 @@ export function MissionRoomScene({ agents = [] }) {
 
       <div className="iso-room">
         <div className="iso-grid" />
+        <div className="ambient-glow ambient-a" />
+        <div className="ambient-glow ambient-b" />
+
         <div className="iso-platform platform-command">Command</div>
         <div className="iso-platform platform-research">Research</div>
         <div className="iso-platform platform-design">Design</div>
         <div className="iso-platform platform-build">Build</div>
         <div className="iso-platform platform-qa">QA</div>
+
+        <div className="iso-prop prop-command-screen" />
+        <div className="iso-prop prop-research-board" />
+        <div className="iso-prop prop-design-wall" />
+        <div className="iso-prop prop-build-rack" />
+        <div className="iso-prop prop-qa-console" />
 
         <div className="connection connection-a" />
         <div className="connection connection-b" />
