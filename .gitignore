@@ -3,6 +3,12 @@ __pycache__/
 *.pyo
 *.pyd
 node_modules/
+.env
+.env.local
+data/*.db
+data/*.sqlite
+logs/*.log
 dist/
+coverage/
 .vite/
 .DS_Store
