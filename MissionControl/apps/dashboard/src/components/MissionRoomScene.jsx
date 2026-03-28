@@ -24,13 +24,13 @@ function activityLabel(agent) {
 
 function avatarAsset(role) {
   const map = {
-    director: '/avatars/supervisor.svg',
-    finder: '/avatars/researcher.svg',
-    'prototype-architect': '/avatars/designer.svg',
-    builder: '/avatars/developer.svg',
-    improver: '/avatars/qa.svg',
+    director: '/avatars-pixel/supervisor.png',
+    finder: '/avatars-pixel/researcher.png',
+    'prototype-architect': '/avatars-pixel/designer.png',
+    builder: '/avatars-pixel/developer.png',
+    improver: '/avatars-pixel/qa.png',
   }
-  return map[role] || '/avatars/supervisor.svg'
+  return map[role] || '/avatars-pixel/supervisor.png'
 }
 
 function AgentSprite({ agent, index }) {
