@@ -1,4 +1,8 @@
+import { useState } from 'react'
 import { useSnapshot } from './useSnapshot'
+import { TaskPanel } from './components/TaskPanel'
+import { SystemPanel } from './components/SystemPanel'
+import { LoginGate } from './components/LoginGate'
 
 function AgentCard({ agent }) {
   return (
@@ -27,8 +31,13 @@ function AgentNode({ agent }) {
 }
 
 export default function App() {
+  const [entered, setEntered] = useState(true)
   const snapshot = useSnapshot()
-  const { activeMission, agents = [], stream = { events: [], notifications: [] } } = snapshot
+  const { activeMission, agents = [], tasks = [], stream = { events: [], notifications: [] } } = snapshot
+
+  if (!entered) {
+    return <LoginGate />
+  }
 
   return (
     <div className="app-shell">
@@ -38,7 +47,7 @@ export default function App() {
       </header>
 
       <main className="layout">
-        <section className="panel">
+        <section className="panel left-stack">
           <h2 className="section-title">Agents</h2>
           {agents.map((agent) => <AgentCard key={agent.agent_id} agent={agent} />)}
         </section>
@@ -50,7 +59,7 @@ export default function App() {
           </div>
         </section>
 
-        <aside className="panel">
+        <aside className="panel right-stack">
           <div className="mission-box">
             <h2 className="section-title">Active Mission</h2>
             <div className="agent-name">{activeMission?.title || 'Sin misión activa'}</div>
@@ -58,10 +67,16 @@ export default function App() {
             <div className="state-pill">{activeMission?.status || 'idle'}</div>
           </div>
 
-          <h2 className="section-title">Event Feed</h2>
-          {stream.events.map((event) => (
-            <div key={event.id} className="event-item">{event.summary}</div>
-          ))}
+          <TaskPanel tasks={tasks} />
+
+          <div className="panel-section">
+            <h2 className="section-title">Event Feed</h2>
+            {stream.events.map((event) => (
+              <div key={event.id} className="event-item">{event.summary}</div>
+            ))}
+          </div>
+
+          <SystemPanel stream={stream} />
         </aside>
       </main>
     </div>
