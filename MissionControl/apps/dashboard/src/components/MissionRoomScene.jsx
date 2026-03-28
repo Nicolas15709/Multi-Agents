@@ -22,15 +22,15 @@ function activityLabel(agent) {
   return map[agent.state] || agent.state
 }
 
-function avatarClass(role) {
+function avatarAsset(role) {
   const map = {
-    director: 'avatar-director',
-    finder: 'avatar-researcher',
-    'prototype-architect': 'avatar-designer',
-    builder: 'avatar-builder',
-    improver: 'avatar-qa',
+    director: '/avatars/supervisor.svg',
+    finder: '/avatars/researcher.svg',
+    'prototype-architect': '/avatars/designer.svg',
+    builder: '/avatars/developer.svg',
+    improver: '/avatars/qa.svg',
   }
-  return map[role] || 'avatar-generic'
+  return map[role] || '/avatars/supervisor.svg'
 }
 
 function AgentSprite({ agent, index }) {
@@ -48,9 +48,8 @@ function AgentSprite({ agent, index }) {
         <strong>{agent.display_name}</strong>
         <span>{activityLabel(agent)}</span>
       </div>
-      <div className={`agent-avatar ${avatarClass(agent.role)}`}>
-        <div className="agent-head-shape" />
-        <div className="agent-body-shape" />
+      <div className="agent-avatar portrait-avatar">
+        <img src={avatarAsset(agent.role)} alt={agent.display_name} className="agent-portrait" />
       </div>
       <div className="activity-ring" />
       <div className="station-marker">{stationLabel(agent.role)}</div>

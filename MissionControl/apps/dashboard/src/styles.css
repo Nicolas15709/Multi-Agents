@@ -531,37 +531,26 @@ body {
 
 .agent-avatar {
   position: relative;
-  width: 64px;
-  height: 88px;
+  width: 84px;
+  height: 84px;
   display: grid;
   place-items: center;
 }
 
-.agent-head-shape {
-  position: absolute;
-  top: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: #f6d2b3;
-  box-shadow: 0 0 0 4px rgba(8,16,28,0.35);
-}
-
-.agent-body-shape {
-  position: absolute;
-  top: 26px;
-  width: 46px;
-  height: 54px;
-  border-radius: 16px 16px 12px 12px;
+.portrait-avatar {
+  border-radius: 22px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 14px 26px rgba(0,0,0,0.24);
+  overflow: hidden;
 }
 
-.avatar-director .agent-body-shape { background: linear-gradient(180deg, #72e4c8, #2fa88a); }
-.avatar-researcher .agent-body-shape { background: linear-gradient(180deg, #78b9ff, #3d74d4); }
-.avatar-designer .agent-body-shape { background: linear-gradient(180deg, #c090ff, #7a57d6); }
-.avatar-builder .agent-body-shape { background: linear-gradient(180deg, #ffb86b, #cb6c24); }
-.avatar-qa .agent-body-shape { background: linear-gradient(180deg, #ff7aa2, #c94174); }
-.avatar-generic .agent-body-shape { background: linear-gradient(180deg, #9aa6c9, #6c7696); }
+.agent-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 .activity-ring {
   width: 88px;

@@ -2,12 +2,18 @@
   "name": "mission-control",
   "version": "0.1.0",
   "description": "Multi-agent orchestrator for OpenClaw + MCP",
-  "main": "src/main_orchestrator.js",
   "type": "module",
   "scripts": {
-    "start": "node src/main_orchestrator.js",
-    "dev": "node --watch src/main_orchestrator.js",
-    "init-db": "node src/db.js --init"
+    "dev": "npm --prefix apps/dashboard run dev -- --host 127.0.0.1 --port 4173",
+    "dev:dashboard": "npm --prefix apps/dashboard run dev -- --host 127.0.0.1 --port 4173",
+    "build": "npm --prefix apps/dashboard run build",
+    "preview": "npm --prefix apps/dashboard run preview",
+    "runtime": "python3 runtime/python/main.py",
+    "runtime:submit": "python3 runtime/python/submit_mission.py",
+    "snapshot": "python3 runtime/python/export_snapshot.py",
+    "init-db": "node src/db.js --init",
+    "legacy:dev": "node --watch src/main_orchestrator.js",
+    "legacy:start": "node src/main_orchestrator.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
