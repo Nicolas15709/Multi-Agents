@@ -27,7 +27,7 @@ class TaskRunner:
         if running:
             task = running[0]
             self.task_repository.update_task_status(task["id"], "done")
-            self.mission_repository.add_event(mission_id, "task_completed", task["agent_id"], f"Task completed: {task['title']}", {"task_id": task["id"]})
+            self.mission_repository.add_event(mission_id, "task_completed", task["agent_id"], f"Task completed: {task['title']}", {"task_id": task["id"], "task_title": task["title"]})
             self.agent_state_manager.set_state(task["agent_id"], "idle")
             self.progress_notifier.notify(
                 mission_id,

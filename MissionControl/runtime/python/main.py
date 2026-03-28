@@ -12,6 +12,7 @@ from db import Database
 from event_stream import EventStreamService
 from mission_service import MissionService
 from mission_lifecycle import MissionLifecycleService
+from mission_summary import MissionSummaryService
 from notifications import NotificationService
 from planner import Planner
 from policies import PolicyEngine
@@ -142,12 +143,14 @@ def main() -> None:
         progress_notifier=progress_notifier,
     )
     progress_summary = ProgressSummaryService(mission_repository=mission_repository, task_repository=task_repository)
+    mission_summary = MissionSummaryService(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
         task_repository=task_repository,
         agent_repository=agent_repository,
         event_stream=event_stream,
         progress_summary=progress_summary,
+        mission_summary=mission_summary,
     )
 
     print("Mission Control runtime")
