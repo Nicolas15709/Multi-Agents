@@ -29,8 +29,16 @@ class Planner:
     mission_repository: MissionRepository
     task_repository: TaskRepository
     template_registry: Optional[TemplateRegistry] = None
+    thought_log: Optional[ThoughtLogService] = None
 
     def create_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False) -> Mission:
+        if self.thought_log:
+            self.thought_log.record(
+                "bootstrap",
+                "create_mission",
+                f"Planning mission '{title}'",
+                {"mode": mode, "priority": priority, "source": source},
+            )
         mission = Mission(
             id=new_id("mission"),
             title=title,
@@ -81,6 +89,16 @@ class Planner:
             "mode": mission.mode,
             "agents": [task.agent_id for task in tasks],
         })
+        if self.thought_log:
+            self.thought_log.record(
+                mission.id,
+                "seed_base_workflow",
+                "Base workflow seeded for mission",
+                {
+                    "workflow_length": len(tasks),
+                    "agents": [task.agent_id for task in tasks],
+                },
+            )
         return tasks
 
     def summary(self) -> dict:

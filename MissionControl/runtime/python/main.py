@@ -10,6 +10,7 @@ from api_snapshot import RuntimeSnapshotAPI
 from config import RuntimeConfig
 from db import Database
 from event_stream import EventStreamService
+from mission_service import MissionService
 from notifications import NotificationService
 from planner import Planner
 from policies import PolicyEngine
@@ -17,11 +18,11 @@ from progress import ProgressNotifier
 from repository import AgentRepository, MissionRepository, NotificationRepository, PolicyRepository, TaskRepository
 from runtime_state import RuntimeStateHydrator
 from scheduler import Scheduler
-from mission_service import MissionService
 from settings import ProgressSettings
 from storage import ensure_parent
 from task_runner import TaskRunner
 from templates import TemplateRegistry
+from thought_log import ThoughtLogService
 from websocket_server import WebSocketPublisher
 
 
@@ -96,11 +97,13 @@ def main() -> None:
     template_registry = TemplateRegistry(config.templates_path)
     bootstrap_agents(agent_repository, agent_registry)
 
+    thought_log = ThoughtLogService(mission_repository)
     planner = Planner(
         config=config,
         mission_repository=mission_repository,
         task_repository=task_repository,
         template_registry=template_registry,
+        thought_log=thought_log,
     )
     notifications = NotificationService(config=config, repository=notification_repository)
     progress_notifier = ProgressNotifier(
@@ -153,6 +156,7 @@ def main() -> None:
         "notifications": notifications.summary(),
         "progress": progress_notifier.summary(),
         "planner": planner.summary(),
+        "thought_log": thought_log.summary(),
     })
 
     try:

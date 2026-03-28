@@ -7,6 +7,7 @@ import { MissionInspector } from './components/MissionInspector'
 import { TimelinePanel } from './components/TimelinePanel'
 import { MissionLauncher } from './components/MissionLauncher'
 import { MissionRoomScene } from './components/MissionRoomScene'
+import { ThoughtLogPanel } from './components/ThoughtLogPanel'
 
 function AgentCard({ agent }) {
   return (
@@ -186,6 +187,7 @@ export default function App() {
 
             <MissionInspector mission={activeMission} tasks={tasks} agents={agents} meta={meta} />
             <MissionLauncher />
+            <ThoughtLogPanel events={stream.events} />
             <TaskPanel tasks={tasks} />
             <SystemPanel stream={stream} />
           </aside>
