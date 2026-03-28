@@ -5,6 +5,7 @@ import { SystemPanel } from './components/SystemPanel'
 import { LoginGate } from './components/LoginGate'
 import { MissionInspector } from './components/MissionInspector'
 import { TimelinePanel } from './components/TimelinePanel'
+import { MissionLauncher } from './components/MissionLauncher'
 
 function AgentCard({ agent }) {
   return (
@@ -198,6 +199,7 @@ export default function App() {
             </section>
 
             <MissionInspector mission={activeMission} tasks={tasks} agents={agents} meta={meta} />
+            <MissionLauncher />
             <TaskPanel tasks={tasks} />
             <SystemPanel stream={stream} />
           </aside>

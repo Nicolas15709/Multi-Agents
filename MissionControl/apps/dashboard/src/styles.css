@@ -329,6 +329,61 @@ body {
   margin-bottom: 6px;
 }
 
+.timeline-payload {
+  margin-top: 8px;
+  color: #c8d4f0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.launcher-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.launcher-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.field-label input,
+.field-label textarea,
+.field-label select {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.launcher-output {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.launcher-output code {
+  display: block;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #dff7ef;
+}
+
 .agent-card {
   background: var(--panel-2);
   border-radius: 18px;
