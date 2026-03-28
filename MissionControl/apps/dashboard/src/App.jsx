@@ -98,7 +98,7 @@ function MissionHighlights({ activeMission, agents, tasks, events, meta }) {
 
 export default function App() {
   const [entered] = useState(true)
-  const { snapshot, status } = useSnapshot()
+  const { snapshot, status, connection } = useSnapshot()
   const { activeMission, agents = [], tasks = [], meta = {}, stream = { events: [], notifications: [] } } = snapshot
 
   if (!entered) {
@@ -117,6 +117,9 @@ export default function App() {
           <div className={`live-pill ${status.source === 'runtime' ? 'is-live' : 'is-fallback'}`}>
             {status.source === 'runtime' ? 'Runtime snapshot' : 'Mock snapshot'}
           </div>
+          <div className={`live-pill ${connection.state === 'connected' ? 'is-live' : 'is-fallback'}`}>
+            WS: {connection.state}
+          </div>
           <div className="meta-chip">Updated: {formatTimestamp(status.lastUpdated)}</div>
         </div>
       </header>
@@ -126,6 +129,13 @@ export default function App() {
           <section className="panel warning-banner">
             <strong>Snapshot fallback:</strong> no se pudo leer `/snapshot.json`. Mostrando el último estado disponible o mock data.
             <div className="muted">{status.error}</div>
+          </section>
+        ) : null}
+
+        {connection.error ? (
+          <section className="panel warning-banner">
+            <strong>WebSocket fallback:</strong> el canal live no está disponible todavía. El dashboard sigue usando snapshot polling.
+            <div className="muted">{connection.error}</div>
           </section>
         ) : null}
 

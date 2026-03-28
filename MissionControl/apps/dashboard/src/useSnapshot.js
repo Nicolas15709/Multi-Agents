@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { mockSnapshot } from './mockData'
+import { useRuntimeFeed } from './useRuntimeFeed'
 
 const REFRESH_INTERVAL_MS = 4000
 
@@ -10,6 +11,17 @@ export function useSnapshot() {
     lastUpdated: mockSnapshot.generatedAt || null,
     error: null,
   })
+
+  const applySnapshot = useCallback((snapshot, source = 'runtime') => {
+    setData(snapshot)
+    setStatus({
+      source,
+      lastUpdated: snapshot.generatedAt || new Date().toISOString(),
+      error: null,
+    })
+  }, [])
+
+  const connection = useRuntimeFeed((snapshot) => applySnapshot(snapshot, 'runtime'))
 
   useEffect(() => {
     let cancelled = false
@@ -22,13 +34,8 @@ export function useSnapshot() {
         }
 
         const json = await res.json()
-        if (!cancelled) {
-          setData(json)
-          setStatus({
-            source: 'runtime',
-            lastUpdated: json.generatedAt || new Date().toISOString(),
-            error: null,
-          })
+        if (!cancelled && connection.state !== 'connected') {
+          applySnapshot(json, 'runtime')
         }
       } catch (error) {
         if (!cancelled) {
@@ -48,7 +55,7 @@ export function useSnapshot() {
       cancelled = true
       clearInterval(timer)
     }
-  }, [])
+  }, [applySnapshot, connection.state])
 
-  return { snapshot: data, status }
+  return { snapshot: data, status, connection }
 }
