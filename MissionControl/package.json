@@ -1,0 +1,16 @@
+{
+  "name": "mission-control",
+  "version": "0.1.0",
+  "description": "Multi-agent orchestrator for OpenClaw + MCP",
+  "main": "src/main_orchestrator.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main_orchestrator.js",
+    "dev": "node --watch src/main_orchestrator.js",
+    "init-db": "node src/db.js --init"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "dotenv": "^16.4.7"
+  }
+}

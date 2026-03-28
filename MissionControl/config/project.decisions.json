@@ -1,0 +1,34 @@
+{
+  "status": "draft",
+  "confirmed": {
+    "projectName": "Mission Control",
+    "agentCount": 5,
+    "orchestratorRuntime": "python",
+    "agentFramework": "langgraph",
+    "orchestratorPersistence": "sqlite",
+    "productPersistence": "supabase",
+    "uiStyle": "isometric-friendly-game-like-dashboard",
+    "futureDeployment": "one-docker-per-agent-later",
+    "initialDeployment": "single-process-local-scaffold",
+    "frontendFramework": "vite-react",
+    "dashboardRealtimeTransport": "local-websocket",
+    "authenticationFlow": "single-admin-user",
+    "frontendDeployment": "vercel",
+    "applicationBackend": "supabase",
+    "executionRuntime": "self-hosted-orchestrator",
+    "autonomyLevel": "high",
+    "externalActionsPolicy": "controlled-with-preauthorized-policies",
+    "authorizationGranularity": "integration-account-action",
+    "authorizationStorage": "hybrid-supabase-plus-local-cache",
+    "securityPosture": "strict-best-practices"
+  },
+  "pending": [
+    "Supabase project URL",
+    "Supabase anon key",
+    "Supabase service role handling strategy",
+    "branding palette",
+    "agent avatar style",
+    "final target path outside workspace",
+    "final agent names/persona labels"
+  ]
+}
