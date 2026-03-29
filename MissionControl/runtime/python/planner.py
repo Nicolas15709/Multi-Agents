@@ -32,13 +32,13 @@ class Planner:
     template_registry: Optional[TemplateRegistry] = None
     thought_log: Optional[ThoughtLogService] = None
 
-    def create_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False) -> Mission:
+    def create_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False, schedule: Optional[str] = None) -> Mission:
         if self.thought_log:
             self.thought_log.record(
                 "bootstrap",
                 "create_mission",
                 f"Planning mission '{title}'",
-                {"mode": mode, "priority": priority, "source": source},
+                {"mode": mode, "priority": priority, "source": source, "schedule": schedule},
             )
         mission = Mission(
             id=new_id("mission"),
@@ -47,6 +47,7 @@ class Planner:
             mode=mode,
             priority=priority,
             source=source,
+            schedule=schedule,
             allow_24x7=allow_24x7,
         )
         self.mission_repository.create_mission(mission)
@@ -54,6 +55,7 @@ class Planner:
             "mode": mode,
             "priority": priority,
             "source": source,
+            "schedule": schedule,
         })
         return mission
 

@@ -11,6 +11,7 @@
     "runtime": "python3 runtime/python/main.py",
     "runtime:submit": "python3 runtime/python/submit_mission.py",
     "runtime:status": "python3 runtime/python/print_status.py",
+    "runtime:ensure-maintenance": "python3 runtime/python/ensure_maintenance_cycle.py",
     "snapshot": "python3 runtime/python/export_snapshot.py",
     "init-db": "node src/db.js --init",
     "legacy:dev": "node --watch src/main_orchestrator.js",

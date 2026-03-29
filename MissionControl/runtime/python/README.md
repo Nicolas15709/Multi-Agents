@@ -25,6 +25,8 @@ Scaffold funcional en evolución.
 - Iniciar runtime persistente:
   - `python3 main.py`
 - Enviar una misión nueva:
-  - `python3 submit_mission.py "Título" "Objetivo" --mode software_build --priority high`
+  - `python3 submit_mission.py "Título" "Objetivo" --mode software_build --priority high --schedule manual:adhoc`
+- Asegurar un ciclo de mantenimiento recurrente (cron-friendly, con deduplicación):
+  - `python3 ensure_maintenance_cycle.py --min-interval-hours 24 --schedule-label cron:daily`
 - Exportar snapshot puntual:
   - `python3 export_snapshot.py`

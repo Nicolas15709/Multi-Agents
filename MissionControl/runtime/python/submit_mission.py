@@ -22,6 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--priority", default="medium", choices=["low", "medium", "high", "critical"])
     parser.add_argument("--source", default="manual", choices=["manual", "scheduled", "system"])
     parser.add_argument("--allow-24x7", action="store_true", dest="allow_24x7")
+    parser.add_argument("--schedule", default=None, help="Optional schedule descriptor (cron label, cadence, or timestamp)")
     return parser
 
 
@@ -66,6 +67,7 @@ def main() -> None:
         priority=args.priority,
         source=args.source,
         allow_24x7=args.allow_24x7,
+        schedule=args.schedule,
     )
 
     state_manager = AgentStateManager(repository=agent_repository)
@@ -77,6 +79,7 @@ def main() -> None:
         "status": result["status"],
         "mode": args.mode,
         "priority": args.priority,
+        "schedule": args.schedule,
     }, ensure_ascii=False))
     db.close()
 

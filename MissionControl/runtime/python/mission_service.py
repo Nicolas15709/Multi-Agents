@@ -17,7 +17,7 @@ class MissionService:
     notifications: NotificationService
     progress_notifier: ProgressNotifier
 
-    def submit_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False) -> Dict:
+    def submit_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False, schedule: str = None) -> Dict:
         current = self.scheduler.highest_priority_mission()
         if current:
             conflict = self.scheduler.resolve_conflict(current["priority"], priority, source)
@@ -47,6 +47,7 @@ class MissionService:
             priority=priority,
             source=source,
             allow_24x7=allow_24x7,
+            schedule=schedule,
         )
         self.planner.seed_base_workflow(mission)
         self.notifications.enqueue(

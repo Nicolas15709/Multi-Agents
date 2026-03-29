@@ -403,6 +403,18 @@ MissionControl/
     └── mission-control.service
 ```
 
+## Automatización operativa añadida
+
+Mission Control ahora incluye un helper cron-friendly para sembrar automáticamente una misión `maintenance_cycle` cuando toque, sin duplicarla si ya hay una activa o si la última ejecución sigue dentro de la ventana mínima.
+
+Ejemplo:
+
+```bash
+npm run runtime:ensure-maintenance -- --min-interval-hours 24 --schedule-label cron:daily
+```
+
+El comando responde JSON (`created` o `skipped`) para que sea fácil integrarlo con cron, systemd timers o scripts de health/ops.
+
 ## Próximos pasos
 
 1. Consolidar runtime Python + LangGraph
