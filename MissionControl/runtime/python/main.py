@@ -22,6 +22,8 @@ from repository import AgentRepository, MissionRepository, NotificationRepositor
 from runtime_state import RuntimeStateHydrator
 from scheduler import Scheduler
 from settings import ProgressSettings
+from startup_recovery import StartupRecoveryService
+from status_report import StatusReportService
 from storage import ensure_parent
 from task_runner import TaskRunner
 from templates import TemplateRegistry
@@ -167,6 +169,14 @@ def main() -> None:
         mission_summary=mission_summary,
         scheduler=scheduler,
     )
+    recovery = StartupRecoveryService(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        agent_state_manager=state_manager,
+        scheduler=scheduler,
+    )
+    startup_recovery = recovery.recover()
+    status_report = StatusReportService(snapshot_api=snapshot_api, lifecycle=lifecycle, recovery=recovery)
 
     print("Mission Control runtime")
     print({
@@ -183,6 +193,8 @@ def main() -> None:
         "progress": progress_notifier.summary(),
         "planner": planner.summary(),
         "thought_log": thought_log.summary(),
+        "startup_recovery": startup_recovery,
+        "status": status_report.build(),
     })
 
     try:
@@ -205,6 +217,7 @@ def main() -> None:
                 "agent_states": state_manager.summary(),
                 "event_stream": event_stream.summary(),
                 "publisher": publisher.summary(),
+                "status": status_report.build(),
                 "tick": tick,
             })
             time.sleep(config.tick_interval_seconds)

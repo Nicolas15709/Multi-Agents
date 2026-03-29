@@ -16,6 +16,7 @@ from progress_summary import ProgressSummaryService
 from repository import AgentRepository, MissionRepository, NotificationRepository, PolicyRepository, TaskRepository
 from scheduler import Scheduler
 from settings import ProgressSettings
+from startup_recovery import StartupRecoveryService
 from templates import TemplateRegistry
 from thought_log import ThoughtLogService
 from status_report import StatusReportService
@@ -72,7 +73,13 @@ def main() -> None:
         mission_summary=mission_summary,
         scheduler=scheduler,
     )
-    status_report = StatusReportService(snapshot_api=snapshot_api, lifecycle=lifecycle)
+    recovery = StartupRecoveryService(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        agent_state_manager=state_manager,
+        scheduler=scheduler,
+    )
+    status_report = StatusReportService(snapshot_api=snapshot_api, lifecycle=lifecycle, recovery=recovery)
 
     print(json.dumps({
         "environment": config.environment,

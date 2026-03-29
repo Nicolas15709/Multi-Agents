@@ -87,8 +87,24 @@ class Scheduler:
     def summary(self) -> Dict:
         active = self.list_active_missions()
         top = self.highest_priority_mission()
+        queued = []
+        blocked = []
+        for mission in active:
+            item = {
+                "id": mission["id"],
+                "title": mission["title"],
+                "priority": mission["priority"],
+                "status": mission["status"],
+                "execution_state": self.mission_execution_state(mission["id"]),
+            }
+            if mission["status"] == "queued":
+                queued.append(item)
+            elif mission["status"] == "blocked":
+                blocked.append(item)
         return {
             "active_count": len(active),
             "highest_priority_mission": top["id"] if top else None,
             "highest_priority_mission_execution_state": self.mission_execution_state(top["id"]) if top else None,
+            "queued_missions": queued,
+            "blocked_missions": blocked,
         }

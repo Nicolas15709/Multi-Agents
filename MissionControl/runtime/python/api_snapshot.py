@@ -38,6 +38,7 @@ class RuntimeSnapshotAPI:
             "generatedAt": utc_now(),
             "progress": progress,
             "missionSummary": mission_summary,
+            "scheduler": self.scheduler.summary() if self.scheduler else {},
             "meta": {
                 "missionCount": len(missions),
                 "agentCount": len(agents),
