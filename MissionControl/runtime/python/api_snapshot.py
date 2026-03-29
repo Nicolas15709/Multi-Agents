@@ -5,6 +5,7 @@ from event_stream import EventStreamService
 from repository import AgentRepository, MissionRepository, TaskRepository
 from progress_summary import ProgressSummaryService
 from mission_summary import MissionSummaryService
+from scheduler import Scheduler
 from utils import utc_now
 
 
@@ -16,10 +17,11 @@ class RuntimeSnapshotAPI:
     event_stream: EventStreamService
     progress_summary: Optional[ProgressSummaryService] = None
     mission_summary: Optional[MissionSummaryService] = None
+    scheduler: Optional[Scheduler] = None
 
     def snapshot(self) -> Dict:
         missions = self.mission_repository.list_missions()
-        active_mission = self.mission_repository.get_focus_mission()
+        active_mission = self.scheduler.highest_priority_mission() if self.scheduler else self.mission_repository.get_focus_mission()
         active_tasks = self.task_repository.list_tasks_for_mission(active_mission["id"]) if active_mission else []
         agents = self.agent_repository.list_agents()
         stream = self.event_stream.snapshot()

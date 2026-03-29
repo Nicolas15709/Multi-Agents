@@ -57,7 +57,11 @@ def main() -> None:
     state_manager = AgentStateManager(repository=agent_repository)
     lifecycle = MissionLifecycleService(mission_repository=mission_repository, task_repository=task_repository)
     event_stream = EventStreamService(mission_repository=mission_repository, notification_repository=notification_repository)
-    progress_summary = ProgressSummaryService(mission_repository=mission_repository, task_repository=task_repository)
+    progress_summary = ProgressSummaryService(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        scheduler=scheduler,
+    )
     mission_summary = MissionSummaryService(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
@@ -66,6 +70,7 @@ def main() -> None:
         event_stream=event_stream,
         progress_summary=progress_summary,
         mission_summary=mission_summary,
+        scheduler=scheduler,
     )
     status_report = StatusReportService(snapshot_api=snapshot_api, lifecycle=lifecycle)
 

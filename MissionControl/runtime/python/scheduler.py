@@ -10,6 +10,12 @@ PRIORITY_SCORE = {
     "critical": 4,
 }
 
+STATUS_SCORE = {
+    "running": 3,
+    "queued": 2,
+    "blocked": 1,
+}
+
 
 @dataclass
 class Scheduler:
@@ -20,11 +26,44 @@ class Scheduler:
         missions = self.mission_repository.list_missions()
         return [m for m in missions if m["status"] in {"queued", "running", "blocked"}]
 
+    def mission_execution_state(self, mission_id: str) -> str:
+        tasks = self.task_repository.list_tasks_for_mission(mission_id)
+        if any(task["status"] == "running" for task in tasks):
+            return "running"
+
+        done_ids = {task["id"] for task in tasks if task["status"] in {"done", "completed"}}
+        ready_pending = []
+        blocked_waiting = []
+        for task in tasks:
+            if task["status"] not in {"pending", "blocked"}:
+                continue
+            deps = task.get("depends_on") or []
+            if all(dep in done_ids for dep in deps):
+                ready_pending.append(task)
+            else:
+                blocked_waiting.append(task)
+
+        if ready_pending:
+            return "ready"
+        if blocked_waiting:
+            return "blocked"
+        return "idle"
+
     def highest_priority_mission(self) -> Optional[Dict]:
         missions = self.list_active_missions()
         if not missions:
             return None
-        return sorted(missions, key=lambda item: (PRIORITY_SCORE.get(item["priority"], 0), item["created_at"]), reverse=True)[0]
+        return sorted(
+            missions,
+            key=lambda item: (
+                1 if self.mission_execution_state(item["id"]) in {"running", "ready"} else 0,
+                PRIORITY_SCORE.get(item["priority"], 0),
+                STATUS_SCORE.get(item["status"], 0),
+                item["updated_at"],
+                item["created_at"],
+            ),
+            reverse=True,
+        )[0]
 
     def should_interrupt(self, current_priority: str, incoming_priority: str) -> bool:
         return PRIORITY_SCORE.get(incoming_priority, 0) > PRIORITY_SCORE.get(current_priority, 0)
@@ -51,4 +90,5 @@ class Scheduler:
         return {
             "active_count": len(active),
             "highest_priority_mission": top["id"] if top else None,
+            "highest_priority_mission_execution_state": self.mission_execution_state(top["id"]) if top else None,
         }

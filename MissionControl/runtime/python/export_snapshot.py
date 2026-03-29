@@ -8,6 +8,7 @@ from event_stream import EventStreamService
 from mission_summary import MissionSummaryService
 from progress_summary import ProgressSummaryService
 from repository import AgentRepository, MissionRepository, NotificationRepository, TaskRepository
+from scheduler import Scheduler
 from storage import ensure_parent
 
 
@@ -21,6 +22,7 @@ def main() -> None:
     agent_repository = AgentRepository(db)
     notification_repository = NotificationRepository(db)
 
+    scheduler = Scheduler(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
         task_repository=task_repository,
@@ -32,11 +34,13 @@ def main() -> None:
         progress_summary=ProgressSummaryService(
             mission_repository=mission_repository,
             task_repository=task_repository,
+            scheduler=scheduler,
         ),
         mission_summary=MissionSummaryService(
             mission_repository=mission_repository,
             task_repository=task_repository,
         ),
+        scheduler=scheduler,
     )
 
     snapshot = snapshot_api.snapshot()

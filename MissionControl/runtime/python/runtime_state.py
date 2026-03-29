@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from agent_state import AgentStateManager
 from repository import MissionRepository, TaskRepository
+from scheduler import Scheduler
 
 STATE_BY_AGENT = {
     "agent-0": "planning",
@@ -18,9 +19,10 @@ class RuntimeStateHydrator:
     mission_repository: MissionRepository
     task_repository: TaskRepository
     agent_state_manager: AgentStateManager
+    scheduler: Optional[Scheduler] = None
 
     def reconcile(self) -> Dict:
-        active_mission = self.mission_repository.get_focus_mission()
+        active_mission = self.scheduler.highest_priority_mission() if self.scheduler else self.mission_repository.get_focus_mission()
         if not active_mission or active_mission["status"] not in self.mission_repository.ACTIVE_STATUSES:
             return {"status": "no_active_missions"}
 

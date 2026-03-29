@@ -144,6 +144,7 @@ def main() -> None:
         mission_repository=mission_repository,
         task_repository=task_repository,
         agent_state_manager=state_manager,
+        scheduler=scheduler,
     )
     task_runner = TaskRunner(
         mission_repository=mission_repository,
@@ -151,7 +152,11 @@ def main() -> None:
         agent_state_manager=state_manager,
         progress_notifier=progress_notifier,
     )
-    progress_summary = ProgressSummaryService(mission_repository=mission_repository, task_repository=task_repository)
+    progress_summary = ProgressSummaryService(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        scheduler=scheduler,
+    )
     mission_summary = MissionSummaryService(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
@@ -160,6 +165,7 @@ def main() -> None:
         event_stream=event_stream,
         progress_summary=progress_summary,
         mission_summary=mission_summary,
+        scheduler=scheduler,
     )
 
     print("Mission Control runtime")
