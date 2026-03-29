@@ -35,25 +35,12 @@ export function TaskPanel({ tasks = [] }) {
         </h2>
         <span className="section-count">{tasks.length}</span>
       </div>
-<<<<<<< HEAD
       
       <div className="scroll-area" style={{ flex: 1 }}>
         {tasks.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100px', opacity: 0.5 }}>
             <ListTodo size={24} style={{ marginBottom: '8px' }} />
             <p className="muted" style={{ fontSize: '11px' }}>No hay tareas activas.</p>
-=======
-      {tasks.length === 0 ? (
-        <p className="muted">No hay tareas todavía.</p>
-      ) : (
-        tasks.map((task) => (
-          <div key={task.id} className="task-item">
-            <div className="task-head">
-              <strong>{task.title}</strong>
-              <span className="state-pill">{task.status}</span>
-            </div>
-            <div className="muted">{task.agent_id} · prioridad {task.priority}{task.depends_on?.length ? ` · depende de ${task.depends_on.length}` : ''}</div>
->>>>>>> d05530c8abb00f53582858def9c6ff2f811a81aa
           </div>
         ) : (
           <motion.div variants={staggerContainer} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
