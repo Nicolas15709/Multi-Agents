@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 
-from agent_state import AgentStateManager
 from api_snapshot import RuntimeSnapshotAPI
-from agents import AgentRegistry
 from config import RuntimeConfig
 from db import Database
 from event_stream import EventStreamService
+from mission_summary import MissionSummaryService
+from progress_summary import ProgressSummaryService
 from repository import AgentRepository, MissionRepository, NotificationRepository, TaskRepository
 from storage import ensure_parent
 
@@ -28,6 +28,14 @@ def main() -> None:
         event_stream=EventStreamService(
             mission_repository=mission_repository,
             notification_repository=notification_repository,
+        ),
+        progress_summary=ProgressSummaryService(
+            mission_repository=mission_repository,
+            task_repository=task_repository,
+        ),
+        mission_summary=MissionSummaryService(
+            mission_repository=mission_repository,
+            task_repository=task_repository,
         ),
     )
 

@@ -4,6 +4,25 @@ import { useRuntimeFeed } from './useRuntimeFeed'
 
 const REFRESH_INTERVAL_MS = 4000
 
+function isRuntimeSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return false
+
+  const hasCoreEnvelope = Object.prototype.hasOwnProperty.call(snapshot, 'generatedAt')
+    && Object.prototype.hasOwnProperty.call(snapshot, 'meta')
+    && Object.prototype.hasOwnProperty.call(snapshot, 'stream')
+
+  if (!hasCoreEnvelope) return false
+
+  return [
+    snapshot.activeMission,
+    snapshot.missionSummary,
+    snapshot.progress?.mission,
+    Array.isArray(snapshot.missions) ? snapshot.missions : null,
+    Array.isArray(snapshot.tasks) ? snapshot.tasks : null,
+    Array.isArray(snapshot.agents) ? snapshot.agents : null,
+  ].some((value) => (Array.isArray(value) ? true : Boolean(value)))
+}
+
 export function useSnapshot() {
   const [data, setData] = useState(mockSnapshot)
   const [status, setStatus] = useState({
@@ -35,9 +54,8 @@ export function useSnapshot() {
         }
 
         const json = await res.json()
-        const hasRuntimeData = Boolean(json?.activeMission || (json?.tasks && json.tasks.length) || (json?.agents && json.agents.length) || json?.missionSummary)
-        if (!hasRuntimeData) {
-          throw new Error('snapshot loaded but contains no runtime data yet')
+        if (!isRuntimeSnapshot(json)) {
+          throw new Error('snapshot loaded but does not match runtime snapshot shape yet')
         }
         if (!cancelled && connection.state !== 'connected') {
           applySnapshot(json, 'runtime')
