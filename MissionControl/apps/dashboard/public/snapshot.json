@@ -1,16 +1,42 @@
 {
-  "generatedAt": "2026-03-28T04:21:36+00:00",
+  "generatedAt": "2026-03-29T17:53:38+00:00",
+  "progress": {
+    "mission": null,
+    "progress": {
+      "total": 0,
+      "done": 0,
+      "running": 0,
+      "blocked": 0,
+      "percent": 0
+    }
+  },
+  "missionSummary": null,
   "meta": {
-    "missionCount": 2,
+    "missionCount": 3,
     "agentCount": 5,
-    "activeAgentCount": 1,
+    "activeAgentCount": 0,
     "taskCount": 4,
     "completedTaskCount": 0,
     "blockedTaskCount": 0,
     "eventCount": 15,
-    "notificationCount": 10
+    "notificationCount": 10,
+    "runningTaskId": null,
+    "runningTaskTitle": null
   },
   "missions": [
+    {
+      "id": "mission-b79affdbffcf",
+      "title": "Scheduled maintenance cycle",
+      "goal": "Run a recurring maintenance pass, review runtime health, and surface follow-up work.",
+      "mode": "maintenance_cycle",
+      "priority": "medium",
+      "status": "queued",
+      "source": "scheduled",
+      "schedule": "cron:test",
+      "allow_24x7": 0,
+      "created_at": "2026-03-29T05:35:12+00:00",
+      "updated_at": "2026-03-29T05:35:12+00:00"
+    },
     {
       "id": "mission-7279e49cebe7",
       "title": "Mission Control timeline refinement",
@@ -59,10 +85,13 @@
       "title": "Plan mission",
       "status": "pending",
       "priority": "high",
-      "depends_on": "[]",
+      "depends_on": [],
       "details_json": "{\"mode\": \"feature_extension\"}",
       "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00"
+      "updated_at": "2026-03-28T04:21:26+00:00",
+      "details": {
+        "mode": "feature_extension"
+      }
     },
     {
       "id": "task-9d4c32d465ac",
@@ -71,10 +100,13 @@
       "title": "Research mission context",
       "status": "pending",
       "priority": "high",
-      "depends_on": "[]",
+      "depends_on": [],
       "details_json": "{\"mode\": \"feature_extension\"}",
       "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00"
+      "updated_at": "2026-03-28T04:21:26+00:00",
+      "details": {
+        "mode": "feature_extension"
+      }
     },
     {
       "id": "task-78d0391bf388",
@@ -83,10 +115,13 @@
       "title": "Implement deliverable",
       "status": "pending",
       "priority": "high",
-      "depends_on": "[]",
+      "depends_on": [],
       "details_json": "{\"mode\": \"feature_extension\"}",
       "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00"
+      "updated_at": "2026-03-28T04:21:26+00:00",
+      "details": {
+        "mode": "feature_extension"
+      }
     },
     {
       "id": "task-fc59fe594728",
@@ -95,10 +130,13 @@
       "title": "Review and harden output",
       "status": "pending",
       "priority": "high",
-      "depends_on": "[]",
+      "depends_on": [],
       "details_json": "{\"mode\": \"feature_extension\"}",
       "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00"
+      "updated_at": "2026-03-28T04:21:26+00:00",
+      "details": {
+        "mode": "feature_extension"
+      }
     }
   ],
   "agents": [
@@ -106,11 +144,11 @@
       "agent_id": "agent-0",
       "display_name": "Supervisor",
       "role": "director",
-      "state": "planning",
-      "active_mission_id": "mission-7279e49cebe7",
+      "state": "idle",
+      "active_mission_id": null,
       "current_task_id": null,
       "personality": "Analytical, direct, focused on deliverables and priority management.",
-      "updated_at": "2026-03-28T04:21:26+00:00"
+      "updated_at": "2026-03-29T16:47:32+00:00"
     },
     {
       "agent_id": "agent-1",
@@ -120,7 +158,7 @@
       "active_mission_id": null,
       "current_task_id": null,
       "personality": "Curious, factual, meticulous with sources and context.",
-      "updated_at": "2026-03-28T04:15:42+00:00"
+      "updated_at": "2026-03-29T16:47:32+00:00"
     },
     {
       "agent_id": "agent-2",
@@ -130,7 +168,7 @@
       "active_mission_id": null,
       "current_task_id": null,
       "personality": "Visually sharp, structured, practical about UX and references.",
-      "updated_at": "2026-03-28T04:15:42+00:00"
+      "updated_at": "2026-03-29T16:47:32+00:00"
     },
     {
       "agent_id": "agent-3",
@@ -140,7 +178,7 @@
       "active_mission_id": null,
       "current_task_id": null,
       "personality": "Productive, pragmatic, implementation-focused and detail-oriented.",
-      "updated_at": "2026-03-28T04:15:42+00:00"
+      "updated_at": "2026-03-29T16:47:32+00:00"
     },
     {
       "agent_id": "agent-4",
@@ -150,11 +188,50 @@
       "active_mission_id": null,
       "current_task_id": null,
       "personality": "Critical, supportive, perfectionist and reliability-focused.",
-      "updated_at": "2026-03-28T04:15:42+00:00"
+      "updated_at": "2026-03-29T16:47:32+00:00"
     }
   ],
   "stream": {
     "events": [
+      {
+        "id": 17,
+        "mission_id": "mission-b79affdbffcf",
+        "event_type": "workflow_seeded",
+        "actor": "planner",
+        "summary": "Base workflow seeded",
+        "payload_json": "{\"agents\": [\"agent-0\", \"agent-1\", \"agent-3\", \"agent-4\"], \"mode\": \"maintenance_cycle\", \"tasks\": [\"task-95826e994428\", \"task-124a38521d80\", \"task-720372327d0e\", \"task-1bb18c1292d2\"]}",
+        "created_at": "2026-03-29T05:35:12+00:00",
+        "payload": {
+          "agents": [
+            "agent-0",
+            "agent-1",
+            "agent-3",
+            "agent-4"
+          ],
+          "mode": "maintenance_cycle",
+          "tasks": [
+            "task-95826e994428",
+            "task-124a38521d80",
+            "task-720372327d0e",
+            "task-1bb18c1292d2"
+          ]
+        }
+      },
+      {
+        "id": 16,
+        "mission_id": "mission-b79affdbffcf",
+        "event_type": "mission_created",
+        "actor": "system",
+        "summary": "Mission created: Scheduled maintenance cycle",
+        "payload_json": "{\"mode\": \"maintenance_cycle\", \"priority\": \"medium\", \"schedule\": \"cron:test\", \"source\": \"scheduled\"}",
+        "created_at": "2026-03-29T05:35:12+00:00",
+        "payload": {
+          "mode": "maintenance_cycle",
+          "priority": "medium",
+          "schedule": "cron:test",
+          "source": "scheduled"
+        }
+      },
       {
         "id": 15,
         "mission_id": "mission-7279e49cebe7",
@@ -162,7 +239,22 @@
         "actor": "planner",
         "summary": "Base workflow seeded",
         "payload_json": "{\"agents\": [\"agent-0\", \"agent-1\", \"agent-3\", \"agent-4\"], \"mode\": \"feature_extension\", \"tasks\": [\"task-d34bb191cf55\", \"task-9d4c32d465ac\", \"task-78d0391bf388\", \"task-fc59fe594728\"]}",
-        "created_at": "2026-03-28T04:21:26+00:00"
+        "created_at": "2026-03-28T04:21:26+00:00",
+        "payload": {
+          "agents": [
+            "agent-0",
+            "agent-1",
+            "agent-3",
+            "agent-4"
+          ],
+          "mode": "feature_extension",
+          "tasks": [
+            "task-d34bb191cf55",
+            "task-9d4c32d465ac",
+            "task-78d0391bf388",
+            "task-fc59fe594728"
+          ]
+        }
       },
       {
         "id": 14,
@@ -171,7 +263,12 @@
         "actor": "system",
         "summary": "Mission created: Mission Control timeline refinement",
         "payload_json": "{\"mode\": \"feature_extension\", \"priority\": \"high\", \"source\": \"manual\"}",
-        "created_at": "2026-03-28T04:21:26+00:00"
+        "created_at": "2026-03-28T04:21:26+00:00",
+        "payload": {
+          "mode": "feature_extension",
+          "priority": "high",
+          "source": "manual"
+        }
       },
       {
         "id": 13,
@@ -180,7 +277,8 @@
         "actor": "system",
         "summary": "Mission completed successfully",
         "payload_json": "{}",
-        "created_at": "2026-03-28T04:14:46+00:00"
+        "created_at": "2026-03-28T04:14:46+00:00",
+        "payload": {}
       },
       {
         "id": 12,
@@ -189,7 +287,10 @@
         "actor": "agent-4",
         "summary": "Task completed: Review and harden output",
         "payload_json": "{\"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:46+00:00"
+        "created_at": "2026-03-28T04:14:46+00:00",
+        "payload": {
+          "task_id": "task-299b84d7c471"
+        }
       },
       {
         "id": 11,
@@ -198,7 +299,10 @@
         "actor": "agent-4",
         "summary": "Task started: Review and harden output",
         "payload_json": "{\"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:41+00:00"
+        "created_at": "2026-03-28T04:14:41+00:00",
+        "payload": {
+          "task_id": "task-299b84d7c471"
+        }
       },
       {
         "id": 10,
@@ -207,7 +311,10 @@
         "actor": "agent-3",
         "summary": "Task completed: Implement deliverable",
         "payload_json": "{\"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-28T04:14:41+00:00"
+        "created_at": "2026-03-28T04:14:41+00:00",
+        "payload": {
+          "task_id": "task-ca8fceb97373"
+        }
       },
       {
         "id": 9,
@@ -216,7 +323,10 @@
         "actor": "agent-3",
         "summary": "Task started: Implement deliverable",
         "payload_json": "{\"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-27T23:07:57+00:00"
+        "created_at": "2026-03-27T23:07:57+00:00",
+        "payload": {
+          "task_id": "task-ca8fceb97373"
+        }
       },
       {
         "id": 8,
@@ -225,7 +335,10 @@
         "actor": "agent-2",
         "summary": "Task completed: Produce design/prototype guidance",
         "payload_json": "{\"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T23:07:57+00:00"
+        "created_at": "2026-03-27T23:07:57+00:00",
+        "payload": {
+          "task_id": "task-30817942c472"
+        }
       },
       {
         "id": 7,
@@ -234,7 +347,10 @@
         "actor": "agent-2",
         "summary": "Task started: Produce design/prototype guidance",
         "payload_json": "{\"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T22:51:59+00:00"
+        "created_at": "2026-03-27T22:51:59+00:00",
+        "payload": {
+          "task_id": "task-30817942c472"
+        }
       },
       {
         "id": 6,
@@ -243,7 +359,10 @@
         "actor": "agent-1",
         "summary": "Task completed: Research mission context",
         "payload_json": "{\"task_id\": \"task-5691f8833a2c\"}",
-        "created_at": "2026-03-27T22:51:59+00:00"
+        "created_at": "2026-03-27T22:51:59+00:00",
+        "payload": {
+          "task_id": "task-5691f8833a2c"
+        }
       },
       {
         "id": 5,
@@ -252,7 +371,10 @@
         "actor": "agent-1",
         "summary": "Task started: Research mission context",
         "payload_json": "{\"task_id\": \"task-5691f8833a2c\"}",
-        "created_at": "2026-03-27T22:46:33+00:00"
+        "created_at": "2026-03-27T22:46:33+00:00",
+        "payload": {
+          "task_id": "task-5691f8833a2c"
+        }
       },
       {
         "id": 4,
@@ -261,7 +383,10 @@
         "actor": "agent-0",
         "summary": "Task completed: Plan mission",
         "payload_json": "{\"task_id\": \"task-855a3f35d022\"}",
-        "created_at": "2026-03-27T22:46:33+00:00"
+        "created_at": "2026-03-27T22:46:33+00:00",
+        "payload": {
+          "task_id": "task-855a3f35d022"
+        }
       },
       {
         "id": 3,
@@ -270,28 +395,41 @@
         "actor": "agent-0",
         "summary": "Task started: Plan mission",
         "payload_json": "{\"task_id\": \"task-855a3f35d022\"}",
-        "created_at": "2026-03-27T22:46:33+00:00"
-      },
-      {
-        "id": 2,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "workflow_seeded",
-        "actor": "planner",
-        "summary": "Base workflow seeded",
-        "payload_json": "{\"tasks\": [\"task-855a3f35d022\", \"task-5691f8833a2c\", \"task-30817942c472\", \"task-ca8fceb97373\", \"task-299b84d7c471\"]}",
-        "created_at": "2026-03-27T22:41:32+00:00"
-      },
-      {
-        "id": 1,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "mission_created",
-        "actor": "system",
-        "summary": "Mission created: Mission Control bootstrap mission",
-        "payload_json": "{\"mode\": \"software_build\", \"priority\": \"medium\", \"source\": \"system\"}",
-        "created_at": "2026-03-27T22:41:32+00:00"
+        "created_at": "2026-03-27T22:46:33+00:00",
+        "payload": {
+          "task_id": "task-855a3f35d022"
+        }
       }
     ],
     "notifications": [
+      {
+        "id": 13,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "Nueva misión creada: Scheduled maintenance cycle",
+        "payload_json": "{\"event_kind\": \"mission_created\", \"mission_id\": \"mission-b79affdbffcf\", \"mode\": \"maintenance_cycle\", \"priority\": \"medium\"}",
+        "created_at": "2026-03-29T05:35:12+00:00",
+        "payload": {
+          "event_kind": "mission_created",
+          "mission_id": "mission-b79affdbffcf",
+          "mode": "maintenance_cycle",
+          "priority": "medium"
+        }
+      },
+      {
+        "id": 12,
+        "channel": "telegram",
+        "kind": "mission_submitted",
+        "status": "queued",
+        "summary": "Mission queued: Scheduled maintenance cycle",
+        "payload_json": "{\"mission_id\": \"mission-b79affdbffcf\", \"mode\": \"maintenance_cycle\"}",
+        "created_at": "2026-03-29T05:35:12+00:00",
+        "payload": {
+          "mission_id": "mission-b79affdbffcf",
+          "mode": "maintenance_cycle"
+        }
+      },
       {
         "id": 11,
         "channel": "telegram",
@@ -299,7 +437,13 @@
         "status": "queued",
         "summary": "Nueva misión creada: Mission Control timeline refinement",
         "payload_json": "{\"event_kind\": \"mission_created\", \"mission_id\": \"mission-7279e49cebe7\", \"mode\": \"feature_extension\", \"priority\": \"high\"}",
-        "created_at": "2026-03-28T04:21:26+00:00"
+        "created_at": "2026-03-28T04:21:26+00:00",
+        "payload": {
+          "event_kind": "mission_created",
+          "mission_id": "mission-7279e49cebe7",
+          "mode": "feature_extension",
+          "priority": "high"
+        }
       },
       {
         "id": 10,
@@ -308,7 +452,11 @@
         "status": "queued",
         "summary": "Mission queued: Mission Control timeline refinement",
         "payload_json": "{\"mission_id\": \"mission-7279e49cebe7\", \"mode\": \"feature_extension\"}",
-        "created_at": "2026-03-28T04:21:26+00:00"
+        "created_at": "2026-03-28T04:21:26+00:00",
+        "payload": {
+          "mission_id": "mission-7279e49cebe7",
+          "mode": "feature_extension"
+        }
       },
       {
         "id": 9,
@@ -317,7 +465,11 @@
         "status": "queued",
         "summary": "La misión se completó correctamente.",
         "payload_json": "{\"event_kind\": \"mission_completed\", \"mission_id\": \"mission-1079d9c3e089\"}",
-        "created_at": "2026-03-28T04:14:46+00:00"
+        "created_at": "2026-03-28T04:14:46+00:00",
+        "payload": {
+          "event_kind": "mission_completed",
+          "mission_id": "mission-1079d9c3e089"
+        }
       },
       {
         "id": 8,
@@ -326,7 +478,13 @@
         "status": "queued",
         "summary": "agent-4 completó: Review and harden output",
         "payload_json": "{\"agent_id\": \"agent-4\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:46+00:00"
+        "created_at": "2026-03-28T04:14:46+00:00",
+        "payload": {
+          "agent_id": "agent-4",
+          "event_kind": "task_completed",
+          "mission_id": "mission-1079d9c3e089",
+          "task_id": "task-299b84d7c471"
+        }
       },
       {
         "id": 7,
@@ -335,7 +493,13 @@
         "status": "queued",
         "summary": "agent-4 inició: Review and harden output",
         "payload_json": "{\"agent_id\": \"agent-4\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:41+00:00"
+        "created_at": "2026-03-28T04:14:41+00:00",
+        "payload": {
+          "agent_id": "agent-4",
+          "event_kind": "task_started",
+          "mission_id": "mission-1079d9c3e089",
+          "task_id": "task-299b84d7c471"
+        }
       },
       {
         "id": 6,
@@ -344,7 +508,13 @@
         "status": "queued",
         "summary": "agent-3 completó: Implement deliverable",
         "payload_json": "{\"agent_id\": \"agent-3\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-28T04:14:41+00:00"
+        "created_at": "2026-03-28T04:14:41+00:00",
+        "payload": {
+          "agent_id": "agent-3",
+          "event_kind": "task_completed",
+          "mission_id": "mission-1079d9c3e089",
+          "task_id": "task-ca8fceb97373"
+        }
       },
       {
         "id": 5,
@@ -353,7 +523,13 @@
         "status": "queued",
         "summary": "agent-3 inició: Implement deliverable",
         "payload_json": "{\"agent_id\": \"agent-3\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-27T23:07:57+00:00"
+        "created_at": "2026-03-27T23:07:57+00:00",
+        "payload": {
+          "agent_id": "agent-3",
+          "event_kind": "task_started",
+          "mission_id": "mission-1079d9c3e089",
+          "task_id": "task-ca8fceb97373"
+        }
       },
       {
         "id": 4,
@@ -362,25 +538,13 @@
         "status": "queued",
         "summary": "agent-2 completó: Produce design/prototype guidance",
         "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T23:07:57+00:00"
-      },
-      {
-        "id": 3,
-        "channel": "telegram",
-        "kind": "progress_update",
-        "status": "queued",
-        "summary": "agent-2 inició: Produce design/prototype guidance",
-        "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T22:51:59+00:00"
-      },
-      {
-        "id": 2,
-        "channel": "telegram",
-        "kind": "progress_update",
-        "status": "queued",
-        "summary": "agent-1 completó: Research mission context",
-        "payload_json": "{\"agent_id\": \"agent-1\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-5691f8833a2c\"}",
-        "created_at": "2026-03-27T22:51:59+00:00"
+        "created_at": "2026-03-27T23:07:57+00:00",
+        "payload": {
+          "agent_id": "agent-2",
+          "event_kind": "task_completed",
+          "mission_id": "mission-1079d9c3e089",
+          "task_id": "task-30817942c472"
+        }
       }
     ]
   }

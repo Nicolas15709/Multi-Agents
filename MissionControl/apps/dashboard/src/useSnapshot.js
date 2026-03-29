@@ -35,6 +35,10 @@ export function useSnapshot() {
         }
 
         const json = await res.json()
+        const hasRuntimeData = Boolean(json?.activeMission || (json?.tasks && json.tasks.length) || (json?.agents && json.agents.length) || json?.missionSummary)
+        if (!hasRuntimeData) {
+          throw new Error('snapshot loaded but contains no runtime data yet')
+        }
         if (!cancelled && connection.state !== 'connected') {
           applySnapshot(json, 'runtime')
         }
