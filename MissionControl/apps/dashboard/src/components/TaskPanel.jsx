@@ -14,7 +14,7 @@ export function TaskPanel({ tasks = [] }) {
               <strong>{task.title}</strong>
               <span className="state-pill">{task.status}</span>
             </div>
-            <div className="muted">{task.agent_id} · prioridad {task.priority}</div>
+            <div className="muted">{task.agent_id} · prioridad {task.priority}{task.depends_on?.length ? ` · depende de ${task.depends_on.length}` : ''}</div>
           </div>
         ))
       )}

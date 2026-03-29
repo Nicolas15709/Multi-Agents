@@ -21,6 +21,13 @@ class TaskRunner:
     agent_state_manager: AgentStateManager
     progress_notifier: ProgressNotifier
 
+    def _task_ready(self, task: Dict, tasks: List[Dict]) -> bool:
+        deps = task.get("depends_on") or []
+        if not deps:
+            return True
+        done_ids = {item["id"] for item in tasks if item["status"] == "done"}
+        return all(dep in done_ids for dep in deps)
+
     def advance_next_task(self, mission_id: str) -> Dict:
         tasks = self.task_repository.list_tasks_for_mission(mission_id)
         running = [task for task in tasks if task["status"] == "running"]
@@ -38,8 +45,26 @@ class TaskRunner:
             tasks = self.task_repository.list_tasks_for_mission(mission_id)
 
         pending = [task for task in tasks if task["status"] == "pending"]
-        if pending:
-            next_task = pending[0]
+        ready = [task for task in pending if self._task_ready(task, tasks)]
+        blocked = [task for task in pending if task not in ready]
+        for task in blocked:
+            self.task_repository.update_task_status(task["id"], "blocked")
+            self.mission_repository.add_event(
+                mission_id,
+                "task_blocked",
+                task["agent_id"],
+                f"Task blocked waiting dependencies: {task['title']}",
+                {"task_id": task["id"], "depends_on": task.get("depends_on", [])},
+            )
+            self.progress_notifier.notify(
+                mission_id,
+                "blocked",
+                f"{task['agent_id']} está bloqueada: {task['title']}",
+                {"task_id": task["id"], "agent_id": task["agent_id"]},
+            )
+
+        if ready:
+            next_task = ready[0]
             self.task_repository.update_task_status(next_task["id"], "running")
             self.agent_state_manager.set_state(
                 next_task["agent_id"],
@@ -48,7 +73,7 @@ class TaskRunner:
                 task_id=next_task["id"],
             )
             self.mission_repository.update_mission_status(mission_id, "running")
-            self.mission_repository.add_event(mission_id, "task_started", next_task["agent_id"], f"Task started: {next_task['title']}", {"task_id": next_task["id"]})
+            self.mission_repository.add_event(mission_id, "task_started", next_task["agent_id"], f"Task started: {next_task['title']}", {"task_id": next_task["id"], "depends_on": next_task.get("depends_on", [])})
             self.progress_notifier.notify(
                 mission_id,
                 "task_started",

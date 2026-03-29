@@ -73,15 +73,19 @@ class Planner:
     def seed_base_workflow(self, mission: Mission) -> List[Task]:
         workflow = self._workflow_for_mode(mission.mode)
         tasks: List[Task] = []
+        previous_task_id = None
         for agent_id, title in workflow:
+            depends_on = [previous_task_id] if previous_task_id else []
             task = Task(
                 id=new_id("task"),
                 mission_id=mission.id,
                 agent_id=agent_id,
                 title=title,
                 priority=mission.priority,
+                depends_on=depends_on,
                 details={"mode": mission.mode},
             )
+            previous_task_id = task.id
             self.task_repository.create_task(task)
             tasks.append(task)
         self.mission_repository.add_event(mission.id, "workflow_seeded", "planner", "Base workflow seeded", {
