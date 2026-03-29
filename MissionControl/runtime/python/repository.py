@@ -8,6 +8,14 @@ from utils import to_json, utc_now
 
 
 class MissionRepository:
+    ACTIVE_STATUSES = {"queued", "running", "blocked"}
+    PRIORITY_SCORE = {
+        "low": 1,
+        "medium": 2,
+        "high": 3,
+        "critical": 4,
+    }
+
     def __init__(self, db: Database):
         self.db = db
 
@@ -36,8 +44,37 @@ class MissionRepository:
     def list_missions(self) -> List[Dict]:
         return self.db.fetchall("SELECT * FROM missions ORDER BY created_at DESC")
 
+    def list_active_missions(self) -> List[Dict]:
+        return [mission for mission in self.list_missions() if mission["status"] in self.ACTIVE_STATUSES]
+
+    def get_focus_mission(self) -> Optional[Dict]:
+        active = self.list_active_missions()
+        if active:
+            return sorted(
+                active,
+                key=lambda item: (self.PRIORITY_SCORE.get(item["priority"], 0), item["created_at"]),
+                reverse=True,
+            )[0]
+        missions = self.list_missions()
+        return missions[0] if missions else None
+
     def get_mission(self, mission_id: str) -> Optional[Dict]:
         return self.db.fetchone("SELECT * FROM missions WHERE id = ?", (mission_id,))
+
+    def latest_active_mission(self) -> Optional[Dict]:
+        return self.db.fetchone(
+            """
+            SELECT * FROM missions
+            WHERE status IN ('queued', 'running', 'blocked')
+            ORDER BY CASE status
+                WHEN 'running' THEN 3
+                WHEN 'blocked' THEN 2
+                WHEN 'queued' THEN 1
+                ELSE 0
+            END DESC, created_at DESC
+            LIMIT 1
+            """
+        )
 
     def update_mission_status(self, mission_id: str, status: str) -> None:
         self.db.execute(

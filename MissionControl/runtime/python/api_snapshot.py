@@ -19,7 +19,7 @@ class RuntimeSnapshotAPI:
 
     def snapshot(self) -> Dict:
         missions = self.mission_repository.list_missions()
-        active_mission = missions[0] if missions else None
+        active_mission = self.mission_repository.get_focus_mission()
         active_tasks = self.task_repository.list_tasks_for_mission(active_mission["id"]) if active_mission else []
         agents = self.agent_repository.list_agents()
         stream = self.event_stream.snapshot()

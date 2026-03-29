@@ -8,10 +8,9 @@ class ProgressSummaryService:
     task_repository: TaskRepository
 
     def latest(self):
-        missions = self.mission_repository.list_missions()
-        if not missions:
-            return {"mission": None}
-        mission = missions[0]
+        mission = self.mission_repository.get_focus_mission()
+        if not mission:
+            return {"mission": None, "progress": {"total": 0, "done": 0, "running": 0, "blocked": 0, "percent": 0}}
         tasks = self.task_repository.list_tasks_for_mission(mission["id"])
         total = len(tasks)
         done = sum(1 for task in tasks if task["status"] == "done")
