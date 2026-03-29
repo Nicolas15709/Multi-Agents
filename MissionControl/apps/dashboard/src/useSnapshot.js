@@ -21,7 +21,8 @@ export function useSnapshot() {
     })
   }, [])
 
-  const connection = useRuntimeFeed((snapshot) => applySnapshot(snapshot, 'runtime'))
+  const onSnapshot = useCallback((snapshot) => applySnapshot(snapshot, 'runtime'), [applySnapshot])
+  const connection = useRuntimeFeed(onSnapshot)
 
   useEffect(() => {
     let cancelled = false

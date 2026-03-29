@@ -1,4 +1,22 @@
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState, Suspense, lazy, forwardRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Terminal,
+  Search,
+  Paintbrush,
+  Code2,
+  ShieldCheck,
+  Activity,
+  Zap,
+  Layers,
+  Target,
+  Cpu,
+  BarChart3,
+  Clock,
+  ChevronRight,
+  Wifi,
+  WifiOff,
+} from 'lucide-react'
 import { useSnapshot } from './useSnapshot'
 import { TaskPanel } from './components/TaskPanel'
 import { SystemPanel } from './components/SystemPanel'
@@ -6,64 +24,106 @@ import { LoginGate } from './components/LoginGate'
 import { MissionInspector } from './components/MissionInspector'
 import { TimelinePanel } from './components/TimelinePanel'
 import { MissionLauncher } from './components/MissionLauncher'
-import { MissionRoomScene } from './components/MissionRoomScene'
 import { ThoughtLogPanel } from './components/ThoughtLogPanel'
 
-function AgentCard({ agent }) {
+// Lazy load the 3D scene to prevent import-time crashes
+const MissionRoomScene = lazy(() => import('./components/MissionRoomScene').then(module => ({ default: module.MissionRoomScene })))
+
+const AGENT_ICONS = {
+  'agent-0': Terminal,
+  'agent-1': Search,
+  'agent-2': Paintbrush,
+  'agent-3': Code2,
+  'agent-4': ShieldCheck,
+}
+
+const AGENT_COLORS = {
+  'agent-0': ['#6366f1', '#4338ca'],
+  'agent-1': ['#06b6d4', '#0891b2'],
+  'agent-2': ['#f472b6', '#db2777'],
+  'agent-3': ['#10b981', '#059669'],
+  'agent-4': ['#f59e0b', '#d97706'],
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
+}
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+}
+
+const AgentCard = forwardRef(({ agent }, ref) => {
+  const Icon = AGENT_ICONS[agent.agent_id] || Activity
+  const colors = AGENT_COLORS[agent.agent_id] || ['#6366f1', '#4338ca']
+  const isActive = agent.state !== 'idle'
+
   return (
-    <div className="agent-card">
+    <motion.div
+      ref={ref}
+      variants={staggerItem}
+      layout
+      className="agent-card"
+      whileHover={{ scale: 1.01 }}
+    >
       <div className="agent-head">
-        <div className="avatar" />
-        <div>
+        <div className="avatar-container">
+          <div className="avatar" style={{
+            background: `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
+            boxShadow: `0 4px 12px ${colors[0]}40`,
+          }}>
+            <Icon size={18} strokeWidth={2.5} />
+          </div>
+          <div className={`status-dot ${isActive ? 'active' : ''}`} />
+        </div>
+        <div style={{ marginLeft: '10px', flex: 1 }}>
           <div className="agent-name">{agent.display_name}</div>
           <div className="agent-role">{agent.role}</div>
         </div>
+        <ChevronRight size={14} style={{ color: 'var(--muted)', opacity: 0.4 }} />
       </div>
-      <div className="state-pill">{agent.state}</div>
-      <p className="muted">{agent.personality}</p>
-    </div>
+      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="state-pill" style={isActive ? {
+          background: 'rgba(16, 185, 129, 0.1)',
+          color: '#10b981',
+          border: '1px solid rgba(16, 185, 129, 0.15)',
+        } : {}}>
+          {agent.state}
+        </div>
+      </div>
+      <p className="muted" style={{ marginTop: '8px', fontSize: '11px', lineHeight: 1.4, position: 'relative', zIndex: 1 }}>
+        {agent.personality}
+      </p>
+    </motion.div>
   )
-}
+})
 
-function AgentNode({ agent, index }) {
-  const positions = [
-    { top: '10%', left: '8%' },
-    { top: '18%', left: '38%' },
-    { top: '52%', left: '18%' },
-    { top: '20%', right: '10%' },
-    { bottom: '10%', right: '14%' }
-  ]
-
+function StatCard({ label, value, hint, icon: IconComp }) {
   return (
-    <div className="agent-node" style={positions[index % positions.length]}>
-      <div className="agent-name">{agent.display_name}</div>
-      <div className="agent-role">{agent.role}</div>
-      <div className="state-pill">{agent.state}</div>
-    </div>
-  )
-}
-
-function StatCard({ label, value, tone = 'neutral', hint }) {
-  return (
-    <div className={`stat-card stat-${tone}`}>
-      <div className="stat-label">{label}</div>
+    <motion.div
+      className="stat-card"
+      whileHover={{ scale: 1.02, borderColor: 'rgba(99, 102, 241, 0.15)' }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {IconComp && <IconComp size={11} style={{ color: 'var(--accent-2)', opacity: 0.7 }} />}
+        <div className="stat-label">{label}</div>
+      </div>
       <div className="stat-value">{value}</div>
       {hint ? <div className="stat-hint">{hint}</div> : null}
-    </div>
+    </motion.div>
   )
-}
-
-function formatTimestamp(value) {
-  if (!value) return 'Unknown'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString()
 }
 
 function MissionHighlights({ activeMission, agents, tasks, events, meta }) {
   const stats = useMemo(() => {
-    const activeAgents = meta?.activeAgentCount ?? agents.filter((agent) => agent.state !== 'idle').length
-    const completedTasks = meta?.completedTaskCount ?? tasks.filter((task) => task.status === 'done' || task.status === 'completed').length
+    const activeAgents = meta?.activeAgentCount ?? agents.filter((a) => a.state !== 'idle').length
+    const completedTasks = meta?.completedTaskCount ?? tasks.filter((t) => t.status === 'done' || t.status === 'completed').length
     const missionStatus = activeMission?.status || 'idle'
 
     return {
@@ -72,126 +132,176 @@ function MissionHighlights({ activeMission, agents, tasks, events, meta }) {
       totalTasks: meta?.taskCount ?? tasks.length,
       eventCount: meta?.eventCount ?? events.length,
       missionStatus,
-      blockedTasks: meta?.blockedTaskCount ?? tasks.filter((task) => task.status === 'blocked').length,
     }
   }, [activeMission, agents, tasks, events, meta])
 
   return (
-    <section className="hero-panel panel">
-      <div className="hero-copy">
-        <div className="eyebrow">Mission overview</div>
-        <h1 className="hero-title">{activeMission?.title || 'Mission Control standby'}</h1>
-        <p className="hero-text">
-          {activeMission?.goal || 'Esperando snapshot del runtime para poblar el estado operativo.'}
-        </p>
-        <div className="hero-meta">
-          <span className="state-pill">{stats.missionStatus}</span>
-          <span className="meta-chip">Mode: {activeMission?.mode || 'n/a'}</span>
-          <span className="meta-chip">Priority: {activeMission?.priority || 'normal'}</span>
-          <span className="meta-chip">Blocked tasks: {stats.blockedTasks}</span>
+    <motion.section
+      className="panel mission-highlights"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.5 }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <div className="eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Target size={12} /> Mission Live Activity
+          </div>
+          <h1 className="mission-title">
+            {activeMission?.title || 'Operational Standby'}
+          </h1>
+          <p className="muted" style={{ maxWidth: '500px', fontSize: '12px', lineHeight: 1.5, marginTop: '4px' }}>
+            {activeMission?.goal || 'Esperando snapshot del sistema para sincronizar objetivos estratégicos.'}
+          </p>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap' }}>
+            <span className="state-pill" style={{
+              background: stats.missionStatus === 'running' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.04)',
+              color: stats.missionStatus === 'running' ? '#10b981' : 'var(--muted)',
+              border: stats.missionStatus === 'running' ? '1px solid rgba(16, 185, 129, 0.15)' : '1px solid transparent',
+            }}>
+              {stats.missionStatus}
+            </span>
+            <span className="badge">
+              Mode: {activeMission?.mode || 'Normal'}
+            </span>
+          </div>
+        </div>
+
+        <div className="stats-grid" style={{ minWidth: '320px' }}>
+          <StatCard label="Agents" value={stats.activeAgents} hint={`${agents.length} total`} icon={Cpu} />
+          <StatCard label="Tasks" value={stats.completedTasks} hint={`${stats.totalTasks} total`} icon={BarChart3} />
+          <StatCard label="Events" value={stats.eventCount} hint="Live stream" icon={Clock} />
         </div>
       </div>
-
-      <div className="stats-grid">
-        <StatCard label="Agents active" value={stats.activeAgents} tone="accent" hint={`${meta?.agentCount ?? agents.length} total`} />
-        <StatCard label="Tasks done" value={stats.completedTasks} tone="success" hint={`${stats.totalTasks} tracked`} />
-        <StatCard label="Feed events" value={stats.eventCount} tone="info" hint="Live mission log" />
-      </div>
-    </section>
+    </motion.section>
   )
 }
 
 export default function App() {
   const [entered] = useState(true)
   const { snapshot, status, connection } = useSnapshot()
-  const { activeMission, agents = [], tasks = [], meta = {}, stream = { events: [], notifications: [] } } = snapshot
 
   if (!entered) {
     return <LoginGate />
   }
 
+  if (!snapshot) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-brand">MISSION CONTROL</div>
+        <div style={{ opacity: 0.5, fontSize: '13px' }}>Sincronizando con el sistema...</div>
+        {status.error && <div style={{ color: '#ef4444', fontSize: '11px', marginTop: '8px' }}>Error: {status.error}</div>}
+      </div>
+    )
+  }
+
+  const { activeMission, agents = [], tasks = [], meta = {}, stream = { events: [], notifications: [] } } = snapshot || {}
+
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div>
+      {/* ═══ TOP BAR ═══ */}
+      <motion.header
+        className="topbar"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Layers size={20} color="#6366f1" />
           <div className="brand">MISSION CONTROL</div>
-          <div className="topbar-subtitle">Real-time coordination view for agents, tasks and system state.</div>
         </div>
-        <div className="topbar-actions">
-          <div className="badge">Dashboard scaffold</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className={`live-pill ${status.source === 'runtime' ? 'is-live' : 'is-fallback'}`}>
-            {status.source === 'runtime' ? 'Runtime snapshot' : 'Mock snapshot'}
+            <Zap size={10} fill="currentColor" />
+            {status.source === 'runtime' ? 'Live Runtime' : 'Mock Mode'}
           </div>
-          <div className={`live-pill ${connection.state === 'connected' ? 'is-live' : 'is-fallback'}`}>
+          <div className="badge" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {connection.state === 'connected' ? <Wifi size={10} /> : <WifiOff size={10} />}
             WS: {connection.state}
           </div>
-          <div className="meta-chip">Updated: {formatTimestamp(status.lastUpdated)}</div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="dashboard-shell">
-        {status.error ? (
-          <section className="panel warning-banner">
-            <strong>Snapshot fallback:</strong> no se pudo leer `/snapshot.json`. Mostrando el último estado disponible o mock data.
-            <div className="muted">{status.error}</div>
-          </section>
-        ) : null}
+      {/* ═══ MAIN LAYOUT ═══ */}
+      <main className="layout">
 
-        {connection.error ? (
-          <section className="panel warning-banner">
-            <strong>WebSocket fallback:</strong> el canal live no está disponible todavía. El dashboard sigue usando snapshot polling.
-            <div className="muted">{connection.error}</div>
-          </section>
-        ) : null}
+        {/* ── LEFT: Team Operatives ── */}
+        <motion.aside
+          className="left-stack panel"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+        >
+          <h2 className="section-title">
+            <Cpu size={12} /> Team Operatives
+          </h2>
+          <div className="scroll-area">
+            <motion.div variants={staggerContainer} initial="hidden" animate="show">
+              <AnimatePresence mode="popLayout">
+                {agents.map((agent) => (
+                  <AgentCard key={agent.agent_id} agent={agent} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </div>
+        </motion.aside>
 
-        <MissionHighlights
-          activeMission={activeMission}
-          agents={agents}
-          tasks={tasks}
-          events={stream.events}
-          meta={meta}
-        />
+        {/* ── CENTER: Highlights + 3D Office + Timeline ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '14px', overflow: 'hidden', minHeight: 0 }}>
+          <MissionHighlights
+            activeMission={activeMission}
+            agents={agents}
+            tasks={tasks}
+            events={stream.events}
+            meta={meta}
+          />
 
-        <div className="dashboard-grid">
-          <section className="panel left-stack">
-            <div className="stack-head">
-              <h2 className="section-title">Agents</h2>
-              <span className="section-count">{meta?.agentCount ?? agents.length}</span>
-            </div>
-            {agents.length === 0 ? (
-              <p className="muted">No hay agentes activos.</p>
-            ) : (
-              agents.map((agent) => <AgentCard key={agent.agent_id} agent={agent} />)
-            )}
-          </section>
-
-          <section className="center-stack">
-            <MissionRoomScene agents={agents} />
-            <TimelinePanel events={stream.events} />
-          </section>
-
-          <aside className="right-stack">
-            <section className="panel mission-box">
-              <div className="stack-head">
-                <h2 className="section-title">Active mission</h2>
-                <span className="state-pill">{activeMission?.status || 'idle'}</span>
+          <div style={{ flex: 1, display: 'grid', gridTemplateRows: '1fr 200px', gap: '14px', minHeight: 0 }}>
+            <Suspense fallback={
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '28px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '11px' }}>Iniciando Oficina Virtual 3D...</div>
               </div>
-              <div className="agent-name">{activeMission?.title || 'Sin misión activa'}</div>
-              <p className="muted">{activeMission?.goal || 'Esperando datos del runtime...'}</p>
-              <div className="meta-list">
-                <span className="meta-chip">Mode: {activeMission?.mode || 'n/a'}</span>
-                <span className="meta-chip">Priority: {activeMission?.priority || 'normal'}</span>
-                <span className="meta-chip">Notifications: {meta?.notificationCount ?? stream.notifications.length}</span>
+            }>
+              <MissionRoomScene agents={agents} />
+            </Suspense>
+            <motion.section
+              className="panel"
+              style={{ padding: '16px' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              <h2 className="section-title">
+                <Activity size={12} /> Mission Timeline
+              </h2>
+              <div className="scroll-area">
+                <TimelinePanel events={stream.events} />
               </div>
-            </section>
+            </motion.section>
+          </div>
+        </section>
 
+        {/* ── RIGHT: Strategic + Tasks + System + Launcher ── */}
+        <motion.aside
+          className="right-stack"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <section className="panel mission-box" style={{ padding: '16px' }}>
+            <h2 className="section-title">
+              <Target size={12} /> Strategic Intel
+            </h2>
             <MissionInspector mission={activeMission} tasks={tasks} agents={agents} meta={meta} />
+          </section>
+
+          <TaskPanel tasks={tasks} />
+          <SystemPanel stream={stream} />
+
+          <div style={{ marginTop: 'auto' }}>
             <MissionLauncher />
-            <ThoughtLogPanel events={stream.events} />
-            <TaskPanel tasks={tasks} />
-            <SystemPanel stream={stream} />
-          </aside>
-        </div>
+          </div>
+        </motion.aside>
       </main>
     </div>
   )

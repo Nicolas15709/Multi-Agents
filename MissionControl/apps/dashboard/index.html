@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mission Control Dashboard</title>
     <meta name="description" content="Mission Control visual dashboard" />
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
   </head>
-  <body></body>
+  <body>
+    <script>console.log('Diagnostic: HTML Body Started');</script>
+    <div id="root"></div>
+    <script>console.log('Diagnostic: Root div found:', !!document.getElementById('root'));</script>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>console.log('Diagnostic: Script tag for main.jsx injected');</script>
+  </body>
 </html>
