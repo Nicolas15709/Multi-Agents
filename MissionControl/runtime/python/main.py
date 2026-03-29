@@ -35,10 +35,19 @@ def bootstrap_agents(agent_repository: AgentRepository, registry: AgentRegistry)
 
 
 def export_snapshot(snapshot: dict) -> str:
-    output_path = Path(__file__).resolve().parent.parent.parent / 'apps' / 'dashboard' / 'public' / 'snapshot.json'
-    ensure_parent(str(output_path))
-    output_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
-    return str(output_path)
+    dashboard_dir = Path(__file__).resolve().parent.parent.parent / 'apps' / 'dashboard'
+    output_paths = [
+        dashboard_dir / 'public' / 'snapshot.json',
+        dashboard_dir / 'dist' / 'snapshot.json',
+    ]
+
+    written_paths = []
+    for output_path in output_paths:
+        ensure_parent(str(output_path))
+        output_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
+        written_paths.append(str(output_path))
+
+    return written_paths[0]
 
 
 def runtime_tick(

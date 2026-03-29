@@ -32,10 +32,17 @@ def main() -> None:
     )
 
     snapshot = snapshot_api.snapshot()
-    output_path = Path(__file__).resolve().parent.parent.parent / 'apps' / 'dashboard' / 'public' / 'snapshot.json'
-    ensure_parent(str(output_path))
-    output_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(output_path)
+    dashboard_dir = Path(__file__).resolve().parent.parent.parent / 'apps' / 'dashboard'
+    output_paths = [
+        dashboard_dir / 'public' / 'snapshot.json',
+        dashboard_dir / 'dist' / 'snapshot.json',
+    ]
+
+    for output_path in output_paths:
+        ensure_parent(str(output_path))
+        output_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
+        print(output_path)
+
     db.close()
 
 
