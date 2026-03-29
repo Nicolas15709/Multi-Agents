@@ -113,12 +113,13 @@ class TaskRunner:
                 "blocked_task_ids": [task["id"] for task in incomplete if task["status"] == "blocked"],
             }
 
-        self.mission_repository.update_mission_status(mission_id, "completed")
-        self.mission_repository.add_event(mission_id, "mission_completed", "system", "Mission completed successfully", {})
-        self.progress_notifier.notify(
-            mission_id,
-            "mission_completed",
-            "La misión se completó correctamente.",
-            {},
-        )
+        if mission.get("status") != "completed":
+            self.mission_repository.update_mission_status(mission_id, "completed")
+            self.mission_repository.add_event(mission_id, "mission_completed", "system", "Mission completed successfully", {})
+            self.progress_notifier.notify(
+                mission_id,
+                "mission_completed",
+                "La misión se completó correctamente.",
+                {},
+            )
         return {"status": "completed", "mission_id": mission_id}
