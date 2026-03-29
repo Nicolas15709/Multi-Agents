@@ -20,12 +20,10 @@ class RuntimeStateHydrator:
     agent_state_manager: AgentStateManager
 
     def reconcile(self) -> Dict:
-        missions = self.mission_repository.list_missions()
-        active = [m for m in missions if m["status"] in {"queued", "running", "blocked"}]
-        if not active:
+        active_mission = self.mission_repository.get_focus_mission()
+        if not active_mission or active_mission["status"] not in self.mission_repository.ACTIVE_STATUSES:
             return {"status": "no_active_missions"}
 
-        active_mission = active[0]
         tasks = self.task_repository.list_tasks_for_mission(active_mission["id"])
         running_tasks = [task for task in tasks if task["status"] == "running"]
         pending_tasks = [task for task in tasks if task["status"] == "pending"]

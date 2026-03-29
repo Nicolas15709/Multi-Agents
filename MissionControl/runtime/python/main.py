@@ -11,10 +11,13 @@ from config import RuntimeConfig
 from db import Database
 from event_stream import EventStreamService
 from mission_service import MissionService
+from mission_lifecycle import MissionLifecycleService
+from mission_summary import MissionSummaryService
 from notifications import NotificationService
 from planner import Planner
 from policies import PolicyEngine
 from progress import ProgressNotifier
+from progress_summary import ProgressSummaryService
 from repository import AgentRepository, MissionRepository, NotificationRepository, PolicyRepository, TaskRepository
 from runtime_state import RuntimeStateHydrator
 from scheduler import Scheduler
@@ -45,6 +48,7 @@ def runtime_tick(
     scheduler: Scheduler,
     state_manager: AgentStateManager,
     mission_service: MissionService,
+    lifecycle: MissionLifecycleService,
     hydrator: RuntimeStateHydrator,
     task_runner: TaskRunner,
     snapshot_api: RuntimeSnapshotAPI,
@@ -65,7 +69,9 @@ def runtime_tick(
     top_mission = scheduler.highest_priority_mission()
     runner_result = None
     if top_mission:
+        lifecycle.activate(top_mission["id"])
         runner_result = task_runner.advance_next_task(top_mission["id"])
+        lifecycle.mark_mission_done_if_ready(top_mission["id"])
 
     snapshot = snapshot_api.snapshot()
     snapshot_path = export_snapshot(snapshot)
@@ -121,6 +127,7 @@ def main() -> None:
         notifications=notifications,
         progress_notifier=progress_notifier,
     )
+    lifecycle = MissionLifecycleService(mission_repository=mission_repository, task_repository=task_repository)
     event_stream = EventStreamService(mission_repository=mission_repository, notification_repository=notification_repository)
     publisher = WebSocketPublisher(config=config)
     publisher.start()
@@ -135,11 +142,15 @@ def main() -> None:
         agent_state_manager=state_manager,
         progress_notifier=progress_notifier,
     )
+    progress_summary = ProgressSummaryService(mission_repository=mission_repository, task_repository=task_repository)
+    mission_summary = MissionSummaryService(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
         task_repository=task_repository,
         agent_repository=agent_repository,
         event_stream=event_stream,
+        progress_summary=progress_summary,
+        mission_summary=mission_summary,
     )
 
     print("Mission Control runtime")
@@ -168,6 +179,7 @@ def main() -> None:
                 scheduler=scheduler,
                 state_manager=state_manager,
                 mission_service=mission_service,
+                lifecycle=lifecycle,
                 hydrator=hydrator,
                 task_runner=task_runner,
                 snapshot_api=snapshot_api,

@@ -180,6 +180,11 @@ function MissionHighlights({ activeMission, agents, tasks, events, meta }) {
 export default function App() {
   const [entered] = useState(true)
   const { snapshot, status, connection } = useSnapshot()
+<<<<<<< HEAD
+=======
+  const { activeMission, agents = [], tasks = [], meta = {}, stream = { events: [], notifications: [] } } = snapshot
+  const progress = snapshot?.progress || null
+>>>>>>> d05530c8abb00f53582858def9c6ff2f811a81aa
 
   if (!entered) {
     return <LoginGate />
@@ -300,8 +305,16 @@ export default function App() {
 
           <div style={{ marginTop: 'auto' }}>
             <MissionLauncher />
+<<<<<<< HEAD
           </div>
         </motion.aside>
+=======
+            <ThoughtLogPanel events={stream.events} />
+            <TaskPanel tasks={tasks} />
+            <SystemPanel stream={stream} progress={progress} />
+          </aside>
+        </div>
+>>>>>>> d05530c8abb00f53582858def9c6ff2f811a81aa
       </main>
     </div>
   )
