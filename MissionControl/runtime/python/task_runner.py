@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from agent_state import AgentStateManager
 from progress import ProgressNotifier
@@ -25,10 +25,11 @@ class TaskRunner:
         deps = task.get("depends_on") or []
         if not deps:
             return True
-        done_ids = {item["id"] for item in tasks if item["status"] == "done"}
+        done_ids = {item["id"] for item in tasks if item["status"] in {"done", "completed"}}
         return all(dep in done_ids for dep in deps)
 
     def advance_next_task(self, mission_id: str) -> Dict:
+        mission = self.mission_repository.get_mission(mission_id) or {"status": None}
         tasks = self.task_repository.list_tasks_for_mission(mission_id)
         running = [task for task in tasks if task["status"] == "running"]
         if running:
@@ -44,24 +45,37 @@ class TaskRunner:
             )
             tasks = self.task_repository.list_tasks_for_mission(mission_id)
 
-        pending = [task for task in tasks if task["status"] == "pending"]
-        ready = [task for task in pending if self._task_ready(task, tasks)]
-        blocked = [task for task in pending if task not in ready]
+        actionable = [task for task in tasks if task["status"] in {"pending", "blocked"}]
+        ready = [task for task in actionable if self._task_ready(task, tasks)]
+        blocked = [task for task in actionable if task not in ready]
+
+        for task in ready:
+            if task["status"] == "blocked":
+                self.task_repository.update_task_status(task["id"], "pending")
+                self.mission_repository.add_event(
+                    mission_id,
+                    "task_unblocked",
+                    task["agent_id"],
+                    f"Task unblocked: {task['title']}",
+                    {"task_id": task["id"], "depends_on": task.get("depends_on", [])},
+                )
+
         for task in blocked:
-            self.task_repository.update_task_status(task["id"], "blocked")
-            self.mission_repository.add_event(
-                mission_id,
-                "task_blocked",
-                task["agent_id"],
-                f"Task blocked waiting dependencies: {task['title']}",
-                {"task_id": task["id"], "depends_on": task.get("depends_on", [])},
-            )
-            self.progress_notifier.notify(
-                mission_id,
-                "blocked",
-                f"{task['agent_id']} está bloqueada: {task['title']}",
-                {"task_id": task["id"], "agent_id": task["agent_id"]},
-            )
+            if task["status"] != "blocked":
+                self.task_repository.update_task_status(task["id"], "blocked")
+                self.mission_repository.add_event(
+                    mission_id,
+                    "task_blocked",
+                    task["agent_id"],
+                    f"Task blocked waiting dependencies: {task['title']}",
+                    {"task_id": task["id"], "depends_on": task.get("depends_on", [])},
+                )
+                self.progress_notifier.notify(
+                    mission_id,
+                    "blocked",
+                    f"{task['agent_id']} está bloqueada: {task['title']}",
+                    {"task_id": task["id"], "agent_id": task["agent_id"]},
+                )
 
         if ready:
             next_task = ready[0]
@@ -81,6 +95,23 @@ class TaskRunner:
                 {"task_id": next_task["id"], "agent_id": next_task["agent_id"]},
             )
             return {"status": "started", "task_id": next_task["id"], "agent_id": next_task["agent_id"]}
+
+        incomplete = [task for task in tasks if task["status"] in {"pending", "blocked", "running"}]
+        if incomplete:
+            if mission.get("status") != "blocked":
+                self.mission_repository.update_mission_status(mission_id, "blocked")
+                self.mission_repository.add_event(
+                    mission_id,
+                    "mission_blocked",
+                    "system",
+                    "Mission blocked waiting for dependencies",
+                    {"blocked_task_ids": [task["id"] for task in incomplete if task["status"] == "blocked"]},
+                )
+            return {
+                "status": "blocked",
+                "mission_id": mission_id,
+                "blocked_task_ids": [task["id"] for task in incomplete if task["status"] == "blocked"],
+            }
 
         self.mission_repository.update_mission_status(mission_id, "completed")
         self.mission_repository.add_event(mission_id, "mission_completed", "system", "Mission completed successfully", {})
