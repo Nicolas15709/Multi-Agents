@@ -29,9 +29,10 @@ class RuntimeSnapshotAPI:
         active_agents = [agent for agent in agents if agent.get("state") and agent.get("state") != "idle"]
         completed_tasks = [task for task in active_tasks if task.get("status") in {"done", "completed"}]
         blocked_tasks = [task for task in active_tasks if task.get("status") == "blocked"]
+        failed_tasks = [task for task in active_tasks if task.get("status") == "failed"]
         running_task = next((task for task in active_tasks if task.get("status") == "running"), None)
 
-        progress = self.progress_summary.latest() if self.progress_summary else {"mission": None, "progress": {"total": 0, "done": 0, "running": 0, "blocked": 0, "percent": 0}}
+        progress = self.progress_summary.latest() if self.progress_summary else {"mission": None, "progress": {"total": 0, "done": 0, "running": 0, "blocked": 0, "failed": 0, "percent": 0}}
         mission_summary = self.mission_summary.build(progress["mission"]["id"]) if self.mission_summary and progress.get("mission") else None
         return {
             "generatedAt": utc_now(),
@@ -44,6 +45,7 @@ class RuntimeSnapshotAPI:
                 "taskCount": len(active_tasks),
                 "completedTaskCount": len(completed_tasks),
                 "blockedTaskCount": len(blocked_tasks),
+                "failedTaskCount": len(failed_tasks),
                 "eventCount": len(stream.get("events", [])),
                 "notificationCount": len(stream.get("notifications", [])),
                 "runningTaskId": running_task.get("id") if running_task else None,

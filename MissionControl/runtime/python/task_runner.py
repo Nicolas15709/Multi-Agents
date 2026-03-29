@@ -28,9 +28,48 @@ class TaskRunner:
         done_ids = {item["id"] for item in tasks if item["status"] in {"done", "completed"}}
         return all(dep in done_ids for dep in deps)
 
+    def _failed_dependency_ids(self, task: Dict, tasks: List[Dict]) -> List[str]:
+        deps = task.get("depends_on") or []
+        if not deps:
+            return []
+        failed_ids = {item["id"] for item in tasks if item["status"] == "failed"}
+        return [dep for dep in deps if dep in failed_ids]
+
     def advance_next_task(self, mission_id: str) -> Dict:
         mission = self.mission_repository.get_mission(mission_id) or {"status": None}
         tasks = self.task_repository.list_tasks_for_mission(mission_id)
+        failed_tasks = [task for task in tasks if task["status"] == "failed"]
+        if failed_tasks:
+            failed_task = failed_tasks[0]
+            if mission.get("status") != "needs_human":
+                self.mission_repository.update_mission_status(mission_id, "needs_human")
+                self.mission_repository.add_event(
+                    mission_id,
+                    "mission_needs_human",
+                    "system",
+                    f"Mission requires human attention after task failure: {failed_task['title']}",
+                    {
+                        "failed_task_id": failed_task["id"],
+                        "failed_task_title": failed_task["title"],
+                        "failed_agent_id": failed_task["agent_id"],
+                    },
+                )
+                self.progress_notifier.notify(
+                    mission_id,
+                    "blocked",
+                    f"La misión requiere atención humana por una tarea fallida: {failed_task['title']}",
+                    {
+                        "failed_task_id": failed_task["id"],
+                        "failed_agent_id": failed_task["agent_id"],
+                    },
+                )
+            self.agent_state_manager.set_state(failed_task["agent_id"], "blocked", mission_id=mission_id, task_id=failed_task["id"])
+            return {
+                "status": "needs_human",
+                "mission_id": mission_id,
+                "failed_task_id": failed_task["id"],
+            }
+
         running = [task for task in tasks if task["status"] == "running"]
         if running:
             task = running[0]
@@ -61,6 +100,32 @@ class TaskRunner:
                 )
 
         for task in blocked:
+            failed_dependency_ids = self._failed_dependency_ids(task, tasks)
+            if failed_dependency_ids:
+                if mission.get("status") != "needs_human":
+                    self.mission_repository.update_mission_status(mission_id, "needs_human")
+                self.mission_repository.add_event(
+                    mission_id,
+                    "mission_needs_human",
+                    "system",
+                    f"Mission requires human attention because dependencies failed: {task['title']}",
+                    {
+                        "task_id": task["id"],
+                        "failed_dependency_ids": failed_dependency_ids,
+                    },
+                )
+                self.progress_notifier.notify(
+                    mission_id,
+                    "blocked",
+                    f"La misión requiere atención humana: {task['title']} depende de una tarea fallida.",
+                    {"task_id": task["id"], "failed_dependency_ids": failed_dependency_ids},
+                )
+                return {
+                    "status": "needs_human",
+                    "mission_id": mission_id,
+                    "task_id": task["id"],
+                    "failed_dependency_ids": failed_dependency_ids,
+                }
             if task["status"] != "blocked":
                 self.task_repository.update_task_status(task["id"], "blocked")
                 self.mission_repository.add_event(

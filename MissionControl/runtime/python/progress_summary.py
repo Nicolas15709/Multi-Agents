@@ -14,12 +14,13 @@ class ProgressSummaryService:
     def latest(self):
         mission = self.scheduler.highest_priority_mission() if self.scheduler else self.mission_repository.get_focus_mission()
         if not mission:
-            return {"mission": None, "progress": {"total": 0, "done": 0, "running": 0, "blocked": 0, "percent": 0}}
+            return {"mission": None, "progress": {"total": 0, "done": 0, "running": 0, "blocked": 0, "failed": 0, "percent": 0}}
         tasks = self.task_repository.list_tasks_for_mission(mission["id"])
         total = len(tasks)
         done = sum(1 for task in tasks if task["status"] == "done")
         running = sum(1 for task in tasks if task["status"] == "running")
         blocked = sum(1 for task in tasks if task["status"] == "blocked")
+        failed = sum(1 for task in tasks if task["status"] == "failed")
         percent = int((done / total) * 100) if total else 0
         return {
             "mission": {
@@ -33,6 +34,7 @@ class ProgressSummaryService:
                 "done": done,
                 "running": running,
                 "blocked": blocked,
+                "failed": failed,
                 "percent": percent,
             },
         }

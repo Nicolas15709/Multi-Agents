@@ -51,6 +51,20 @@ class MissionLifecycleService:
             return False
         if any(task["status"] in {"pending", "running", "blocked"} for task in tasks):
             return False
+        failed_tasks = [task for task in tasks if task["status"] == "failed"]
+        if failed_tasks:
+            self.mission_repository.update_mission_status(mission_id, "needs_human")
+            self.mission_repository.add_event(
+                mission_id,
+                "mission_needs_human",
+                "system",
+                "Mission requires human attention before it can complete",
+                {
+                    "mission_id": mission_id,
+                    "failed_task_ids": [task["id"] for task in failed_tasks],
+                },
+            )
+            return False
         self.mission_repository.update_mission_status(mission_id, "completed")
         self.mission_repository.add_event(mission_id, "mission_completed", "system", "Mission completed", {"mission_id": mission_id})
         return True
@@ -61,10 +75,12 @@ class MissionLifecycleService:
         done = sum(1 for task in tasks if task["status"] == "done")
         blocked = sum(1 for task in tasks if task["status"] == "blocked")
         running = sum(1 for task in tasks if task["status"] == "running")
+        failed = sum(1 for task in tasks if task["status"] == "failed")
         return {
             "total": total,
             "done": done,
             "blocked": blocked,
             "running": running,
+            "failed": failed,
             "percent": int((done / total) * 100) if total else 0,
         }

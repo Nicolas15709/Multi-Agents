@@ -38,5 +38,6 @@ class MissionSummaryService:
                 "running": sum(1 for task in tasks if task["status"] == "running"),
                 "pending": sum(1 for task in tasks if task["status"] == "pending"),
                 "blocked": sum(1 for task in tasks if task["status"] == "blocked"),
+                "failed": sum(1 for task in tasks if task["status"] == "failed"),
             },
         }
