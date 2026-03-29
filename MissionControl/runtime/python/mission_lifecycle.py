@@ -9,14 +9,43 @@ class MissionLifecycleService:
     mission_repository: MissionRepository
     task_repository: TaskRepository
 
-    def activate(self, mission_id: str) -> None:
+    def activate(self, mission_id: str) -> bool:
         mission = self.mission_repository.get_mission(mission_id)
         if not mission:
-            return
-        self.mission_repository.update_mission_status(mission_id, "running")
-        self.mission_repository.add_event(mission_id, "mission_activated", "system", "Mission activated", {"mission_id": mission_id})
+            return False
+
+        paused_ids = self.mission_repository.pause_other_running_missions(mission_id)
+        for paused_id in paused_ids:
+            self.mission_repository.add_event(
+                paused_id,
+                "mission_paused",
+                "system",
+                "Mission paused while another mission takes focus",
+                {"paused_for_mission_id": mission_id},
+            )
+
+        if mission.get("status") != "running":
+            self.mission_repository.update_mission_status(mission_id, "running")
+            self.mission_repository.add_event(mission_id, "mission_activated", "system", "Mission activated", {"mission_id": mission_id})
+            return True
+
+        if paused_ids:
+            self.mission_repository.add_event(
+                mission_id,
+                "mission_reaffirmed",
+                "system",
+                "Mission kept runtime focus after resolving competing running missions",
+                {"mission_id": mission_id, "paused_mission_ids": paused_ids},
+            )
+            return True
+
+        return False
 
     def mark_mission_done_if_ready(self, mission_id: str) -> bool:
+        mission = self.mission_repository.get_mission(mission_id)
+        if not mission or mission.get("status") == "completed":
+            return False
+
         tasks = self.task_repository.list_tasks_for_mission(mission_id)
         if not tasks:
             return False

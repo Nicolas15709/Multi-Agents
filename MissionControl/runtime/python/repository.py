@@ -15,6 +15,11 @@ class MissionRepository:
         "high": 3,
         "critical": 4,
     }
+    STATUS_SCORE = {
+        "running": 3,
+        "blocked": 2,
+        "queued": 1,
+    }
 
     def __init__(self, db: Database):
         self.db = db
@@ -52,11 +57,32 @@ class MissionRepository:
         if active:
             return sorted(
                 active,
-                key=lambda item: (self.PRIORITY_SCORE.get(item["priority"], 0), item["created_at"]),
+                key=lambda item: (
+                    self.STATUS_SCORE.get(item["status"], 0),
+                    self.PRIORITY_SCORE.get(item["priority"], 0),
+                    item["updated_at"],
+                    item["created_at"],
+                ),
                 reverse=True,
             )[0]
         missions = self.list_missions()
         return missions[0] if missions else None
+
+    def pause_other_running_missions(self, active_mission_id: str) -> List[str]:
+        running_missions = self.db.fetchall(
+            "SELECT id FROM missions WHERE status = 'running' AND id != ? ORDER BY created_at DESC",
+            (active_mission_id,),
+        )
+        paused_ids = [mission["id"] for mission in running_missions]
+        if not paused_ids:
+            return []
+
+        now = utc_now()
+        self.db.execute(
+            "UPDATE missions SET status = 'queued', updated_at = ? WHERE status = 'running' AND id != ?",
+            (now, active_mission_id),
+        )
+        return paused_ids
 
     def get_mission(self, mission_id: str) -> Optional[Dict]:
         return self.db.fetchone("SELECT * FROM missions WHERE id = ?", (mission_id,))
