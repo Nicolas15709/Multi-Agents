@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 from repository import MissionRepository
 
@@ -8,7 +8,7 @@ from repository import MissionRepository
 class ThoughtLogService:
     mission_repository: MissionRepository
 
-    def record(self, mission_id: str, step: str, summary: str, detail: Dict | None = None) -> None:
+    def record(self, mission_id: str, step: str, summary: str, detail: Optional[Dict] = None) -> None:
         self.mission_repository.add_event(
             mission_id,
             event_type="thought_step",

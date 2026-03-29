@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from models import Mission, Task
 from repository import MissionRepository, TaskRepository
 from templates import TemplateRegistry
+from thought_log import ThoughtLogService
 from utils import new_id
 
 DEFAULT_WORKFLOW = [

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 from event_stream import EventStreamService
 from repository import AgentRepository, MissionRepository, TaskRepository
@@ -14,8 +14,8 @@ class RuntimeSnapshotAPI:
     task_repository: TaskRepository
     agent_repository: AgentRepository
     event_stream: EventStreamService
-    progress_summary: ProgressSummaryService | None = None
-    mission_summary: MissionSummaryService | None = None
+    progress_summary: Optional[ProgressSummaryService] = None
+    mission_summary: Optional[MissionSummaryService] = None
 
     def snapshot(self) -> Dict:
         missions = self.mission_repository.list_missions()
