@@ -415,6 +415,31 @@ npm run runtime:ensure-maintenance -- --min-interval-hours 24 --schedule-label c
 
 El comando responde JSON (`created` o `skipped`) para que sea fácil integrarlo con cron, systemd timers o scripts de health/ops.
 
+## Diagnóstico operativo
+
+Para revisar rápidamente si el runtime está sano, si el snapshot del dashboard está fresco, si hay trabajo bloqueado o si el WebSocket/systemd parecen caídos, ahora existe un comando de diagnóstico orientado a operaciones:
+
+```bash
+npm run runtime:doctor
+```
+
+Opciones útiles:
+
+```bash
+npm run runtime:doctor -- --json
+npm run runtime:doctor -- --snapshot-max-age-minutes 30
+npm run runtime:doctor -- --systemd-unit mission-control.service
+```
+
+El diagnóstico revisa:
+- presencia y ubicación de la base SQLite
+- misión foco y estado general del runtime
+- tareas/misiones bloqueadas
+- necesidad potencial de recovery tras reinicio
+- frescura de `apps/dashboard/public/snapshot.json` y `dist/snapshot.json`
+- reachability del WebSocket configurado
+- estado del unit de systemd si `systemctl` está disponible
+
 ## Próximos pasos
 
 1. Consolidar runtime Python + LangGraph
