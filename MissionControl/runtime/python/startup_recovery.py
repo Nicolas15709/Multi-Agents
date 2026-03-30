@@ -49,6 +49,39 @@ class StartupRecoveryService:
             mission_id = mission["id"]
             tasks = self.task_repository.list_tasks_for_mission(mission_id)
             running_tasks = [task for task in tasks if task["status"] == "running"]
+
+            if running_tasks:
+                for task in running_tasks:
+                    if apply:
+                        self.task_repository.update_task_status(task["id"], "pending")
+                        self.mission_repository.add_event(
+                            mission_id,
+                            "task_requeued",
+                            "system",
+                            f"Task re-queued during recovery: {task['title']}",
+                            {
+                                "task_id": task["id"],
+                                "recovery": "startup",
+                                "reason": "stale_running_task_after_restart",
+                                "was_focus_mission": bool(focus and mission_id == focus["id"]),
+                            },
+                        )
+                        self.agent_state_manager.set_state(task["agent_id"], "idle")
+                    counts["tasks_reset"] += 1
+                    counts["agents_reset"] += 1
+                    updates.append({
+                        "mission_id": mission_id,
+                        "task_id": task["id"],
+                        "action": "task_requeued",
+                        "reason": "stale_running_task_after_restart",
+                    })
+
+                tasks = self.task_repository.list_tasks_for_mission(mission_id) if apply else [
+                    {**task, "status": ("pending" if task["status"] == "running" else task["status"])}
+                    for task in tasks
+                ]
+                running_tasks = []
+
             pending_tasks = [task for task in tasks if task["status"] == "pending"]
             blocked_tasks = [task for task in tasks if task["status"] == "blocked"]
             done_ids = {task["id"] for task in tasks if task["status"] in {"done", "completed"}}
@@ -70,27 +103,6 @@ class StartupRecoveryService:
                 counts["missions_completed"] += 1
                 updates.append({"mission_id": mission_id, "action": "mission_completed"})
                 continue
-
-            if focus and mission_id != focus["id"] and running_tasks:
-                for task in running_tasks:
-                    if apply:
-                        self.task_repository.update_task_status(task["id"], "pending")
-                        self.mission_repository.add_event(
-                            mission_id,
-                            "task_requeued",
-                            "system",
-                            f"Task re-queued during recovery: {task['title']}",
-                            {"task_id": task["id"], "recovery": "startup", "reason": "non_focus_running_task"},
-                        )
-                        self.agent_state_manager.set_state(task["agent_id"], "idle")
-                    counts["tasks_reset"] += 1
-                    counts["agents_reset"] += 1
-                    updates.append({
-                        "mission_id": mission_id,
-                        "task_id": task["id"],
-                        "action": "task_requeued",
-                    })
-                running_tasks = []
 
             desired_status: Optional[str] = None
             if not tasks:
