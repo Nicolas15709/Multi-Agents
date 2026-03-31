@@ -450,3 +450,289 @@ El diagnóstico revisa:
 6. Diseñar cards, mission room y command center
 7. Añadir catálogo completo de plantillas
 8. Preparar futura dockerización por agente
+
+---
+
+# Despliegue en Producción (VPS)
+
+Mission Control incluye una configuración completa para despliegue 24/7 en un VPS usando Docker Compose.
+
+## Requisitos del VPS
+
+- **Sistema Operativo**: Ubuntu 22.04+ o Debian 11+ (x64 o ARM64)
+- **Docker**: 20.10+ con Docker Compose v2
+- **RAM**: Mínimo 2GB, recomendado 4GB+
+- **Almacenamiento**: 10GB libres (para base de datos, logs y contenedores)
+- **Puertos**: 80 (HTTP) y opcionalmente 8765 (WebSocket)
+- **Dominio** (opcional): Apuntando a la IP del VPS
+
+## Estructura de despliegue
+
+```text
+MissionControl/
+├── deployment/
+│   ├── Dockerfile          # Imagen multi-stage (dashboard + runtime)
+│   ├── nginx.conf          # Configuración de nginx
+│   ├── start.sh            # Script de inicio del contenedor
+│   └── init-db.sh          # Script de inicialización de BD
+├── docker-compose.yml      # Orquestación de contenedores
+├── .env.vps.example        # Variables de entorno de ejemplo
+├── .dockerignore           # Archivos excluidos del build
+└── ... (código fuente)
+```
+
+## Pasos de despliegue
+
+### 1. Prepara el servidor
+
+```bash
+# Actualizar sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Docker y Compose
+sudo apt install -y docker.io docker-compose
+
+# Añadir usuario actual a grupo docker (logout/login requerido)
+sudo usermod -aG docker $USER
+```
+
+### 2. Clona el repositorio en el VPS
+
+```bash
+git clone <tu-repositorio> /opt/mission-control
+cd /opt/mission-control
+```
+
+### 3. Configura variables de entorno
+
+```bash
+# Copiar el ejemplo
+cp MissionControl/.env.vps.example .env.vps
+
+# Editar con valores reales
+nano .env.vps
+```
+
+Variables críticas a configurar:
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (si usas Supabase)
+- `OPENROUTER_API_KEY` (para que los agentes puedan usar LLMs)
+- `JWT_SECRET` (genera uno: `openssl rand -base64 32`)
+
+> **Nota**: Si no configuras Supabase, Mission Control funcionará en modo standalone con SQLite local (solo para pruebas o uso personal).
+
+### 4. Inicializar la base de datos
+
+```bash
+# Dar permisos de ejecución
+chmod +x MissionControl/deployment/init-db.sh
+
+# Inicializar (esto crea la SQLite y siembra los agentes iniciales)
+MissionControl/deployment/init-db.sh .env.vps
+```
+
+### 5. Construir y levantar servicios
+
+```bash
+# Construir imagen Docker (solo primera vez o tras cambios)
+docker-compose build
+
+# Iniciar en modo detached (segundo plano)
+docker-compose up -d
+
+# Ver logs en tiempo real
+docker-compose logs -f
+```
+
+### 6. Verificar que todo funciona
+
+```bash
+# Salud del contenedor
+docker-compose ps
+
+# Health check (debe responder "healthy")
+curl http://localhost/health
+
+# Logs de la aplicación
+docker-compose logs mission-control
+```
+
+### 7. Acceder al dashboard
+
+Abre en tu navegador: `http://IP-DE-TU-VPS/`
+
+- La primera carga puede tardar unos segundos mientras el runtime初始化.
+- El dashboard se conecta automáticamente via WebSocket a `ws://IP/ws`.
+- Los agentes aparecerán en estado `idle` hasta que se envíe una misión.
+
+### 8. (Opcional) Configurar HTTPS con Let's Encrypt
+
+Recomendamos usar **Caddy** o **nginx + certbot** para SSL gratis:
+
+**Con Caddy (más simple)**:
+```bash
+# Instalar Caddy
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update && sudo apt install caddy
+
+# Configurar Caddy para proxy a Mission Control (puerto 80)
+sudo nano /etc/caddy/Caddyfile
+```
+
+Contenido de Caddyfile:
+```
+tu-dominio.com {
+    reverse_proxy localhost:80
+}
+```
+
+```bash
+sudo systemctl reload caddy
+```
+
+## Comandos útiles de Docker Compose
+
+```bash
+# Reiniciar servicios
+docker-compose restart
+
+# Parar servicios
+docker-compose down
+
+# Parar y eliminar volúmenes (¡CUIDADO: borra la base de datos!)
+docker-compose down -v
+
+# Ver logs
+docker-compose logs -f mission-control
+
+# Acceder a shell del contenedor
+docker-compose exec mission-control bash
+
+# Rebuild tras cambios en el código
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+## Directorios persistentes
+
+- `./data` → Base de datos SQLite y archivos temporales
+- `./logs` → Logs de la aplicación (dentro del contenedor)
+
+Estos directorios están montados como volúmenes, por lo que sobreviven a recreaciones de contenedores.
+
+## Monitorización
+
+### Healthcheck
+Docker Compose verifica cada 30 segundos que `http://localhost/health` responde. El estado se ve con:
+```bash
+docker-compose ps
+```
+
+### Logs
+Los logs del Python runtime y nginx se mezclan. Para filtar:
+```bash
+docker-compose logs -f mission-control | grep -i error
+```
+
+### Revisión manual
+```bash
+# Estado de la base de datos
+docker-compose exec mission-control python3 -c "from db import Database; db = Database('/app/data/sessions.db'); print('Missions:', db.fetchone('SELECT COUNT(*) as c FROM missions')['c'])"
+
+# Generar snapshot inmediato
+docker-compose exec mission-control python3 export_snapshot.py
+```
+
+## Copias de seguridad (Backup)
+
+La base de datos es un archivo SQLite en `data/sessions.db`:
+
+```bash
+# Backup manual
+cp data/sessions.db "backups/sessions-$(date +%Y%m%d-%H%M%S).db"
+
+# Automatizar con cron (diario a las 2am)
+0 2 * * * cp /opt/mission-control/data/sessions.db /opt/mission-control/backups/sessions-$(date +\%Y\%m\%d).db
+```
+
+## Actualización
+
+```bash
+# 1. Pull de cambios
+git pull origin main
+
+# 2. Reconstruir imagen
+docker-compose build
+
+# 3. Reiniciar servicios
+docker-compose up -d
+
+# 4. Verificar logs
+docker-compose logs -f
+```
+
+## Solución de problemas
+
+### El contenedor se reinicia constantemente
+Ver logs: `docker-compose logs mission-control`
+- Error de conexión a Supabase → revisar `.env.vps`
+- Puerto 80 ocupado → cambiar puerto en `docker-compose.yml` o liberar puerto
+
+### Base de datos corrupta
+Eliminar volumen y reinicializar:
+```bash
+docker-compose down -v
+rm -rf data/sessions.db
+MissionControl/deployment/init-db.sh .env.vps
+docker-compose up -d
+```
+
+### Dashboard no carga (blanco)
+1. Verificar que nginx responde: `curl http://localhost/`
+2. Verificar que el build existe: `ls -la apps/dashboard/dist/`
+3. Si falta, reconstruir: `docker-compose build`
+4. Verificar permisos: `ls -la data/`
+
+### WebSocket no conecta
+- Asegurarse de que `MISSION_CONTROL_WEBSOCKET=true` en `.env.vps`
+- Verificar que el puerto 8765 no está bloqueado por firewall (si se accede externamente)
+- En el dashboard, abrir consola del navegador (F12) y revisar errores de conexión WebSocket
+
+### Agentes no aparecen
+- Esperar ~5 segundos (tick interval)
+- Verificar que el runtime está vivo: `docker-compose logs mission-control | grep "Mission Control bootstrap"`
+- Si no, puede que la base de datos no esté inicializada
+
+## Migración de base de datos
+
+Si en el futuro se modifican las tablas, se agregarán scripts de migración en `deployment/migrations/`. Por ahora, el esquema inicial es fijo y se aplica en `init-db.sh`.
+
+Para migrar manualmente:
+```bash
+docker-compose exec mission-control python3 -c "
+from db import Database
+db = Database('/app/data/sessions.db')
+# Ejecutar SQL manualmente
+db.execute('ALTER TABLE missions ADD COLUMN nueva_columna TEXT')
+"
+```
+
+## Seguridad en producción
+
+- Cambiar el usuario por defecto de nginx (se ejecuta como root por simplicidad; considerar usuario `nginx` en hardening)
+- Configurar firewall (ufw/iptables) para solo abrir puertos 80/443
+- Usar HTTPS (ver sección anterior)
+- Rotar secretos periódicamente
+- No commitear `.env.vps` (ya está en `.gitignore`)
+- Limitar logs (evitar log de secrets)
+- Usar `restart: unless-stopped` en docker-compose (ya configurado)
+
+## Soporte y contribuciones
+
+Para reportar bugs o solicitar features, usar issues del repositorio.
+
+---
+
+*Desarrollado con ❤️ para operaciones 24/7*
+
