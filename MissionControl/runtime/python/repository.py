@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-from db import Database
-from models import AgentRecord, Mission, NotificationRecord, PolicyRecord, Task
-from utils import to_json, utc_now
+from .db import Database
+from .models import AgentRecord, Mission, NotificationRecord, PolicyRecord, Task
+from .utils import to_json, utc_now
 
 
 class MissionRepository:
@@ -162,6 +162,11 @@ class TaskRepository:
         rows = self.db.fetchall("SELECT * FROM tasks WHERE mission_id = ? ORDER BY created_at ASC", (mission_id,))
         return [self._decode_fields(row) for row in rows]
 
+    def get_task(self, task_id: str) -> Optional[Dict]:
+        """Get a single task by ID."""
+        row = self.db.fetchone("SELECT * FROM tasks WHERE id = ?", (task_id,))
+        return self._decode_fields(row) if row else None
+
     def update_task_status(self, task_id: str, status: str) -> None:
         self.db.execute(
             "UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?",
@@ -212,6 +217,10 @@ class AgentRepository:
 
     def list_agents(self) -> List[Dict]:
         return self.db.fetchall("SELECT * FROM agent_status ORDER BY agent_id ASC")
+
+    def get_agent(self, agent_id: str) -> Optional[Dict]:
+        """Get a single agent by ID."""
+        return self.db.fetchone("SELECT * FROM agent_status WHERE agent_id = ?", (agent_id,))
 
 
 class PolicyRepository:

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from models import NotificationRecord
-from repository import NotificationRepository
+from .models import NotificationRecord
+from .repository import NotificationRepository
 
 
 @dataclass

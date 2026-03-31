@@ -1,9 +1,12 @@
+"""Startup recovery service using state reconciler and robust detection."""
+
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from agent_state import AgentStateManager
 from repository import MissionRepository, TaskRepository
 from scheduler import Scheduler
+from state_machine import StateReconciler, TransactionalStateUpdater
 
 
 @dataclass
@@ -12,14 +15,19 @@ class StartupRecoveryService:
     task_repository: TaskRepository
     agent_state_manager: AgentStateManager
     scheduler: Scheduler
+    state_updater: Optional[TransactionalStateUpdater] = None
+    state_reconciler: Optional[StateReconciler] = None
 
     def inspect(self) -> Dict:
+        """Inspect recovery needs without applying changes."""
         return self._recover(apply=False)
 
     def recover(self) -> Dict:
+        """Perform full recovery and state normalization."""
         return self._recover(apply=True)
 
     def _recover(self, apply: bool) -> Dict:
+        """Core recovery logic."""
         missions = self.mission_repository.list_missions()
         if not missions:
             return {
@@ -33,6 +41,7 @@ class StartupRecoveryService:
                     "tasks_reset": 0,
                     "agents_reset": 0,
                 },
+                "reconciler_details": None,
             }
 
         focus = self.scheduler.highest_priority_mission()
@@ -45,6 +54,24 @@ class StartupRecoveryService:
             "agents_reset": 0,
         }
 
+        # Phase 1: Use StateReconciler to normalize mission states based on task states
+        reconciler_details = None
+        if self.state_reconciler:
+            reconciler_result = self.state_reconciler.reconcile_mission_states(apply=apply)
+            reconciler_details = reconciler_result
+            counts["missions_requeued"] += reconciler_result.get("fixes_applied", 0)
+            # Collect details
+            for detail in reconciler_result.get("details", []):
+                updates.append({
+                    "mission_id": detail["mission_id"],
+                    "action": "mission_status_normalized",
+                    "from": detail["from"],
+                    "to": detail["to"],
+                    "method": "state_reconciler",
+                })
+
+        # Phase 2: Handling for stale running tasks after restart
+        # (StateReconciler doesn't automatically reset running tasks to pending)
         for mission in missions:
             mission_id = mission["id"]
             tasks = self.task_repository.list_tasks_for_mission(mission_id)
@@ -53,102 +80,81 @@ class StartupRecoveryService:
             if running_tasks:
                 for task in running_tasks:
                     if apply:
-                        self.task_repository.update_task_status(task["id"], "pending")
-                        self.mission_repository.add_event(
-                            mission_id,
-                            "task_requeued",
-                            "system",
-                            f"Task re-queued during recovery: {task['title']}",
-                            {
-                                "task_id": task["id"],
-                                "recovery": "startup",
-                                "reason": "stale_running_task_after_restart",
-                                "was_focus_mission": bool(focus and mission_id == focus["id"]),
-                            },
-                        )
+                        # Use state_updater for atomic transition if available
+                        if self.state_updater:
+                            try:
+                                self.state_updater.begin_transaction()
+                                self.state_updater.transition_task(
+                                    task["id"],
+                                    "pending",
+                                    reason="startup_recovery_stale_task",
+                                    actor="startup_recovery"
+                                )
+                                self.state_updater.commit_transaction()
+                            except Exception:
+                                self.state_updater.rollback_transaction()
+                                raise
+                        else:
+                            self.task_repository.update_task_status(task["id"], "pending")
+                        # Reset agent to idle
                         self.agent_state_manager.set_state(task["agent_id"], "idle")
                     counts["tasks_reset"] += 1
                     counts["agents_reset"] += 1
                     updates.append({
                         "mission_id": mission_id,
                         "task_id": task["id"],
-                        "action": "task_requeued",
+                        "action": "task_reset_from_running",
                         "reason": "stale_running_task_after_restart",
+                        "was_focus_mission": bool(focus and mission_id == focus["id"]),
                     })
 
-                tasks = self.task_repository.list_tasks_for_mission(mission_id) if apply else [
-                    {**task, "status": ("pending" if task["status"] == "running" else task["status"])}
-                    for task in tasks
-                ]
-                running_tasks = []
+        # Phase 3: Ensure focus mission has a consistent state
+        if focus:
+            focus_id = focus["id"]
+            focus_tasks = self.task_repository.list_tasks_for_mission(focus_id)
+            # After recovery, focus mission should be either queued (has ready tasks) or running (has running tasks)
+            # We trust the scheduler's highest_priority_mission but ensure it's not in an invalid state
+            focus_status = focus["status"]
+            if focus_status == "completed":
+                # Completed missions are fine
+                pass
+            elif focus_status in {"queued", "running", "blocked"}:
+                # These are acceptable
+                pass
+            else:
+                # Unknown status, attempt to normalize via reconciler or set to queued
+                if apply and self.state_updater:
+                    try:
+                        self.state_updater.begin_transaction()
+                        self.state_updater.transition_mission(
+                            focus_id,
+                            "queued",
+                            reason="normalize_focus_mission",
+                            actor="startup_recovery"
+                        )
+                        self.state_updater.commit_transaction()
+                        counts["missions_requeued"] += 1
+                        updates.append({
+                            "mission_id": focus_id,
+                            "action": "focus_mission_normalized",
+                            "from": focus_status,
+                            "to": "queued",
+                        })
+                    except Exception:
+                        self.state_updater.rollback_transaction()
 
-            pending_tasks = [task for task in tasks if task["status"] == "pending"]
-            blocked_tasks = [task for task in tasks if task["status"] == "blocked"]
-            done_ids = {task["id"] for task in tasks if task["status"] in {"done", "completed"}}
-            ready_tasks = [
-                task for task in pending_tasks + blocked_tasks
-                if all(dep in done_ids for dep in (task.get("depends_on") or []))
-            ]
-
-            if tasks and len(done_ids) == len(tasks) and mission["status"] != "completed":
-                if apply:
-                    self.mission_repository.update_mission_status(mission_id, "completed")
-                    self.mission_repository.add_event(
-                        mission_id,
-                        "mission_recovered_completed",
-                        "system",
-                        "Mission marked completed during runtime recovery",
-                        {"recovery": "startup", "task_count": len(tasks)},
-                    )
-                counts["missions_completed"] += 1
-                updates.append({"mission_id": mission_id, "action": "mission_completed"})
-                continue
-
-            desired_status: Optional[str] = None
-            if not tasks:
-                desired_status = mission["status"]
-            elif running_tasks and focus and mission_id == focus["id"]:
-                desired_status = "running"
-            elif ready_tasks:
-                desired_status = "queued"
-            elif pending_tasks or blocked_tasks:
-                desired_status = "blocked"
-            elif len(done_ids) == len(tasks):
-                desired_status = "completed"
-
-            if desired_status and desired_status != mission["status"]:
-                if apply:
-                    self.mission_repository.update_mission_status(mission_id, desired_status)
-                    self.mission_repository.add_event(
-                        mission_id,
-                        "mission_state_recovered",
-                        "system",
-                        f"Mission status normalized to {desired_status}",
-                        {
-                            "recovery": "startup",
-                            "previous_status": mission["status"],
-                            "next_status": desired_status,
-                            "ready_task_count": len(ready_tasks),
-                            "running_task_count": len(running_tasks),
-                            "blocked_task_count": len(blocked_tasks),
-                        },
-                    )
-                if desired_status == "queued":
-                    counts["missions_requeued"] += 1
-                elif desired_status == "blocked":
-                    counts["missions_blocked"] += 1
-                elif desired_status == "completed":
-                    counts["missions_completed"] += 1
-                updates.append({
-                    "mission_id": mission_id,
-                    "action": "mission_status_updated",
-                    "from": mission["status"],
-                    "to": desired_status,
-                })
+        # Determine overall status
+        if apply and updates:
+            status = "recovered"
+        elif updates:
+            status = "needs_recovery"
+        else:
+            status = "noop"
 
         return {
-            "status": "recovered" if apply and updates else ("needs_recovery" if updates else "noop"),
+            "status": status,
             "focus_mission_id": focus["id"] if focus else None,
             "updates": updates,
             "counts": counts,
+            "reconciler_details": reconciler_details,
         }

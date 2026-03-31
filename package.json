@@ -6,8 +6,12 @@
   "scripts": {
     "dev": "npm --prefix MissionControl/apps/dashboard run dev -- --host 127.0.0.1 --port 4173",
     "dev:dashboard": "npm --prefix MissionControl/apps/dashboard run dev -- --host 127.0.0.1 --port 4173",
+    "dev:monitor": "npm --prefix apps/openclaw-monitor run dev -- --host 127.0.0.1 --port 4174",
+    "dev:monitor-api": "npm --prefix apps/openclaw-monitor-api run dev",
     "build": "npm --prefix MissionControl/apps/dashboard run build",
+    "build:monitor": "npm --prefix apps/openclaw-monitor run build",
     "preview": "npm --prefix MissionControl/apps/dashboard run preview",
+    "preview:monitor": "npm --prefix apps/openclaw-monitor run preview",
     "runtime": "python3 MissionControl/runtime/python/main.py",
     "runtime:submit": "python3 MissionControl/runtime/python/submit_mission.py",
     "snapshot": "python3 MissionControl/runtime/python/export_snapshot.py",

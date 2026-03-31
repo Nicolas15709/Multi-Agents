@@ -10,8 +10,8 @@ from api_snapshot import RuntimeSnapshotAPI
 from config import RuntimeConfig
 from db import Database
 from event_stream import EventStreamService
-from mission_service import MissionService
 from mission_lifecycle import MissionLifecycleService
+from mission_service import MissionService
 from mission_summary import MissionSummaryService
 from notifications import NotificationService
 from planner import Planner
@@ -23,6 +23,7 @@ from runtime_state import RuntimeStateHydrator
 from scheduler import Scheduler
 from settings import ProgressSettings
 from startup_recovery import StartupRecoveryService
+from state_machine import StateHistory, StateReconciler, TransactionalStateUpdater
 from status_report import StatusReportService
 from storage import ensure_parent
 from task_runner import TaskRunner
@@ -114,6 +115,19 @@ def main() -> None:
     template_registry = TemplateRegistry(config.templates_path)
     bootstrap_agents(agent_repository, agent_registry)
 
+    # Initialize state management infrastructure
+    state_history = StateHistory()
+    state_updater = TransactionalStateUpdater(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        state_history=state_history
+    )
+    state_reconciler = StateReconciler(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        state_updater=state_updater
+    )
+
     thought_log = ThoughtLogService(mission_repository)
     planner = Planner(
         config=config,
@@ -129,16 +143,25 @@ def main() -> None:
         mode=progress_settings.telegram_progress_mode,
     )
     policy_engine = PolicyEngine(repository=policy_repository)
-    scheduler = Scheduler(mission_repository=mission_repository, task_repository=task_repository)
-    state_manager = AgentStateManager(repository=agent_repository)
+    scheduler = Scheduler(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        state_updater=state_updater
+    )
+    state_manager = AgentStateManager(repository=agent_repository, state_updater=state_updater)
     mission_service = MissionService(
         planner=planner,
         mission_repository=mission_repository,
         scheduler=scheduler,
         notifications=notifications,
         progress_notifier=progress_notifier,
+        state_updater=state_updater,
     )
-    lifecycle = MissionLifecycleService(mission_repository=mission_repository, task_repository=task_repository)
+    lifecycle = MissionLifecycleService(
+        mission_repository=mission_repository,
+        task_repository=task_repository,
+        state_updater=state_updater
+    )
     event_stream = EventStreamService(mission_repository=mission_repository, notification_repository=notification_repository)
     publisher = WebSocketPublisher(config=config)
     publisher.start()
@@ -153,6 +176,7 @@ def main() -> None:
         task_repository=task_repository,
         agent_state_manager=state_manager,
         progress_notifier=progress_notifier,
+        state_updater=state_updater,
     )
     progress_summary = ProgressSummaryService(
         mission_repository=mission_repository,
@@ -174,6 +198,8 @@ def main() -> None:
         task_repository=task_repository,
         agent_state_manager=state_manager,
         scheduler=scheduler,
+        state_updater=state_updater,
+        state_reconciler=state_reconciler,
     )
     startup_recovery = recovery.recover()
     status_report = StatusReportService(snapshot_api=snapshot_api, lifecycle=lifecycle, recovery=recovery)

@@ -7,6 +7,7 @@ from planner import Planner
 from progress import ProgressNotifier
 from repository import MissionRepository
 from scheduler import Scheduler
+from state_machine import MissionStateMachine, StateValidationError
 
 
 @dataclass
@@ -16,6 +17,7 @@ class MissionService:
     scheduler: Scheduler
     notifications: NotificationService
     progress_notifier: ProgressNotifier
+    state_updater: Optional[object] = None  # TransactionalStateUpdater
 
     def submit_mission(self, title: str, goal: str, mode: str, priority: str = "medium", source: str = "manual", allow_24x7: bool = False, schedule: str = None) -> Dict:
         current = self.scheduler.highest_priority_mission()
@@ -50,6 +52,20 @@ class MissionService:
             schedule=schedule,
         )
         self.planner.seed_base_workflow(mission)
+        # Use state_updater to transition mission from initial creation state to queued if needed
+        if self.state_updater:
+            try:
+                self.state_updater.begin_transaction()
+                self.state_updater.transition_mission(
+                    mission.id,
+                    "queued",
+                    reason="mission_submitted",
+                    actor=source
+                )
+                self.state_updater.commit_transaction()
+            except StateValidationError:
+                # If transition not needed (already queued), just commit without transition
+                self.state_updater.rollback_transaction()
         self.notifications.enqueue(
             kind="mission_submitted",
             summary=f"Mission queued: {title}",

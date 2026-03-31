@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from repository import MissionRepository, TaskRepository
+from state_machine import MissionStateMachine, StateValidationError
 
 PRIORITY_SCORE = {
     "low": 1,
@@ -21,6 +22,7 @@ STATUS_SCORE = {
 class Scheduler:
     mission_repository: MissionRepository
     task_repository: TaskRepository
+    state_updater: Optional[object] = None  # TransactionalStateUpdater
 
     def list_active_missions(self) -> List[Dict]:
         missions = self.mission_repository.list_missions()
@@ -83,6 +85,42 @@ class Scheduler:
             "decision": "queue",
             "reason": "existing_work_keeps_priority",
         }
+
+    def pause_other_running_missions(self, active_mission_id: str) -> List[str]:
+        """Pause all running missions except the active one using state machine transitions."""
+        running_missions = self.mission_repository.db.fetchall(
+            "SELECT id FROM missions WHERE status = 'running' AND id != ? ORDER BY created_at DESC",
+            (active_mission_id,),
+        )
+        paused_ids = [mission["id"] for mission in running_missions]
+        if not paused_ids:
+            return []
+
+        if self.state_updater:
+            # Use transactional state updater to pause missions with validation
+            try:
+                self.state_updater.begin_transaction()
+                for mission in running_missions:
+                    self.state_updater.transition_mission(
+                        mission["id"],
+                        "queued",
+                        reason="pause_for_new_priority",
+                        actor="scheduler"
+                    )
+                self.state_updater.commit_transaction()
+            except StateValidationError as e:
+                # Log error but continue (some transitions may be invalid)
+                # In production, should notify and continue
+                self.state_updater.rollback_transaction()
+                # Fallback: attempt direct pause without validation? Better to log and skip
+                raise
+        else:
+            # Legacy direct update (without validation)
+            now = self.mission_repository.db.utc_now() if hasattr(self.mission_repository.db, 'utc_now') else None
+            # Simple implementación legada
+            for mission_id in paused_ids:
+                self.mission_repository.update_mission_status(mission_id, "queued")
+        return paused_ids
 
     def summary(self) -> Dict:
         active = self.list_active_missions()

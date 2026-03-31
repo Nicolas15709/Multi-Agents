@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-from storage import ensure_parent
+from .storage import ensure_parent
 
 BASE_DIR = Path(__file__).resolve().parent
 SCHEMA_PATH = BASE_DIR / "schema.sql"

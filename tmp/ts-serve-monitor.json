@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "TCP": {
+    "443": {
+      "HTTPS": true
+    }
+  },
+  "Web": {
+    "vnic-nico.tailc4fbb3.ts.net:443": {
+      "Handlers": {
+        "/": {
+          "Proxy": "http://127.0.0.1:18789"
+        },
+        "/monitor-api/": {
+          "Proxy": "http://127.0.0.1:4180"
+        }
+      }
+    }
+  }
+}
