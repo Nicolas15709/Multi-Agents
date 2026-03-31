@@ -1,9 +1,16 @@
 # Multi-stage Dockerfile for Mission Control
 # ===========================================
 # Stage 1: Build the React dashboard (Vite)
-FROM node:20-alpine AS dashboard-builder
+FROM node:20-slim AS dashboard-builder
 
 WORKDIR /app
+
+# Install system deps for native modules (e.g., better-sqlite3)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy dashboard package files
 COPY MissionControl/apps/dashboard/package*.json ./
