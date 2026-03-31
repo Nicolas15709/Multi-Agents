@@ -13,12 +13,19 @@
     "runtime:status": "python3 runtime/python/print_status.py",
     "runtime:doctor": "python3 runtime/python/doctor.py",
     "runtime:ensure-maintenance": "python3 runtime/python/ensure_maintenance_cycle.py",
+    "runtime:notifications:process": "python3 runtime/python/notification_processor_cli.py --limit 100",
     "snapshot": "python3 runtime/python/export_snapshot.py",
+    "db:init": "node src/db.js --init",
+    "db:migrate": "node deploy/apply_supabase_migrations.js",
+    "db:migrate:combine": "node deploy/combine_migrations.js > deploy/combined_migrations.sql",
+    "test": "cd runtime/python && python -m pytest -v --cov=. --cov-report=term-missing --cov-report=html",
+    "test:ci": "cd runtime/python && python -m pytest --junitxml=../test-results.xml --cov=. --cov-report=xml",
     "init-db": "node src/db.js --init",
     "legacy:dev": "node --watch src/main_orchestrator.js",
     "legacy:start": "node src/main_orchestrator.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
     "better-sqlite3": "^11.7.0",
     "dotenv": "^16.4.7"
   }

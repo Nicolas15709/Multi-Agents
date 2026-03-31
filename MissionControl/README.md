@@ -42,6 +42,15 @@ Permitir que un equipo de agentes:
 - artifacts importantes
 - storage final
 
+### Sistema de Memoria (Vector + Sesión)
+- **Memoria Vectorial**: Supabase pgvector para búsqueda semántica a largo plazo (experiencias, eventos, artifacts)
+- **Memoria por Sesión**: SQLite local con state diffing y snapshots comprimidos (estado en tiempo real)
+- **Embeddings**: OpenAI o Groq (text-embedding-ada-002)
+- **TTL automático**: Políticas configurables de retención y limpieza
+- **Sync**: Cola de sincronización para consistencia eventual
+
+> Consulta `MEMORY.md` para la guía completa de configuración, API y operación.
+
 ### Runtime de ejecución
 - Python
 - LangGraph
@@ -450,6 +459,114 @@ El diagnóstico revisa:
 6. Diseñar cards, mission room y command center
 7. Añadir catálogo completo de plantillas
 8. Preparar futura dockerización por agente
+
+---
+
+# CI/CD y Testing
+
+Mission Control incluye integración continua con GitHub Actions y una suite de pruebas automáticas para el runtime Python.
+
+## Ejecutar pruebas localmente
+
+```bash
+# Instalar dependencias de desarrollo
+cd runtime/python
+pip install -r requirements.txt
+pip install -r requirements-test.txt
+
+# Ejecutar todas las pruebas con cobertura
+npm test
+# o directamente:
+cd runtime/python && python -m pytest -v --cov=. --cov-report=term-missing
+
+# Generar reporte HTML de cobertura
+cd runtime/python && python -m pytest --cov=. --cov-report=html
+# Luego abrir htmlcov/index.html en el navegador
+```
+
+### Cobertura esperada
+El objetivo de cobertura es >90% para el runtime Python (módulos core: db, repository, config, models, scheduler, etc.)
+
+## Flujo de CI/CD
+
+El workflow de CI (.github/workflows/ci.yml) se ejecuta en:
+
+- Push a `main`/`master`
+- Pull requests hacia `main`/`master`
+- Merge groups
+
+### Pasos del workflow
+
+1. **Setup Python**: Usa matrices para Python 3.11 y 3.12
+2. **Instalación**: Instala dependencias de producción y testing
+3. **Tests**: Ejecuta pytest con coverage, genera reportes XML y terminal
+4. **Upload a Codecov**: Sube la cobertura a codecov.io (opcional)
+5. **Lint**: Ejecuta flake8 para detectar errores de estilo y calidad
+6. **Build**: Solo en push a main, construye el dashboard (npm run build) y guarda artefacto
+
+### Secrets requeridos en GitHub
+
+ParaCodecov (opcional):
+- `CODECOV_TOKEN`: Token de Codecov
+
+## Notificaciones externas
+
+Mission Control soporta notificaciones a través de **Telegram** y **Slack**. Estas se usan para alertas, actualizaciones de misión, bloqueos y decisiones que requieren intervención humana.
+
+### Configurar Telegram
+
+1. Crear un bot con [@BotFather](https://t.me/BotFather) y obtener el token
+2. Obtener tu chat ID:
+   - Enviar un mensaje a tu bot
+   - Visitar `https://api.telegram.org/bot<TOKEN>/getUpdates`
+   - Buscar el campo `"chat":{"id":123456789,...}`
+3. Configurar variables de entorno:
+   ```bash
+   TELEGRAM_BOT_TOKEN=tu_bot_token
+   TELEGRAM_CHAT_ID=tu_chat_id
+   ```
+4. Habilitar en el runtime: `MISSION_CONTROL_TELEGRAM_NOTIFICATIONS=true` (por defecto está true)
+
+### Configurar Slack
+
+1. Crear un Incoming Webhook en Slack:
+   - Ve a tu workspace → Apps → "Incoming Webhooks"
+   - Actítalo y crea un nuevo webhook
+   - Copia la URL (ej: `https://hooks.slack.com/services/T000/B000/XXXX`)
+2. Configurar variable de entorno:
+   ```bash
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+   ```
+3. El webhook se activa automáticamente si está configurado
+
+### Tipos de notificaciones (kinds)
+
+- `mission_complete`: Misión completada
+- `mission_failed`: Misión falló
+- `agent_blocked`: Agente bloqueado
+- `error`: Error general del sistema
+- `heartbeat`: Latido del sistema (silencioso, no notifica en Telegram)
+- `progress`: Actualización de progreso (opcionalmente silencioso)
+- `alert`: Alertas generales
+
+### Procesar notificaciones manualmente
+
+El runtime procesa notificaciones automáticamente cada tick. También puedes procesar la cola manualmente:
+
+```bash
+# Procesar hasta 100 notificaciones pendientes
+npm run runtime:notifications:process -- --limit 100
+
+# Modo dry-run (simular sin enviar)
+npm run runtime:notifications:process -- --dry-run
+
+# Salida JSON
+npm run runtime:notifications:process -- --json
+```
+
+### CLI de通知下称处理
+
+El script `runtime/python/notification_processor_cli.py` permite procesar notificaciones desde la línea de comandos, útil para cron jobs o debugging.
 
 ---
 

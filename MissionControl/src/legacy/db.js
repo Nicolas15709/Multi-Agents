@@ -6,6 +6,7 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const rootDir = path.resolve(__dirname, '..');
 const dbPath = process.env.MISSION_CONTROL_DB || path.join(rootDir, 'data', 'sessions.db');
 const schemaPath = path.join(rootDir, 'src', 'schema.sql');
+const sessionSchemaPath = path.join(rootDir, 'src', 'session_schema.sql');
 
 export function getDb() {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
@@ -16,6 +17,13 @@ export function initDb() {
   const db = getDb();
   const schema = fs.readFileSync(schemaPath, 'utf8');
   db.exec(schema);
+
+  // Load session schema if exists
+  if (fs.existsSync(sessionSchemaPath)) {
+    const sessionSchema = fs.readFileSync(sessionSchemaPath, 'utf8');
+    db.exec(sessionSchema);
+  }
+
   return db;
 }
 
