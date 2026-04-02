@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(wc -l /c/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/runtime/python/*.py)",
+      "Bash(ls \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/vite.config\"*)",
+      "Bash(ls \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/apps/dashboard/vite.config\"*)",
+      "Bash(ls \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/tsconfig\"*)",
+      "Bash(cp -r \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/pixel-agents-ref/webview-ui/public/assets/furniture\" \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/furniture\")",
+      "Bash(cp -r \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/pixel-agents-ref/webview-ui/public/assets/floors\" \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/floors\")",
+      "Bash(cp -r \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/pixel-agents-ref/webview-ui/public/assets/walls\" \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/walls\")",
+      "Bash(npx vite:*)",
+      "Bash(node -e \"const fs=require\\('fs'\\); const j=JSON.parse\\(fs.readFileSync\\('c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/default-layout.json','utf8'\\)\\); console.log\\('Layout:', j.cols+'x'+j.rows, 'tiles:', j.tiles.length, 'furniture:', j.furniture.length\\)\")"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "code-review-graph"
+  ]
+}

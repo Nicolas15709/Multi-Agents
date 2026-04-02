@@ -26,8 +26,8 @@ import { TimelinePanel } from './components/TimelinePanel'
 import { MissionLauncher } from './components/MissionLauncher'
 import { ThoughtLogPanel } from './components/ThoughtLogPanel'
 
-// Lazy load the 3D scene to prevent import-time crashes
-const MissionRoomScene = lazy(() => import('./components/MissionRoomScene').then(module => ({ default: module.MissionRoomScene })))
+// Lazy load the pixel office scene
+const PixelOffice = lazy(() => import('./components/PixelOffice').then(module => ({ default: module.PixelOffice })))
 
 const AGENT_ICONS = {
   'agent-0': Terminal,
@@ -260,10 +260,10 @@ export default function App() {
           <div style={{ flex: 1, display: 'grid', gridTemplateRows: '1fr 200px', gap: '14px', minHeight: 0 }}>
             <Suspense fallback={
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '28px' }}>
-                <div style={{ color: 'var(--muted)', fontSize: '11px' }}>Iniciando Oficina Virtual 3D...</div>
+                <div style={{ color: 'var(--muted)', fontSize: '11px' }}>Cargando oficina virtual...</div>
               </div>
             }>
-              <MissionRoomScene agents={agents} />
+              <PixelOffice agents={agents} />
             </Suspense>
             <motion.section
               className="panel"
