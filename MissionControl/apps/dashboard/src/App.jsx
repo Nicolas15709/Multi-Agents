@@ -45,7 +45,7 @@ export default function App() {
   if (!snapshot) {
     return (
       <div className="loading-screen">
-        <div className="loading-brand">VIRTUAL AGENCY</div>
+        <div className="loading-brand">{officeConfig.name.toUpperCase()}</div>
         <div style={{ opacity: 0.5, fontSize: '13px' }}>Sincronizando con el sistema...</div>
         {status.error && (
           <div style={{ color: 'var(--danger)', fontSize: '11px', marginTop: '8px' }}>
@@ -122,6 +122,7 @@ export default function App() {
           connection={connection}
           sidebarCollapsed={sidebarCollapsed}
           onToggleSidebar={toggleSidebar}
+          officeConfig={officeConfig}
           meta={{ agentCount: agents.length, taskCount: tasks.length, missionCount: missions.length, ...meta }}
         />
 

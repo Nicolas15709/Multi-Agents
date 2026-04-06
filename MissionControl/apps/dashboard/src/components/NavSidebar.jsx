@@ -70,7 +70,7 @@ function resolveBadge(badgeKey, agents, activeMission) {
 
 export function NavSidebar({ officeConfig, agents = [], activeView, onViewChange, onOpenCustomizer, activeMission, collapsed }) {
   const [expanded, setExpanded] = useState({ main: true, operations: true, config: true, team: true })
-  const { name, icon, color } = officeConfig
+  const { name, icon, color, description } = officeConfig
   const OfficeIcon = ICON_MAP[icon] ?? Building2
 
   const toggleSection = (id) => setExpanded(v => ({ ...v, [id]: !v[id] }))
@@ -92,7 +92,7 @@ export function NavSidebar({ officeConfig, agents = [], activeView, onViewChange
         </motion.div>
         <div className="nav-sidebar-identity-text">
           <div className="nav-sidebar-identity-name">{name}</div>
-          <div className="nav-sidebar-identity-desc">Virtual Agency</div>
+          <div className="nav-sidebar-identity-desc">{description || 'Virtual Agency'}</div>
         </div>
         <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}`, flexShrink: 0 }} />
       </div>
