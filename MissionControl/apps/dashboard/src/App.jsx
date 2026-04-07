@@ -6,6 +6,8 @@ import { createCustomAgent, loadCustomAgents, mergeAgents, saveCustomAgents } fr
 import { NavSidebar } from './components/NavSidebar'
 import { TopBar } from './components/TopBar'
 import { ToastContainer, useToasts, useEventToasts } from './components/Toast'
+import { LoginGate } from './components/LoginGate'
+import { isAuthenticated, setAuthToken, clearAuthToken } from './runtimeApi'
 
 import { OverviewView }   from './components/views/OverviewView'
 import { MissionsView }   from './components/views/MissionsView'
@@ -31,6 +33,7 @@ function ViewRouter({ view, onViewChange, ...props }) {
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => isAuthenticated())
   const { snapshot, status, connection } = useSnapshot()
   const [officeConfig, setOfficeConfig] = useState(() => loadOfficeConfig())
   const [customAgents, setCustomAgents] = useState(() => loadCustomAgents())
@@ -38,10 +41,27 @@ export default function App() {
   const [activeView, setActiveView] = useState('overview')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const { toasts, addToast, dismiss } = useToasts()
+  const stream = snapshot?.stream || { events: [], notifications: [] }
 
   const toggleSidebar = useCallback(() => setSidebarCollapsed(v => !v), [])
+  useEventToasts(stream.events, addToast)
 
-  // Loading state
+  function handleLogin(token) {
+    setAuthToken(token)
+    setAuthed(true)
+  }
+
+  function handleLogout() {
+    clearAuthToken()
+    setAuthed(false)
+  }
+
+  // Show login screen when not authenticated
+  if (!authed) {
+    return <LoginGate onLogin={handleLogin} />
+  }
+
+  // Loading state (authenticated but snapshot not yet received)
   if (!snapshot) {
     return (
       <div className="loading-screen">
@@ -59,18 +79,19 @@ export default function App() {
   const {
     activeMission,
     missions = [],
+    missionSummary = null,
+    missionSummaries = {},
     agents: runtimeAgents = [],
     tasks = [],
     intakeRequests = [],
     hireRequests = [],
-    stream = { events: [], notifications: [] },
+    sharedMemory = [],
+    agentMessages = [],
+    actionApprovals = [],
     meta = {},
   } = snapshot
   const progress = snapshot?.progress || null
   const agents = mergeAgents(runtimeAgents, customAgents)
-
-  // Toast notifications for runtime events
-  useEventToasts(stream.events, addToast)
 
   function handleCreateAgent(input) {
     setCustomAgents((current) => {
@@ -83,15 +104,21 @@ export default function App() {
   const viewProps = {
     activeMission,
     missions,
+    missionSummary,
+    missionSummaries,
     agents,
     tasks,
     intakeRequests,
     hireRequests,
+    sharedMemory,
+    agentMessages,
+    actionApprovals,
     stream,
     progress,
     officeConfig,
     connection,
     onCreateAgent: handleCreateAgent,
+    onLogout: handleLogout,
   }
 
   return (
@@ -111,6 +138,7 @@ export default function App() {
           collapsed={sidebarCollapsed}
           onViewChange={setActiveView}
           onOpenCustomizer={() => setShowCustomizer(true)}
+          onLogout={handleLogout}
         />
       </motion.div>
 

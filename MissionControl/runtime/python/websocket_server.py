@@ -6,9 +6,15 @@ import json
 import threading
 from dataclasses import dataclass, field
 from typing import Dict, Optional, Set
+from urllib.parse import parse_qs, urlparse
 
 from websockets.exceptions import ConnectionClosed
 from websockets.server import WebSocketServerProtocol, serve
+
+try:
+    from .auth import verify_jwt
+except ImportError:  # pragma: no cover
+    from auth import verify_jwt
 
 
 @dataclass
@@ -22,6 +28,34 @@ class WebSocketPublisher:
     _server: Optional[object] = field(default=None, init=False)
 
     async def _handler(self, websocket: WebSocketServerProtocol) -> None:
+        # ── Token authentication ──────────────────────────────────────────
+        jwt_secret = getattr(self.config, "jwt_secret", "").strip()
+        static_token = getattr(self.config, "api_auth_token", "").strip()
+
+        if jwt_secret or static_token:
+            # Extract ?token= from the WebSocket handshake URL
+            ws_path = getattr(websocket, "path", "") or ""
+            qs = parse_qs(urlparse(ws_path).query)
+            submitted_token = (qs.get("token") or [""])[0]
+
+            if jwt_secret:
+                if verify_jwt(submitted_token, jwt_secret) is None:
+                    await websocket.close(4001, "unauthorized")
+                    return
+            else:
+                # Legacy static-token fallback
+                import hmac as _hmac
+                try:
+                    ok = _hmac.compare_digest(
+                        submitted_token.encode("utf-8"),
+                        static_token.encode("utf-8"),
+                    )
+                except Exception:
+                    ok = False
+                if not ok:
+                    await websocket.close(4001, "unauthorized")
+                    return
+
         self._clients.add(websocket)
         try:
             if self.last_payload is not None:
@@ -69,7 +103,7 @@ class WebSocketPublisher:
                 loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
             loop.close()
 
-        self._thread = threading.Thread(target=runner, name="mission-control-ws", daemon=True)
+        self._thread = threading.Thread(target=runner, name="virtual-agency-ws", daemon=True)
         self._thread.start()
         self._started = True
 
@@ -113,3 +147,4 @@ class WebSocketPublisher:
             "clients": len(self._clients),
             "has_payload": self.last_payload is not None,
         }
+

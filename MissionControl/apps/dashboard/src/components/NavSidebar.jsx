@@ -6,7 +6,7 @@ import {
   Brain, Layers, Code2, Terminal, Paintbrush, Search, Activity, Wifi,
   Sparkles, Briefcase, BookOpen, FlaskConical, Microscope,
   Satellite, Landmark, ChevronDown, ChevronRight,
-  LayoutTemplate, SlidersHorizontal,
+  LayoutTemplate, SlidersHorizontal, LogOut,
 } from 'lucide-react'
 
 const ICON_MAP = {
@@ -68,7 +68,7 @@ function resolveBadge(badgeKey, agents, activeMission) {
   return null
 }
 
-export function NavSidebar({ officeConfig, agents = [], activeView, onViewChange, onOpenCustomizer, activeMission, collapsed }) {
+export function NavSidebar({ officeConfig, agents = [], activeView, onViewChange, onOpenCustomizer, activeMission, collapsed, onLogout }) {
   const [expanded, setExpanded] = useState({ main: true, operations: true, config: true, team: true })
   const { name, icon, color, description } = officeConfig
   const OfficeIcon = ICON_MAP[icon] ?? Building2
@@ -189,6 +189,19 @@ export function NavSidebar({ officeConfig, agents = [], activeView, onViewChange
           </div>
           <span className="nav-footer-label">Personalizar oficina</span>
         </button>
+        {onLogout && (
+          <button
+            className="nav-footer-btn"
+            onClick={onLogout}
+            style={{ color: 'var(--muted)' }}
+            title="Cerrar sesión"
+          >
+            <div className="nav-sidebar-identity-icon" style={{ width: '27px', height: '27px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
+              <LogOut size={13} style={{ color: '#f87171' }} />
+            </div>
+            <span className="nav-footer-label" style={{ color: '#f87171' }}>Cerrar sesión</span>
+          </button>
+        )}
       </div>
     </aside>
   )
