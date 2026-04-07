@@ -17,9 +17,9 @@ export function LoginGate({ onLogin }) {
         </div>
         
         <p className="section-title">Security Protocol</p>
-        <h1 style={{ fontSize: '2.5rem', margin: '8px 0', letterSpacing: '-0.02em' }}>MISSION CONTROL</h1>
+        <h1 style={{ fontSize: '2.5rem', margin: '8px 0', letterSpacing: '-0.02em' }}>VIRTUAL AGENCY</h1>
         <p className="muted" style={{ maxWidth: '300px', margin: '0 auto 32px auto' }}>
-          Plataforma de Operaciones de Marketing Autónomo. Ingrese con sus credenciales de agencia.
+          Plataforma de Operaciones de Marketing AutÃ³nomo. Ingrese con sus credenciales de agencia.
         </p>
         
         <motion.button 
@@ -40,3 +40,4 @@ export function LoginGate({ onLogin }) {
     </div>
   )
 }
+

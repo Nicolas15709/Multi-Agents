@@ -105,7 +105,7 @@ export default function App() {
       <header className="topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Layers className="text-indigo-400" size={24} />
-          <div className="brand">MISSION CONTROL</div>
+          <div className="brand">VIRTUAL AGENCY</div>
         </div>
         <div className="badge">
           <Zap size={12} fill="currentColor" style={{ marginRight: 6 }} />
@@ -178,3 +178,4 @@ export default function App() {
     </div>
   )
 }
+

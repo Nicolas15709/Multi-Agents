@@ -10,6 +10,7 @@ try:
     from .agent_state import AgentStateManager
     from .coordination_service import CoordinationService
     from .progress import ProgressNotifier
+    from .replanner import DynamicReplanner, _apply_replan
     from .repository import MissionControlRepository, MissionRepository, TaskRepository
     from .state_machine import StateValidationError, TransactionalStateUpdater
 except ImportError:  # pragma: no cover - runtime script compatibility
@@ -18,6 +19,7 @@ except ImportError:  # pragma: no cover - runtime script compatibility
     from agent_state import AgentStateManager
     from coordination_service import CoordinationService
     from progress import ProgressNotifier
+    from replanner import DynamicReplanner, _apply_replan
     from repository import MissionControlRepository, MissionRepository, TaskRepository
     from state_machine import StateValidationError, TransactionalStateUpdater
 
@@ -57,15 +59,15 @@ class TaskRunner:
     coordination_service: Optional[CoordinationService] = None
     approval_service: Optional[ActionApprovalService] = None
     # LLM execution manager — None = simulation mode (backwards compatible)
-    execution_manager: Optional[TaskExecutionManager] = field(
-        default=None, repr=False
-    )
+    execution_manager: Optional[TaskExecutionManager] = field(default=None, repr=False)
+    # Dynamic replanner — handles repeated task failures via agent-0 re-planning
+    replanner: Optional[DynamicReplanner] = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
-        # Auto-initialise if ANTHROPIC_API_KEY is present in env
+        import os
+        has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
         if self.execution_manager is None:
-            import os
-            if os.environ.get("ANTHROPIC_API_KEY"):
+            if has_key:
                 self.execution_manager = get_execution_manager()
                 logger.info("LLM execution enabled (ANTHROPIC_API_KEY found)")
             else:
@@ -73,6 +75,9 @@ class TaskRunner:
                     "ANTHROPIC_API_KEY not set — running in simulation mode. "
                     "Tasks will be marked done without real LLM execution."
                 )
+        if self.replanner is None and has_key:
+            self.replanner = DynamicReplanner()
+            logger.info("Dynamic replanner enabled")
 
     def _estimate_task_tokens(self, task: Dict) -> int:
         details = task.get("details") or {}
@@ -370,6 +375,44 @@ class TaskRunner:
             retry_result = self._schedule_retry_if_allowed(mission_id, mission, failed_task)
             if retry_result:
                 return retry_result
+
+            # ── Dynamic re-planning (Punto 3) ─────────────────────────────────
+            # When retries are exhausted, ask the Supervisor to re-plan instead
+            # of immediately escalating to needs_human.
+            if self.replanner and self.replanner.should_replan(mission_id, failed_task, tasks):
+                try:
+                    replan = self.replanner.replan(mission, failed_task, tasks, self.task_repository)
+                    action = replan.get("action", "escalate")
+                    logger.info("Replanner decision for task %s: %s", failed_task["id"], action)
+
+                    if action in {"replace_task", "insert_tasks", "skip"}:
+                        new_ids = _apply_replan(replan, failed_task, tasks, self.task_repository)
+                        self.mission_repository.add_event(
+                            mission_id, "mission_replanned", "agent-0",
+                            f"Supervisor re-planned after failure of '{failed_task['title']}': {action}",
+                            {"new_task_ids": new_ids, "reasoning": replan.get("reasoning", "")},
+                        )
+                        self.progress_notifier.notify(
+                            mission_id, "task_retry_scheduled",
+                            f"Supervisor re-planificó tras fallo de '{failed_task['title']}'.",
+                            {"new_task_ids": new_ids, "action": action},
+                        )
+                        self._transition_mission_if_needed(
+                            mission_id, mission.get("status"), "queued",
+                            reason="replanned", actor="replanner",
+                        )
+                        return {
+                            "status": "replanned",
+                            "mission_id": mission_id,
+                            "failed_task_id": failed_task["id"],
+                            "action": action,
+                            "new_task_ids": new_ids,
+                        }
+                    # action == "escalate" → fall through to needs_human below
+                except Exception as exc:
+                    logger.error("Replanner failed: %s — falling through to needs_human", exc)
+
+            # ── Escalate to human after all recovery options exhausted ─────────
             if mission.get("status") != "needs_human":
                 self._transition_mission_if_needed(
                     mission_id,

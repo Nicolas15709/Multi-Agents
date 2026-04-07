@@ -15,8 +15,11 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import subprocess
+import sys
 import threading
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -24,6 +27,45 @@ from typing import Dict, List, Optional
 logger = logging.getLogger("agent_executor")
 
 # ─── Constants ────────────────────────────────────────────────────────────────
+
+# Sandbox: literal strings that are always blocked
+_COMMAND_BLOCKLIST = frozenset({
+    "rm -rf /", "rm -rf ~", ":(){ :|:& };:", "mkfs", "dd if=/dev/zero",
+    "chmod -R 777 /", "chown -R", "> /etc/passwd", "curl | sh", "wget | sh",
+    "curl | bash", "wget | bash", "shutdown", "reboot", "halt", "poweroff",
+    "kill -9 1", "killall", "> /dev/sda", "format c:", "del /f /s /q c:\\",
+})
+
+# Sandbox: regex patterns that are always blocked
+_COMMAND_BLOCKLIST_PATTERNS = [
+    r"rm\s+-rf\s+[/~]",          # rm -rf on root or home
+    r">\s*/etc/",                  # overwrite system files
+    r"curl.+\|\s*(ba)?sh",        # curl pipe to shell
+    r"wget.+\|\s*(ba)?sh",        # wget pipe to shell
+    r"python[23]?\s+-c.+exec\(",  # exec via python one-liner
+    r"__import__\(.+os",           # Python os import tricks
+]
+
+
+def _set_resource_limits() -> None:
+    """Set resource limits for subprocess (Unix only)."""
+    import resource  # noqa: PLC0415 — Unix only
+    # Max 512 MB virtual memory
+    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+    # Max 100 MB file size
+    resource.setrlimit(resource.RLIMIT_FSIZE, (100 * 1024 * 1024, 100 * 1024 * 1024))
+
+
+@dataclass
+class SandboxConfig:
+    """Controls what capabilities the sandboxed bash tool grants agents."""
+    allow_network: bool = True          # set False to block curl/wget entirely
+    allow_git: bool = True              # allow git operations
+    allow_package_install: bool = True  # allow pip/npm install
+    max_file_size_mb: int = 100
+    max_memory_mb: int = 512
+    extra_blocked_commands: List[str] = field(default_factory=list)
+
 
 _PROMPTS_ROOT = Path(__file__).resolve().parent.parent.parent / "prompts"
 _WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent / "workspace"
@@ -157,9 +199,10 @@ def _list_workspace_files(workspace: Path) -> List[str]:
 # ─── Tool executor ────────────────────────────────────────────────────────────
 
 class ToolExecutor:
-    def __init__(self, mission_id: str):
+    def __init__(self, mission_id: str, sandbox: Optional[SandboxConfig] = None):
         self._workspace = _workspace(mission_id)
         self._output_signal: Optional[Dict] = None  # Set when write_output is called
+        self._sandbox = sandbox or SandboxConfig()
 
     @property
     def output_signal(self) -> Optional[Dict]:
@@ -200,7 +243,56 @@ class ToolExecutor:
             return "Workspace is empty."
         return "\n".join(files)
 
+    def _check_command_safety(self, command: str) -> Optional[str]:
+        """Return an error message if the command is blocked, None if safe."""
+        sandbox = self._sandbox
+
+        # Network blocking: reject curl/wget when allow_network=False
+        if not sandbox.allow_network:
+            if re.search(r"\bcurl\b", command, re.IGNORECASE):
+                return "BLOCKED: Network access is disabled (curl not permitted)"
+            if re.search(r"\bwget\b", command, re.IGNORECASE):
+                return "BLOCKED: Network access is disabled (wget not permitted)"
+
+        # Git blocking
+        if not sandbox.allow_git:
+            if re.search(r"\bgit\b", command, re.IGNORECASE):
+                return "BLOCKED: Git operations are disabled"
+
+        # Package install blocking
+        if not sandbox.allow_package_install:
+            if re.search(r"\bpip[23]?\s+install\b", command, re.IGNORECASE):
+                return "BLOCKED: Package installation is disabled (pip)"
+            if re.search(r"\bnpm\s+install\b", command, re.IGNORECASE):
+                return "BLOCKED: Package installation is disabled (npm)"
+
+        # Literal blocklist
+        for blocked in _COMMAND_BLOCKLIST:
+            if blocked in command:
+                return f"BLOCKED: Command contains prohibited pattern: {blocked!r}"
+
+        # Extra per-instance blocked commands
+        for blocked in sandbox.extra_blocked_commands:
+            if blocked in command:
+                return f"BLOCKED: Command contains prohibited pattern: {blocked!r}"
+
+        # Regex pattern blocklist
+        for pattern in _COMMAND_BLOCKLIST_PATTERNS:
+            if re.search(pattern, command, re.IGNORECASE):
+                return f"BLOCKED: Command matches dangerous pattern: {pattern!r}"
+
+        return None
+
     def _execute_bash(self, command: str) -> str:
+        # Safety check before any subprocess is spawned
+        block_reason = self._check_command_safety(command)
+        if block_reason:
+            logger.warning("Sandbox blocked command: %s | reason: %s", command[:120], block_reason)
+            return block_reason
+
+        # Apply resource limits on Unix; no-op on Windows
+        preexec = _set_resource_limits if sys.platform != "win32" else None
+
         try:
             result = subprocess.run(
                 command,
@@ -210,6 +302,7 @@ class ToolExecutor:
                 text=True,
                 timeout=_BASH_TIMEOUT_SECONDS,
                 env={**os.environ, "PYTHONUNBUFFERED": "1"},
+                preexec_fn=preexec,
             )
             parts = []
             if result.stdout.strip():
@@ -327,9 +420,10 @@ class AgentExecutor:
     Designed to be called from a daemon thread by TaskRunner.
     """
 
-    def __init__(self, model: str = _DEFAULT_MODEL):
+    def __init__(self, model: str = _DEFAULT_MODEL, sandbox: Optional[SandboxConfig] = None):
         self._model = model
         self._client = None  # Lazy init
+        self._sandbox = sandbox or SandboxConfig()
 
     def _get_client(self):
         if self._client is None:
@@ -355,7 +449,7 @@ class AgentExecutor:
         system_prompt = _load_system_prompt(agent_id)
         task_prompt = _build_task_prompt(mission, task)
 
-        tool_executor = ToolExecutor(mission_id)
+        tool_executor = ToolExecutor(mission_id, sandbox=self._sandbox)
         client = self._get_client()
 
         messages = [{"role": "user", "content": task_prompt}]
@@ -473,8 +567,12 @@ class TaskExecutionManager:
     _EXEC_RESULT_KEY = "_exec_result"       # result dict once done
     _EXEC_STARTED_KEY = "_exec_started_at"  # ISO timestamp
 
-    def __init__(self, executor: Optional[AgentExecutor] = None):
-        self._executor = executor or AgentExecutor()
+    def __init__(
+        self,
+        executor: Optional[AgentExecutor] = None,
+        sandbox: Optional[SandboxConfig] = None,
+    ):
+        self._executor = executor or AgentExecutor(sandbox=sandbox)
         self._lock = threading.Lock()
 
     def is_execution_started(self, task: Dict) -> bool:
