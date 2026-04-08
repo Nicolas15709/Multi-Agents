@@ -76,7 +76,7 @@ class MissionRepository:
         )
 
     def list_missions(self) -> List[Dict]:
-        return self.db.fetchall("SELECT * FROM missions ORDER BY created_at DESC, rowid DESC")
+        return self.db.fetchall("SELECT * FROM missions ORDER BY created_at DESC")
 
     def list_active_missions(self) -> List[Dict]:
         return [mission for mission in self.list_missions() if mission["status"] in self.ACTIVE_STATUSES]
@@ -773,7 +773,7 @@ class MissionMemoryRepository:
         self.db = db
 
     def create_entry(self, entry: MissionMemoryRecord) -> Dict:
-        cur = self.db.execute(
+        new_id = self.db.execute_returning(
             """
             INSERT INTO mission_memory_entries (
               mission_id, source_task_id, author_agent_id, scope, memory_key,
@@ -792,7 +792,7 @@ class MissionMemoryRepository:
                 utc_now(),
             ),
         )
-        return self.get_entry(int(cur.lastrowid))
+        return self.get_entry(int(new_id))
 
     def get_entry(self, entry_id: int) -> Optional[Dict]:
         row = self.db.fetchone("SELECT * FROM mission_memory_entries WHERE id = ?", (entry_id,))
@@ -820,7 +820,7 @@ class AgentMessageRepository:
         self.db = db
 
     def create_message(self, message: AgentMessageRecord) -> Dict:
-        cur = self.db.execute(
+        new_id = self.db.execute_returning(
             """
             INSERT INTO agent_messages (
               mission_id, from_agent_id, to_agent_id, source_task_id, target_task_id,
@@ -842,7 +842,7 @@ class AgentMessageRepository:
                 utc_now(),
             ),
         )
-        return self.get_message(int(cur.lastrowid))
+        return self.get_message(int(new_id))
 
     def get_message(self, message_id: int) -> Optional[Dict]:
         row = self.db.fetchone("SELECT * FROM agent_messages WHERE id = ?", (message_id,))

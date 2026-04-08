@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 import re
 import sqlite3
+import threading
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -71,6 +72,16 @@ class _PostgresDatabase:
             row = cur.fetchone()
             return dict(row) if row else None
 
+    def execute_returning(self, sql: str, params: Iterable[Any] = ()) -> Any:
+        sql = _to_pg(sql)
+        if "RETURNING" not in sql.upper():
+            sql = sql.rstrip().rstrip(";") + " RETURNING id"
+        with self.conn.cursor(cursor_factory=self._cursor_factory) as cur:
+            cur.execute(sql, tuple(params))
+            self.conn.commit()
+            row = cur.fetchone()
+            return row["id"] if row else None
+
     def close(self) -> None:
         if getattr(self, "conn", None) is not None:
             try:
@@ -96,8 +107,9 @@ class _SQLiteDatabase:
     def __init__(self, db_path: str) -> None:
         ensure_parent(db_path)
         self.db_path = db_path
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
+        self._lock = threading.Lock()
 
     def init(self) -> None:
         schema = SCHEMA_PATH.read_text(encoding="utf-8")
@@ -124,24 +136,31 @@ class _SQLiteDatabase:
             pass
 
     def execute(self, sql: str, params: Iterable[Any] = ()) -> sqlite3.Cursor:
-        if self.conn is None:
-            raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
-        cur = self.conn.execute(sql, tuple(params))
-        self.conn.commit()
-        return cur
+        with self._lock:
+            if self.conn is None:
+                raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
+            cur = self.conn.execute(sql, tuple(params))
+            self.conn.commit()
+            return cur
 
     def fetchall(self, sql: str, params: Iterable[Any] = ()) -> List[Dict[str, Any]]:
-        if self.conn is None:
-            raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
-        cur = self.conn.execute(sql, tuple(params))
-        return [dict(row) for row in cur.fetchall()]
+        with self._lock:
+            if self.conn is None:
+                raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
+            cur = self.conn.execute(sql, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
 
     def fetchone(self, sql: str, params: Iterable[Any] = ()) -> Optional[Dict[str, Any]]:
-        if self.conn is None:
-            raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
-        cur = self.conn.execute(sql, tuple(params))
-        row = cur.fetchone()
-        return dict(row) if row else None
+        with self._lock:
+            if self.conn is None:
+                raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
+            cur = self.conn.execute(sql, tuple(params))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    def execute_returning(self, sql: str, params: Iterable[Any] = ()) -> Any:
+        cur = self.execute(sql, params)
+        return cur.lastrowid
 
     def close(self) -> None:
         if getattr(self, "conn", None) is not None:
