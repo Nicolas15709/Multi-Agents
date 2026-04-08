@@ -55,10 +55,10 @@ class RuntimeConfig:
         return cls(
             db_path=os.getenv("MISSION_CONTROL_RUNTIME_DB", str(base_dir / ".." / ".." / "data" / "runtime.db")),
             websocket_enabled=os.getenv("MISSION_CONTROL_WEBSOCKET", "true").lower() == "true",
-            websocket_host=os.getenv("MISSION_CONTROL_WEBSOCKET_HOST", "127.0.0.1"),
+            websocket_host=os.getenv("MISSION_CONTROL_WEBSOCKET_HOST", "0.0.0.0"),
             websocket_port=int(os.getenv("MISSION_CONTROL_WEBSOCKET_PORT", "8765")),
             api_enabled=os.getenv("MISSION_CONTROL_API", "true").lower() == "true",
-            api_host=os.getenv("MISSION_CONTROL_API_HOST", "127.0.0.1"),
+            api_host=os.getenv("MISSION_CONTROL_API_HOST", "0.0.0.0"),
             api_port=int(os.getenv("MISSION_CONTROL_API_PORT", "8787")),
             api_cors_origin=os.getenv("MISSION_CONTROL_API_CORS_ORIGIN", "*"),
             api_auth_token=os.getenv("MISSION_CONTROL_API_AUTH_TOKEN", ""),

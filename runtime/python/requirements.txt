@@ -1,5 +1,0 @@
-langgraph
-pydantic
-python-dotenv
-websockets
-aiosqlite

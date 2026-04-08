@@ -1,76 +1,29 @@
 version: '3.8'
 
 services:
-  virtual-agency:
+  runtime:
     build:
       context: .
-      dockerfile: MissionControl/deployment/Dockerfile
-    container_name: virtual-agency
+      dockerfile: Dockerfile
+    container_name: virtual-agency-runtime
     restart: unless-stopped
     ports:
-      # HTTP dashboard (exposed to internet)
-      - "80:80"
-      # WebSocket (optional - for direct access or debugging)
-      # - "8765:8765"
-    environment:
-      # Runtime database (SQLite) - REQUIRED
-      - MISSION_CONTROL_RUNTIME_DB=/app/data/runtime.db
-      # Environment - REQUIRED
-      - MISSION_CONTROL_ENV=production
-      # WebSocket - REQUIRED
-      - MISSION_CONTROL_WEBSOCKET=true
-      - MISSION_CONTROL_WEBSOCKET_HOST=0.0.0.0
-      - MISSION_CONTROL_WEBSOCKET_PORT=8765
-      # Runtime tick interval (seconds)
-      - MISSION_CONTROL_TICK_INTERVAL_SECONDS=${MISSION_CONTROL_TICK_INTERVAL_SECONDS:-5}
-      # Logging
-      - MISSION_CONTROL_LOG_LEVEL=${MISSION_CONTROL_LOG_LEVEL:-info}
-      # Telegram notifications
-      - MISSION_CONTROL_TELEGRAM_NOTIFICATIONS=${MISSION_CONTROL_TELEGRAM_NOTIFICATIONS:-true}
-      - MISSION_CONTROL_TELEGRAM_PROGRESS_MODE=${MISSION_CONTROL_TELEGRAM_PROGRESS_MODE:-phase_updates}
-      # LLM API (OpenRouter) - REQUIRED for agents to function
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
-      - DEFAULT_MODEL=${DEFAULT_MODEL:-openrouter/google/gemini-2.0-flash-001}
-      # Supabase (product backend - OPTIONAL)
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      # Integrations (OPTIONAL)
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION:-us-east-1}
-      # Notifications (OPTIONAL)
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
-      # Monitoring (OPTIONAL)
-      - SENTRY_DSN=${SENTRY_DSN}
+      - "8787:8787"
+      - "8765:8765"
+    env_file:
+      - .env
     volumes:
-      # Persistent database
+      # Persistencia de datos (SQLite, logs, etc.)
       - ./data:/app/data
-      # Persistent logs
-      - ./logs:/app/logs
-      # Configuration files (agents, templates)
-      - ./MissionControl/config:/app/config:ro
     networks:
       - virtual-agency-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8787/health"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 3
-      start_period: 10s
-    # Resource limits (adjust based on VPS)
-    # mem_limit: 2g
-    # cpu_shares: 1024
+      start_period: 15s
 
 networks:
   virtual-agency-network:
     driver: bridge
-
-

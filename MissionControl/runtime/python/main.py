@@ -61,6 +61,10 @@ try:
 except ImportError:
     InterventionPolicy = None  # type: ignore[assignment,misc]
     get_default_policy = None  # type: ignore[assignment]
+try:
+    from telegram_bot import create_from_env as create_telegram_bot
+except ImportError:
+    create_telegram_bot = None  # type: ignore[assignment]
 
 
 def bootstrap_agents(agent_repository: AgentRepository, registry: AgentRegistry) -> None:
@@ -383,6 +387,15 @@ def main() -> None:
     policy = get_default_policy() if get_default_policy is not None else None
     llm_backend = detect_execution_backend()
 
+    # ── Telegram bot listener (incoming commands → missions) ───────────────
+    telegram_bot = None
+    if create_telegram_bot is not None:
+        telegram_bot = create_telegram_bot(
+            mission_service=mission_service,
+            mission_repository=mission_repository,
+        )
+        telegram_bot.start()
+
     print("Virtual Agency runtime")
     print({
         "environment": config.environment,
@@ -414,6 +427,7 @@ def main() -> None:
         "thought_log": thought_log.summary(),
         "startup_recovery": startup_recovery,
         "status": status_report.build(),
+        "telegram_bot": telegram_bot.summary() if telegram_bot is not None else {"enabled": False, "status": "unavailable"},
     })
 
     try:

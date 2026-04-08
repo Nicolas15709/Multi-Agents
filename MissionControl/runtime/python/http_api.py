@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import threading
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -348,7 +349,21 @@ class RuntimeApiServer:
                 db = services["db"]
                 try:
                     if path in {"/health", "/api/health"}:
-                        return self._send_json(200, {"ok": True, "service": "mission-control-api"})
+                        db_status = "ok"
+                        db_mode = "postgres" if os.getenv("DATABASE_URL") else "sqlite"
+                        try:
+                            db.fetchone("SELECT 1 AS ping")
+                        except Exception:
+                            db_status = "error"
+                        return self._send_json(
+                            200,
+                            {
+                                "ok": True,
+                                "service": "mission-control-api",
+                                "db": db_status,
+                                "mode": db_mode,
+                            },
+                        )
 
                     if path == "/api/snapshot":
                         snapshot = services["snapshot_api"].snapshot()

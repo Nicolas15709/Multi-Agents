@@ -4,3 +4,4 @@ pydantic
 python-dotenv
 websockets
 aiosqlite
+psycopg2-binary
