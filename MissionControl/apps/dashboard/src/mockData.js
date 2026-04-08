@@ -24,8 +24,11 @@ export const mockSnapshot = {
     runningTaskTitle: null,
   },
   activeMission: null,
+  missions: [],
   agents: [],
   tasks: [],
+  intakeRequests: [],
+  hireRequests: [],
   stream: {
     events: [],
     notifications: [],

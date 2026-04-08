@@ -1,11 +1,11 @@
-# Mission Control - Master Plan
+# Virtual Agency - Master Plan
 
-Este documento consolida la visión, arquitectura, producto, seguridad y operación definidos para Mission Control.
+Este documento consolida la visiÃ³n, arquitectura, producto, seguridad y operaciÃ³n definidos para Virtual Agency.
 
 ## Resumen ejecutivo
-Mission Control será un centro de operaciones multiagente autónomo, visual, seguro y persistente, capaz de trabajar en desarrollo, marketing, auditoría digital y ejecución híbrida, con 5 agentes base, agenda avanzada, políticas granulares y dashboard vivo.
+Virtual Agency serÃ¡ un centro de operaciones multiagente autÃ³nomo, visual, seguro y persistente, capaz de trabajar en desarrollo, marketing, auditorÃ­a digital y ejecuciÃ³n hÃ­brida, con 5 agentes base, agenda avanzada, polÃ­ticas granulares y dashboard vivo.
 
-## Núcleo fijo
+## NÃºcleo fijo
 - Supervisor
 - Researcher
 - Designer
@@ -13,7 +13,7 @@ Mission Control será un centro de operaciones multiagente autónomo, visual, se
 - QA
 
 ## Modos y plantillas
-El sistema funcionará con plantillas amplias y modos de misión para evitar agregar demasiados agentes y mantener el runtime eficiente.
+El sistema funcionarÃ¡ con plantillas amplias y modos de misiÃ³n para evitar agregar demasiados agentes y mantener el runtime eficiente.
 
 ## Arquitectura
 - Frontend: Vercel + Vite + React
@@ -23,11 +23,11 @@ El sistema funcionará con plantillas amplias y modos de misión para evitar agr
 ## Seguridad
 - login-first
 - magic link
-- secretos fuera del código
+- secretos fuera del cÃ³digo
 - RLS
 - guardrails
 - permisos granulares
-- acciones externas solo por políticas explícitas
+- acciones externas solo por polÃ­ticas explÃ­citas
 
 ## Tiempo real
 - dashboard con cards de agentes
@@ -36,5 +36,6 @@ El sistema funcionará con plantillas amplias y modos de misión para evitar agr
 - inspector del agente
 - feed de eventos
 
-## Autonomía
-Alta, con escalamiento solo cuando hay ambigüedad, riesgo, conflicto, credenciales faltantes o retries agotados.
+## AutonomÃ­a
+Alta, con escalamiento solo cuando hay ambigÃ¼edad, riesgo, conflicto, credenciales faltantes o retries agotados.
+

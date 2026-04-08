@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  mission-control:
+  virtual-agency:
     build:
       context: .
       dockerfile: MissionControl/deployment/Dockerfile
-    container_name: mission-control
+    container_name: virtual-agency
     restart: unless-stopped
     ports:
       # HTTP dashboard (exposed to internet)
@@ -58,7 +58,7 @@ services:
       # Configuration files (agents, templates)
       - ./MissionControl/config:/app/config:ro
     networks:
-      - mission-control-network
+      - virtual-agency-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -70,5 +70,7 @@ services:
     # cpu_shares: 1024
 
 networks:
-  mission-control-network:
+  virtual-agency-network:
     driver: bridge
+
+

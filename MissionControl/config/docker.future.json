@@ -4,26 +4,27 @@
     {
       "name": "supervisor",
       "agentId": "agent-0",
-      "image": "mission-control/supervisor:future",
+      "image": "virtual-agency/supervisor:future",
       "dependsOn": ["orchestrator-db"]
     },
     {
       "name": "researcher",
       "agentId": "agent-1",
-      "image": "mission-control/researcher:future",
+      "image": "virtual-agency/researcher:future",
       "dependsOn": ["orchestrator-db"]
     },
     {
       "name": "developer",
       "agentId": "agent-2",
-      "image": "mission-control/developer:future",
+      "image": "virtual-agency/developer:future",
       "dependsOn": ["orchestrator-db"]
     },
     {
       "name": "qa",
       "agentId": "agent-3",
-      "image": "mission-control/qa:future",
+      "image": "virtual-agency/qa:future",
       "dependsOn": ["orchestrator-db"]
     }
   ]
 }
+

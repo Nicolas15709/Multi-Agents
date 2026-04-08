@@ -1,5 +1,5 @@
-/**
- * Memory Manager - Main coordinator for Mission Control memory system
+﻿/**
+ * Memory Manager - Main coordinator for Virtual Agency memory system
  * Integrates vector store (Supabase pgvector) with session store (SQLite)
  * Handles TTL policies and automatic cleanup
  */
@@ -452,3 +452,4 @@ export function healthCheck() {
     config: TTL_CONFIG
   };
 }
+

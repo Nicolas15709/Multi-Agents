@@ -201,6 +201,9 @@ interface FlatAsset {
   orientation?: string
   state?: string
   mirrorSide?: boolean
+  rotationScheme?: string
+  animationGroup?: string
+  frame?: number
 }
 
 interface InheritedProps {
@@ -213,6 +216,7 @@ interface InheritedProps {
   orientation?: string
   state?: string
   rotationScheme?: string
+  animationGroup?: string
 }
 
 function flattenManifest(node: ManifestNode, inherited: InheritedProps): FlatAsset[] {
@@ -225,7 +229,7 @@ function flattenManifest(node: ManifestNode, inherited: InheritedProps): FlatAss
       name: inherited.name,
       label: inherited.name,
       category: inherited.category,
-      file: asset.file,
+      file: (asset as any).file || `${asset.id}.png`,
       width: asset.width,
       height: asset.height,
       footprintW: asset.footprintW,
@@ -238,6 +242,9 @@ function flattenManifest(node: ManifestNode, inherited: InheritedProps): FlatAss
       ...(orientation ? { orientation } : {}),
       ...(state ? { state } : {}),
       ...(asset.mirrorSide ? { mirrorSide: true } : {}),
+      ...(inherited.rotationScheme ? { rotationScheme: inherited.rotationScheme } : {}),
+      ...(inherited.animationGroup ? { animationGroup: inherited.animationGroup } : {}),
+      ...(asset.frame !== undefined ? { frame: asset.frame } : {}),
     }]
   }
 
@@ -254,8 +261,16 @@ function flattenManifest(node: ManifestNode, inherited: InheritedProps): FlatAss
     if (group.groupType === 'state' && group.state) {
       childProps.state = group.state
     }
+    if (group.groupType === 'animation') {
+      const orientationKey = childProps.orientation || 'default'
+      const stateKey = childProps.state || 'default'
+      childProps.animationGroup = `${childProps.groupId}|${orientationKey}|${stateKey}`
+    }
     if (group.orientation && !childProps.orientation) {
       childProps.orientation = group.orientation
+    }
+    if (group.state && !childProps.state) {
+      childProps.state = group.state
     }
     results.push(...flattenManifest(member, childProps))
   }
@@ -283,9 +298,9 @@ async function loadFurnitureAssets(basePath: string): Promise<LoadedAssetData | 
       const manifest = await res.json() as FurnitureManifest
 
       const inherited: InheritedProps = {
-        groupId: manifest.id,
-        name: manifest.name,
-        category: manifest.category,
+        groupId: manifest.id || furnitureName,
+        name: manifest.name || furnitureName,
+        category: manifest.category || 'misc',
         canPlaceOnWalls: manifest.canPlaceOnWalls ?? false,
         canPlaceOnSurfaces: manifest.canPlaceOnSurfaces ?? false,
         backgroundTiles: manifest.backgroundTiles ?? 0,
@@ -294,11 +309,11 @@ async function loadFurnitureAssets(basePath: string): Promise<LoadedAssetData | 
       let assets: FlatAsset[]
       if (manifest.type === 'asset') {
         assets = [{
-          id: manifest.id,
-          name: manifest.name,
-          label: manifest.name,
+          id: manifest.id || furnitureName,
+          name: manifest.name || furnitureName,
+          label: manifest.name || furnitureName,
           category: manifest.category,
-          file: manifest.file!,
+          file: manifest.file || `${manifest.id || furnitureName}.png`,
           width: manifest.width!,
           height: manifest.height!,
           footprintW: manifest.footprintW!,
@@ -307,7 +322,7 @@ async function loadFurnitureAssets(basePath: string): Promise<LoadedAssetData | 
           canPlaceOnWalls: manifest.canPlaceOnWalls ?? false,
           canPlaceOnSurfaces: manifest.canPlaceOnSurfaces ?? false,
           backgroundTiles: manifest.backgroundTiles ?? 0,
-          groupId: manifest.id,
+          groupId: manifest.id || furnitureName,
         }]
       } else {
         assets = []
@@ -340,6 +355,10 @@ async function loadFurnitureAssets(basePath: string): Promise<LoadedAssetData | 
             canPlaceOnSurfaces: asset.canPlaceOnSurfaces,
             backgroundTiles: asset.backgroundTiles,
             canPlaceOnWalls: asset.canPlaceOnWalls,
+            mirrorSide: asset.mirrorSide,
+            rotationScheme: asset.rotationScheme,
+            animationGroup: asset.animationGroup,
+            frame: asset.frame,
           })
         } catch {
           console.warn(`Failed to load sprite for ${asset.id}`)

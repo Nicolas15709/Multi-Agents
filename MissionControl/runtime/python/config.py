@@ -2,6 +2,11 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from parent directory (MissionControl/)
+_env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+load_dotenv(_env_path)
 
 
 def _load_json_env(name: str, default: str) -> dict:

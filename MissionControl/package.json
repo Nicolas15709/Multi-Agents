@@ -1,5 +1,5 @@
 {
-  "name": "mission-control",
+  "name": "virtual-agency",
   "version": "0.1.0",
   "description": "Multi-agent orchestrator for OpenClaw + MCP",
   "type": "module",
@@ -30,3 +30,4 @@
     "dotenv": "^16.4.7"
   }
 }
+

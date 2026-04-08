@@ -15,6 +15,7 @@ from event_stream import EventStreamService
 from hiring_service import HiringService
 from http_api import RuntimeApiServer
 from intake_service import IntakeService
+from llm_support import detect_execution_backend
 from mission_lifecycle import MissionLifecycleService
 from mission_service import MissionService
 from mission_summary import MissionSummaryService
@@ -380,6 +381,7 @@ def main() -> None:
     distiller = MemoryDistiller()
     stagnation_detector = StagnationDetector() if StagnationDetector is not None else None
     policy = get_default_policy() if get_default_policy is not None else None
+    llm_backend = detect_execution_backend()
 
     print("Virtual Agency runtime")
     print({
@@ -400,6 +402,7 @@ def main() -> None:
         "progress": progress_notifier.summary(),
         "planner": planner.summary(),
         "api": api_server.summary(),
+        "llm_execution": llm_backend,
         "auto_propose_hires_enabled": config.auto_propose_hires_enabled,
         "autonomy_budget_defaults": {
             "max_autonomous_steps": config.max_autonomous_steps,

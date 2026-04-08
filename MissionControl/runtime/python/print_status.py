@@ -13,7 +13,7 @@ from planner import Planner
 from policies import PolicyEngine
 from progress import ProgressNotifier
 from progress_summary import ProgressSummaryService
-from repository import AgentRepository, MissionRepository, NotificationRepository, PolicyRepository, TaskRepository
+from repository import AgentHireRequestRepository, AgentRepository, IntakeRequestRepository, MissionControlRepository, MissionRepository, NotificationRepository, PolicyRepository, TaskRepository
 from scheduler import Scheduler
 from settings import ProgressSettings
 from startup_recovery import StartupRecoveryService
@@ -33,6 +33,9 @@ def main() -> None:
     agent_repository = AgentRepository(db)
     policy_repository = PolicyRepository(db)
     notification_repository = NotificationRepository(db)
+    intake_repository = IntakeRequestRepository(db)
+    hire_request_repository = AgentHireRequestRepository(db)
+    mission_control_repository = MissionControlRepository(db)
 
     agent_registry = AgentRegistry(config.agents_registry_path)
     template_registry = TemplateRegistry(config.templates_path)
@@ -72,6 +75,9 @@ def main() -> None:
         progress_summary=progress_summary,
         mission_summary=mission_summary,
         scheduler=scheduler,
+        intake_repository=intake_repository,
+        hire_request_repository=hire_request_repository,
+        mission_control_repository=mission_control_repository,
     )
     recovery = StartupRecoveryService(
         mission_repository=mission_repository,

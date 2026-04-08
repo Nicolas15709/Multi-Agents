@@ -3,8 +3,12 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from repository import MissionRepository, TaskRepository
-from state_machine import MissionStateMachine, StateValidationError, TransactionalStateUpdater
+try:
+    from .repository import MissionRepository, TaskRepository
+    from .state_machine import MissionStateMachine, StateValidationError, TransactionalStateUpdater
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import MissionRepository, TaskRepository
+    from state_machine import MissionStateMachine, StateValidationError, TransactionalStateUpdater
 
 
 @dataclass

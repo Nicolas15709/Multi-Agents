@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from repository import MissionRepository, TaskRepository
-from scheduler import Scheduler
+try:
+    from .repository import MissionRepository, TaskRepository
+    from .scheduler import Scheduler
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import MissionRepository, TaskRepository
+    from scheduler import Scheduler
 
 
 @dataclass

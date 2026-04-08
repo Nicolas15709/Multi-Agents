@@ -1,5 +1,5 @@
-/**
- * Embeddings Service for Mission Control Memory
+﻿/**
+ * Embeddings Service for Virtual Agency Memory
  * Supports OpenAI and Groq embeddings models
  */
 
@@ -135,3 +135,4 @@ export function getEmbeddingCacheStats() {
     keys: Array.from(embeddingCache.keys()).slice(0, 10) // sample
   };
 }
+

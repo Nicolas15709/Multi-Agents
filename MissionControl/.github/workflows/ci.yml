@@ -78,10 +78,11 @@ jobs:
 
       - name: Archive production build
         run: |
-          tar -czf mission-control-dashboard-build.tar.gz -C apps/dashboard/dist .
+          tar -czf virtual-agency-dashboard-build.tar.gz -C apps/dashboard/dist .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: dashboard-build
-          path: mission-control-dashboard-build.tar.gz
+          path: virtual-agency-dashboard-build.tar.gz
+

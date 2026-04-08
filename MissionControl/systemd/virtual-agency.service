@@ -1,0 +1,27 @@
+[Unit]
+Description=Virtual Agency Python Runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/.openclaw/workspace/MissionControl
+Environment=PYTHONUNBUFFERED=1
+Environment=MISSION_CONTROL_ENV=production
+Environment=MISSION_CONTROL_WEBSOCKET=true
+Environment=MISSION_CONTROL_WEBSOCKET_HOST=127.0.0.1
+Environment=MISSION_CONTROL_WEBSOCKET_PORT=8765
+Environment=MISSION_CONTROL_API=true
+Environment=MISSION_CONTROL_API_HOST=127.0.0.1
+Environment=MISSION_CONTROL_API_PORT=8787
+Environment=MISSION_CONTROL_TICK_INTERVAL_SECONDS=5
+EnvironmentFile=-/home/ubuntu/.openclaw/workspace/MissionControl/.env.vps
+ExecStart=/home/ubuntu/.openclaw/workspace/.venv/bin/python /home/ubuntu/.openclaw/workspace/MissionControl/runtime/python/main.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+

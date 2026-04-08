@@ -1,12 +1,12 @@
 {
-  "name": "mission-control-dashboard",
+  "name": "virtual-agency-dashboard",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "npm --prefix ../../MissionControl/apps/dashboard run dev",
+    "build": "npm --prefix ../../MissionControl/apps/dashboard run build",
+    "preview": "npm --prefix ../../MissionControl/apps/dashboard run preview"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",
@@ -19,3 +19,4 @@
     "vite": "^5.4.10"
   }
 }
+

@@ -1,6 +1,9 @@
 from typing import Dict, List
 
-from repository import PolicyRepository
+try:
+    from .repository import PolicyRepository
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import PolicyRepository
 
 
 class PolicyEngine:

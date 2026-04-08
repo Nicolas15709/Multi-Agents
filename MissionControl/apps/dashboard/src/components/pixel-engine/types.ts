@@ -167,6 +167,8 @@ export interface OfficeLayout {
   furniture: PlacedFurniture[]
   /** Per-tile color settings, parallel to tiles array. null = wall/no color */
   tileColors?: Array<FloorColor | null>
+  /** Bumped when the bundled default layout changes; forces a reset on existing installs */
+  layoutRevision?: number
 }
 
 export const PetType = { CAT: 'cat', DOG: 'dog' } as const

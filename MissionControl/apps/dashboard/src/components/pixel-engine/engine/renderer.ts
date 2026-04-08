@@ -101,6 +101,77 @@ interface ZDrawable {
   draw: (ctx: CanvasRenderingContext2D) => void
 }
 
+export interface ContentBounds {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  width: number
+  height: number
+}
+
+export function computeContentBounds(
+  tileMap: TileTypeVal[][],
+  furniture: FurnitureInstance[],
+  tileColors?: Array<FloorColor | null>,
+  layoutCols?: number,
+  layoutRows?: number,
+): ContentBounds {
+  const cols = layoutCols ?? (tileMap.length > 0 ? tileMap[0].length : 0)
+  const rows = layoutRows ?? tileMap.length
+  const wallInstances = hasWallSprites()
+    ? getWallInstances(tileMap, tileColors, layoutCols)
+    : []
+
+  let minX = Number.POSITIVE_INFINITY
+  let minY = Number.POSITIVE_INFINITY
+  let maxX = Number.NEGATIVE_INFINITY
+  let maxY = Number.NEGATIVE_INFINITY
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const tile = tileMap[r]?.[c]
+      if (tile === undefined || tile === TileType.VOID || tile === TileType.WALL) continue
+      minX = Math.min(minX, c * TILE_SIZE)
+      minY = Math.min(minY, r * TILE_SIZE)
+      maxX = Math.max(maxX, (c + 1) * TILE_SIZE)
+      maxY = Math.max(maxY, (r + 1) * TILE_SIZE)
+    }
+  }
+
+  for (const item of [...wallInstances, ...furniture]) {
+    const spriteHeight = item.sprite.length
+    const spriteWidth = item.sprite[0]?.length ?? 0
+    minX = Math.min(minX, item.x)
+    minY = Math.min(minY, item.y)
+    maxX = Math.max(maxX, item.x + spriteWidth)
+    maxY = Math.max(maxY, item.y + spriteHeight)
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY)) {
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: cols * TILE_SIZE,
+      maxY: rows * TILE_SIZE,
+      width: cols * TILE_SIZE,
+      height: rows * TILE_SIZE,
+    }
+  }
+
+  // Pad by 1 tile on each side so edge sprites (tall plants, wall decorations)
+  // are never clipped by the canvas viewport boundary.
+  const PAD = TILE_SIZE
+  return {
+    minX: minX - PAD,
+    minY: minY - PAD,
+    maxX: maxX + PAD,
+    maxY: maxY + PAD,
+    width: (maxX + PAD) - (minX - PAD),
+    height: (maxY + PAD) - (minY - PAD),
+  }
+}
+
 export function renderScene(
   ctx: CanvasRenderingContext2D,
   furniture: FurnitureInstance[],
@@ -119,12 +190,25 @@ export function renderScene(
     const cached = getCachedSprite(f.sprite, zoom)
     const fx = offsetX + f.x * zoom
     const fy = offsetY + f.y * zoom
-    drawables.push({
-      zY: f.zY,
-      draw: (c) => {
-        c.drawImage(cached, fx, fy)
-      },
-    })
+    if (f.mirrored) {
+      drawables.push({
+        zY: f.zY,
+        draw: (c) => {
+          c.save()
+          c.translate(fx + cached.width, fy)
+          c.scale(-1, 1)
+          c.drawImage(cached, 0, 0)
+          c.restore()
+        },
+      })
+    } else {
+      drawables.push({
+        zY: f.zY,
+        draw: (c) => {
+          c.drawImage(cached, fx, fy)
+        },
+      })
+    }
   }
 
   // Characters
@@ -370,16 +454,24 @@ export function renderGhostPreview(
   offsetX: number,
   offsetY: number,
   zoom: number,
+  mirrored: boolean = false,
 ): void {
   const cached = getCachedSprite(sprite, zoom)
   const x = offsetX + col * TILE_SIZE * zoom
   const y = offsetY + row * TILE_SIZE * zoom
   ctx.save()
   ctx.globalAlpha = GHOST_PREVIEW_SPRITE_ALPHA
-  ctx.drawImage(cached, x, y)
-  // Tint overlay
-  ctx.globalAlpha = GHOST_PREVIEW_TINT_ALPHA
+  if (mirrored) {
+    ctx.translate(x + cached.width, y)
+    ctx.scale(-1, 1)
+    ctx.drawImage(cached, 0, 0)
+  } else {
+    ctx.drawImage(cached, x, y)
+  }
+  ctx.restore()
+  ctx.save()
   ctx.fillStyle = valid ? GHOST_VALID_TINT : GHOST_INVALID_TINT
+  ctx.globalAlpha = GHOST_PREVIEW_TINT_ALPHA
   ctx.fillRect(x, y, cached.width, cached.height)
   ctx.restore()
 }
@@ -755,6 +847,7 @@ export type LayerButtonBounds = ButtonBounds
 export interface EditorRenderState {
   showGrid: boolean
   ghostSprite: SpriteData | null
+  ghostMirrored?: boolean
   ghostCol: number
   ghostRow: number
   ghostValid: boolean
@@ -816,11 +909,14 @@ export function renderFrame(
   const cols = layoutCols ?? (tileMap.length > 0 ? tileMap[0].length : 0)
   const rows = layoutRows ?? tileMap.length
 
-  // Center map in viewport + pan offset (integer device pixels)
-  const mapW = cols * TILE_SIZE * zoom
-  const mapH = rows * TILE_SIZE * zoom
-  const offsetX = Math.floor((canvasWidth - mapW) / 2) + Math.round(panX)
-  const offsetY = Math.floor((canvasHeight - mapH) / 2) + Math.round(panY)
+  // Center against the actual rendered content bounds instead of the raw grid box.
+  const contentBounds = computeContentBounds(tileMap, furniture, tileColors, layoutCols, layoutRows)
+  const offsetX =
+    Math.floor((canvasWidth - contentBounds.width * zoom) / 2 - contentBounds.minX * zoom) +
+    Math.round(panX)
+  const offsetY =
+    Math.floor((canvasHeight - contentBounds.height * zoom) / 2 - contentBounds.minY * zoom) +
+    Math.round(panY)
 
   // Draw tiles (floor + wall base color)
   renderTileGrid(ctx, tileMap, offsetX, offsetY, zoom, tileColors, layoutCols)
@@ -866,7 +962,17 @@ export function renderFrame(
       renderGhostBorder(ctx, offsetX, offsetY, zoom, cols, rows, editor.ghostBorderHoverCol, editor.ghostBorderHoverRow)
     }
     if (editor.ghostSprite && editor.ghostCol >= 0) {
-      renderGhostPreview(ctx, editor.ghostSprite, editor.ghostCol, editor.ghostRow, editor.ghostValid, offsetX, offsetY, zoom)
+      renderGhostPreview(
+        ctx,
+        editor.ghostSprite,
+        editor.ghostCol,
+        editor.ghostRow,
+        editor.ghostValid,
+        offsetX,
+        offsetY,
+        zoom,
+        editor.ghostMirrored ?? false,
+      )
     }
     if (editor.hasSelection) {
       renderSelectionHighlight(ctx, editor.selectedCol, editor.selectedRow, editor.selectedW, editor.selectedH, offsetX, offsetY, zoom)

@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Mission Control
+# Multi-stage Dockerfile for Virtual Agency
 # ===========================================
 # Stage 1: Build the React dashboard (Vite)
 FROM node:20-slim AS dashboard-builder
@@ -77,3 +77,4 @@ COPY deployment/start.sh ./
 RUN chmod +x start.sh
 
 CMD ["./start.sh"]
+

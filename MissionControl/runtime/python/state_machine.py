@@ -5,9 +5,14 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from .models import MissionStatus, TaskStatus, AgentState
-from .repository import MissionRepository, TaskRepository
-from .utils import utc_now
+try:
+    from .models import MissionStatus, TaskStatus, AgentState
+    from .repository import MissionRepository, TaskRepository
+    from .utils import utc_now
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from models import MissionStatus, TaskStatus, AgentState
+    from repository import MissionRepository, TaskRepository
+    from utils import utc_now
 
 
 class StateValidationError(Exception):
@@ -55,10 +60,11 @@ class TaskStateMachine:
 
     VALID_TRANSITIONS = {
         "pending": ["running", "blocked", "failed"],
-        "running": ["done", "failed", "blocked"],
+        "running": ["done", "completed", "failed", "blocked"],
         "blocked": ["pending", "failed"],
         "failed": ["pending"],  # Retry allowed
         "done": [],  # Terminal state
+        "completed": [],  # Terminal alias
     }
 
     @classmethod
@@ -73,7 +79,7 @@ class TaskStateMachine:
 
     @classmethod
     def is_terminal(cls, status: str) -> bool:
-        return status == "done"
+        return status in {"done", "completed"}
 
     @classmethod
     def get_allowed_transitions(cls, from_status: str) -> List[str]:
@@ -160,20 +166,29 @@ class TransactionalStateUpdater:
         self.task_repository = task_repository
         self.state_history = state_history
         self._pending_transitions: List[StateTransition] = []
+        self._rollback_actions: List[Tuple[str, str, str]] = []
 
     def begin_transaction(self) -> None:
         """Start a new transaction batch."""
         self._pending_transitions = []
+        self._rollback_actions = []
 
     def commit_transaction(self) -> None:
         """Commit all pending transitions to history."""
         for transition in self._pending_transitions:
             self.state_history.record(transition)
         self._pending_transitions = []
+        self._rollback_actions = []
 
     def rollback_transaction(self) -> None:
         """Cancel pending transitions."""
+        for entity_type, entity_id, from_status in reversed(self._rollback_actions):
+            if entity_type == "mission":
+                self.mission_repository.update_mission_status(entity_id, from_status)
+            elif entity_type == "task" and self.task_repository:
+                self.task_repository.update_task_status(entity_id, from_status)
         self._pending_transitions = []
+        self._rollback_actions = []
 
     def transition_mission(
         self,
@@ -197,6 +212,7 @@ class TransactionalStateUpdater:
 
         # Execute transition
         self.mission_repository.update_mission_status(mission_id, to_status)
+        self._rollback_actions.append(("mission", mission_id, from_status))
 
         # Record in pending transactions
         transition = StateTransition(
@@ -233,6 +249,7 @@ class TransactionalStateUpdater:
 
         # Execute transition
         self.task_repository.update_task_status(task_id, to_status)
+        self._rollback_actions.append(("task", task_id, from_status))
 
         # Record in pending transactions
         transition = StateTransition(

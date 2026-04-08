@@ -5,7 +5,7 @@ export function createInitialPlan(goal) {
     to: 'agent-0',
     goal,
     context: {
-      project: 'Mission Control',
+      project: 'Virtual Agency',
       constraints: [
         'ARM VPS friendly',
         '128k context safety',
@@ -33,3 +33,4 @@ export function nextAgentFromWorkflow(currentAgentId, workflow = []) {
   if (index === -1 || index === workflow.length - 1) return null;
   return workflow[index + 1];
 }
+

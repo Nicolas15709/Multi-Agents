@@ -1,7 +1,7 @@
 export const mockSnapshot = {
   activeMission: {
     id: 'mission-bootstrap',
-    title: 'Bootstrap Mission Control',
+    title: 'Bootstrap Virtual Agency',
     goal: 'Initialize runtime, dashboard and mission pipeline',
     mode: 'software_build',
     priority: 'high',
@@ -46,12 +46,13 @@ export const mockSnapshot = {
   ],
   stream: {
     events: [
-      { id: 1, summary: 'Supervisor inició la planificación de la misión.' },
-      { id: 2, summary: 'Researcher recopiló contexto técnico y comercial.' },
-      { id: 3, summary: 'Designer está definiendo la estructura visual del dashboard.' }
+      { id: 1, summary: 'Supervisor iniciÃ³ la planificaciÃ³n de la misiÃ³n.' },
+      { id: 2, summary: 'Researcher recopilÃ³ contexto tÃ©cnico y comercial.' },
+      { id: 3, summary: 'Designer estÃ¡ definiendo la estructura visual del dashboard.' }
     ],
     notifications: [
-      { id: 1, summary: 'Misión bootstrap creada.' }
+      { id: 1, summary: 'MisiÃ³n bootstrap creada.' }
     ]
   }
 }
+

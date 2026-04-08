@@ -13,6 +13,7 @@ import {
   CHARACTER_HIT_HALF_WIDTH,
   CHARACTER_HIT_HEIGHT,
   MOOD_BUBBLE_DURATION_SEC,
+  FURNITURE_ANIM_INTERVAL_SEC,
 } from '../../constants.js'
 import type { Character, Seat, FurnitureInstance, TileType as TileTypeVal, OfficeLayout, PlacedFurniture } from '../types.js'
 import { createCharacter, updateCharacter } from './characters.js'
@@ -28,7 +29,7 @@ import {
   layoutToSeats,
   getBlockedTiles,
 } from '../layout/layoutSerializer.js'
-import { getCatalogEntry, getOnStateType } from '../layout/furnitureCatalog.js'
+import { getAnimationFrames, getCatalogEntry, getOnStateType } from '../layout/furnitureCatalog.js'
 
 export class OfficeState {
   layout: OfficeLayout
@@ -38,6 +39,7 @@ export class OfficeState {
   furniture: FurnitureInstance[]
   walkableTiles: Array<{ col: number; row: number }>
   characters: Map<number, Character> = new Map()
+  furnitureAnimTimer = 0
   selectedAgentId: number | null = null
   cameraFollowId: number | null = null
   hoveredAgentId: number | null = null
@@ -193,8 +195,60 @@ export class OfficeState {
   }
 
   private findFreeSeat(): string | null {
+    const electronicsTiles = new Set<string>()
+    for (const item of this.layout.furniture) {
+      const entry = getCatalogEntry(item.type)
+      if (!entry || entry.category !== 'electronics') continue
+      for (let dr = 0; dr < entry.footprintH; dr++) {
+        for (let dc = 0; dc < entry.footprintW; dc++) {
+          electronicsTiles.add(`${item.col + dc},${item.row + dr}`)
+        }
+      }
+    }
+
+    const pcSeats: string[] = []
+    const otherSeats: string[] = []
     for (const [uid, seat] of this.seats) {
-      if (!seat.assigned) return uid
+      if (seat.assigned) continue
+
+      let facesPC = false
+      const dCol = seat.facingDir === Direction.RIGHT ? 1 : seat.facingDir === Direction.LEFT ? -1 : 0
+      const dRow = seat.facingDir === Direction.DOWN ? 1 : seat.facingDir === Direction.UP ? -1 : 0
+
+      for (let depth = 1; depth <= AUTO_ON_FACING_DEPTH && !facesPC; depth++) {
+        const tileCol = seat.seatCol + dCol * depth
+        const tileRow = seat.seatRow + dRow * depth
+        if (electronicsTiles.has(`${tileCol},${tileRow}`)) {
+          facesPC = true
+          break
+        }
+        if (dCol !== 0) {
+          if (
+            electronicsTiles.has(`${tileCol},${tileRow - 1}`) ||
+            electronicsTiles.has(`${tileCol},${tileRow + 1}`)
+          ) {
+            facesPC = true
+            break
+          }
+        } else {
+          if (
+            electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
+            electronicsTiles.has(`${tileCol + 1},${tileRow}`)
+          ) {
+            facesPC = true
+            break
+          }
+        }
+      }
+
+      ;(facesPC ? pcSeats : otherSeats).push(uid)
+    }
+
+    if (pcSeats.length > 0) {
+      return pcSeats[Math.floor(Math.random() * pcSeats.length)]
+    }
+    if (otherSeats.length > 0) {
+      return otherSeats[Math.floor(Math.random() * otherSeats.length)]
     }
     return null
   }
@@ -578,16 +632,20 @@ export class OfficeState {
       return
     }
 
-    // Build modified furniture list with auto-state applied
+    const animFrame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC)
     const modifiedFurniture: PlacedFurniture[] = this.layout.furniture.map((item) => {
       const entry = getCatalogEntry(item.type)
       if (!entry) return item
-      // Check if any tile of this furniture overlaps an auto-on tile
       for (let dr = 0; dr < entry.footprintH; dr++) {
         for (let dc = 0; dc < entry.footprintW; dc++) {
           if (autoOnTiles.has(`${item.col + dc},${item.row + dr}`)) {
-            const onType = getOnStateType(item.type)
+            let onType = getOnStateType(item.type)
             if (onType !== item.type) {
+              const frames = getAnimationFrames(onType)
+              if (frames && frames.length > 1) {
+                const frameIndex = animFrame % frames.length
+                onType = frames[frameIndex]
+              }
               return { ...item, type: onType }
             }
             return item
@@ -657,6 +715,13 @@ export class OfficeState {
   }
 
   update(dt: number): void {
+    const prevFrame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC)
+    this.furnitureAnimTimer += dt
+    const nextFrame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC)
+    if (nextFrame !== prevFrame) {
+      this.rebuildFurnitureInstances()
+    }
+
     const toDelete: number[] = []
     for (const ch of this.characters.values()) {
       // Handle matrix effect animation

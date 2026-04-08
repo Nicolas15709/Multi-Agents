@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from notifications import NotificationService
-from repository import MissionRepository
+try:
+    from .notifications import NotificationService
+    from .repository import MissionRepository
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from notifications import NotificationService
+    from repository import MissionRepository
 
 
 @dataclass

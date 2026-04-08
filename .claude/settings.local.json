@@ -10,7 +10,9 @@
       "Bash(cp -r \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/pixel-agents-ref/webview-ui/public/assets/floors\" \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/floors\")",
       "Bash(cp -r \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/pixel-agents-ref/webview-ui/public/assets/walls\" \"c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/walls\")",
       "Bash(npx vite:*)",
-      "Bash(node -e \"const fs=require\\('fs'\\); const j=JSON.parse\\(fs.readFileSync\\('c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/default-layout.json','utf8'\\)\\); console.log\\('Layout:', j.cols+'x'+j.rows, 'tiles:', j.tiles.length, 'furniture:', j.furniture.length\\)\")"
+      "Bash(node -e \"const fs=require\\('fs'\\); const j=JSON.parse\\(fs.readFileSync\\('c:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/apps/dashboard/public/pixel-assets/default-layout.json','utf8'\\)\\); console.log\\('Layout:', j.cols+'x'+j.rows, 'tiles:', j.tiles.length, 'furniture:', j.furniture.length\\)\")",
+      "Bash(node:*)",
+      "Bash(xxd)"
     ]
   },
   "enableAllProjectMcpServers": true,

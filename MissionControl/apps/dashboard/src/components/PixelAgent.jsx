@@ -75,7 +75,7 @@ export const PixelAgent = ({
         style={{
           width: '100%',
           height: '100%',
-          backgroundImage: `url('/sprites/char_${charIndex % 6}.png')`,
+          backgroundImage: `url('/pixel-assets/characters/char_${charIndex % 6}.png')`,
           backgroundPosition: `-${xPos * scale}px -${yPos * scale}px`,
           backgroundSize: `${112 * scale}px ${96 * scale}px`,
           imageRendering: 'pixelated', // Crucial for retro look

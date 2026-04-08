@@ -1,7 +1,7 @@
 {
   "status": "draft",
   "confirmed": {
-    "projectName": "Mission Control",
+    "projectName": "Virtual Agency",
     "agentCount": 5,
     "orchestratorRuntime": "python",
     "agentFramework": "langgraph",
@@ -32,3 +32,4 @@
     "final agent names/persona labels"
   ]
 }
+

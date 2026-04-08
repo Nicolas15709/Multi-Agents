@@ -1,4 +1,4 @@
-# Docker ignore para Mission Control
+# Docker ignore para Virtual Agency
 # ================================
 
 # Git
@@ -19,7 +19,7 @@
 *~
 .DS_Store
 
-# Logs y datos locales (se montan como volúmenes)
+# Logs y datos locales (se montan como volÃºmenes)
 logs/
 data/
 *.log
@@ -32,7 +32,7 @@ coverage/
 __tests__
 __mocks__
 
-# Documentación temporal
+# DocumentaciÃ³n temporal
 tmp/
 temp/
 .cache/
@@ -65,7 +65,7 @@ config/docker.future.json  # archivo experimental
 apps/dashboard/node_modules
 apps/dashboard/.vite
 
-# Documentation source (no necesaria en producción)
+# Documentation source (no necesaria en producciÃ³n)
 docs/MASTER_PLAN.md
 docs/SECURITY_MODEL.md
 docs/PRODUCT_REQUIREMENTS.md
@@ -83,3 +83,4 @@ CHANGELOG.md
 *.key
 *.crt
 secrets/
+

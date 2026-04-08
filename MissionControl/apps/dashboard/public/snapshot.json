@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T17:53:38+00:00",
+  "generatedAt": "2026-04-08T04:21:17+00:00",
   "progress": {
     "mission": null,
     "progress": {
@@ -7,52 +7,211 @@
       "done": 0,
       "running": 0,
       "blocked": 0,
+      "failed": 0,
       "percent": 0
     }
   },
   "missionSummary": null,
+  "missionSummaries": {
+    "mission-08ee5646982a": {
+      "mission": {
+        "id": "mission-08ee5646982a",
+        "title": "Virtual Agency bootstrap mission",
+        "goal": "Initialize the orchestrator scaffold and validate core runtime pieces.",
+        "mode": "software_build",
+        "priority": "medium",
+        "status": "completed",
+        "source": "system"
+      },
+      "tasks": [
+        {
+          "id": "task-6becf09647e1",
+          "agent_id": "agent-0",
+          "title": "Triage the mission, define the operating workstreams, and set approval gates",
+          "status": "done",
+          "priority": "medium"
+        },
+        {
+          "id": "task-552b9bc0fb38",
+          "agent_id": "agent-1",
+          "title": "Gather context, constraints, sources, and operating assumptions",
+          "status": "done",
+          "priority": "medium"
+        },
+        {
+          "id": "task-f6a8e510908d",
+          "agent_id": "agent-3",
+          "title": "Produce the working technical solution and implementation artifacts",
+          "status": "done",
+          "priority": "medium"
+        },
+        {
+          "id": "task-4d38c59ef4de",
+          "agent_id": "agent-2",
+          "title": "Own the Design workstream and deliver its mission-specific outputs",
+          "status": "done",
+          "priority": "medium"
+        },
+        {
+          "id": "task-20a27beb7494",
+          "agent_id": "agent-2",
+          "title": "Own the Product workstream and deliver its mission-specific outputs",
+          "status": "done",
+          "priority": "medium"
+        },
+        {
+          "id": "task-83a9139e8cf3",
+          "agent_id": "agent-4",
+          "title": "Validate outputs, quality, and mission readiness",
+          "status": "done",
+          "priority": "medium"
+        },
+        {
+          "id": "task-6c3a409dc9f6",
+          "agent_id": "agent-0",
+          "title": "Consolidate the outputs, decide next action, and close the mission",
+          "status": "done",
+          "priority": "medium"
+        }
+      ],
+      "plan": {
+        "workflow_version": "open_capability_graph_v1",
+        "domains": [
+          "engineering",
+          "design",
+          "product"
+        ],
+        "primary_domain": "engineering",
+        "intent_tags": [
+          "research",
+          "build",
+          "review"
+        ],
+        "outcome_tags": [
+          "working_solution"
+        ],
+        "risk_flags": [],
+        "risk_level": "low",
+        "requires_human_approval": false,
+        "preferred_divisions": [
+          "engineering",
+          "testing",
+          "product",
+          "design",
+          "marketing",
+          "project-management"
+        ],
+        "preferred_template_ids": [
+          "engineering-frontend-developer",
+          "engineering-backend-architect",
+          "engineering-devops-automator",
+          "design-ui-designer",
+          "design-ux-researcher",
+          "design-brand-guardian",
+          "product-manager",
+          "product-sprint-prioritizer",
+          "testing-reality-checker"
+        ],
+        "workstreams": [
+          "mission-control",
+          "discovery",
+          "engineering",
+          "design",
+          "product",
+          "review",
+          "closeout"
+        ],
+        "required_capabilities": [
+          "planning",
+          "scoping",
+          "delegation",
+          "research",
+          "analysis",
+          "context-building",
+          "engineering",
+          "build",
+          "review",
+          "delivery",
+          "design",
+          "product",
+          "validation",
+          "risk-checking",
+          "synthesis",
+          "approval",
+          "handoff"
+        ],
+        "specialist_template_hints": [
+          "engineering-frontend-developer",
+          "engineering-backend-architect",
+          "engineering-devops-automator",
+          "design-ui-designer",
+          "design-ux-researcher",
+          "design-brand-guardian",
+          "product-manager",
+          "product-sprint-prioritizer",
+          "testing-reality-checker",
+          "engineering-code-reviewer"
+        ],
+        "tool_primitives": [
+          "shared-memory",
+          "task-board",
+          "code-editor",
+          "shell",
+          "tests",
+          "design-editor",
+          "asset-board",
+          "analytics",
+          "web-research",
+          "docs-reader",
+          "approval-gate",
+          "docs-writer"
+        ],
+        "approval_policies": [
+          "auto_allowed"
+        ],
+        "external_action_kinds": []
+      },
+      "counts": {
+        "total": 7,
+        "done": 7,
+        "running": 0,
+        "pending": 0,
+        "blocked": 0,
+        "failed": 0
+      }
+    }
+  },
+  "scheduler": {
+    "active_count": 0,
+    "highest_priority_mission": null,
+    "highest_priority_mission_execution_state": null,
+    "queued_missions": [],
+    "blocked_missions": []
+  },
   "meta": {
-    "missionCount": 3,
-    "agentCount": 5,
+    "missionCount": 1,
+    "agentCount": 3,
     "activeAgentCount": 0,
-    "taskCount": 4,
+    "taskCount": 0,
     "completedTaskCount": 0,
     "blockedTaskCount": 0,
+    "failedTaskCount": 0,
+    "intakeRequestCount": 0,
+    "pendingIntakeCount": 0,
+    "hireRequestCount": 0,
+    "sharedMemoryCount": 0,
+    "agentMessageCount": 0,
+    "actionApprovalCount": 0,
     "eventCount": 15,
     "notificationCount": 10,
     "runningTaskId": null,
-    "runningTaskTitle": null
+    "runningTaskTitle": null,
+    "activeMissionBudgetStatus": null
   },
   "missions": [
     {
-      "id": "mission-b79affdbffcf",
-      "title": "Scheduled maintenance cycle",
-      "goal": "Run a recurring maintenance pass, review runtime health, and surface follow-up work.",
-      "mode": "maintenance_cycle",
-      "priority": "medium",
-      "status": "queued",
-      "source": "scheduled",
-      "schedule": "cron:test",
-      "allow_24x7": 0,
-      "created_at": "2026-03-29T05:35:12+00:00",
-      "updated_at": "2026-03-29T05:35:12+00:00"
-    },
-    {
-      "id": "mission-7279e49cebe7",
-      "title": "Mission Control timeline refinement",
-      "goal": "Improve runtime event richness and dashboard mission clarity",
-      "mode": "feature_extension",
-      "priority": "high",
-      "status": "queued",
-      "source": "manual",
-      "schedule": null,
-      "allow_24x7": 0,
-      "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00"
-    },
-    {
-      "id": "mission-1079d9c3e089",
-      "title": "Mission Control bootstrap mission",
+      "id": "mission-08ee5646982a",
+      "title": "Virtual Agency bootstrap mission",
       "goal": "Initialize the orchestrator scaffold and validate core runtime pieces.",
       "mode": "software_build",
       "priority": "medium",
@@ -60,95 +219,55 @@
       "source": "system",
       "schedule": null,
       "allow_24x7": 1,
-      "created_at": "2026-03-27T22:41:32+00:00",
-      "updated_at": "2026-03-28T04:14:46+00:00"
-    }
-  ],
-  "activeMission": {
-    "id": "mission-7279e49cebe7",
-    "title": "Mission Control timeline refinement",
-    "goal": "Improve runtime event richness and dashboard mission clarity",
-    "mode": "feature_extension",
-    "priority": "high",
-    "status": "queued",
-    "source": "manual",
-    "schedule": null,
-    "allow_24x7": 0,
-    "created_at": "2026-03-28T04:21:26+00:00",
-    "updated_at": "2026-03-28T04:21:26+00:00"
-  },
-  "tasks": [
-    {
-      "id": "task-d34bb191cf55",
-      "mission_id": "mission-7279e49cebe7",
-      "agent_id": "agent-0",
-      "title": "Plan mission",
-      "status": "pending",
-      "priority": "high",
-      "depends_on": [],
-      "details_json": "{\"mode\": \"feature_extension\"}",
-      "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00",
-      "details": {
-        "mode": "feature_extension"
-      }
-    },
-    {
-      "id": "task-9d4c32d465ac",
-      "mission_id": "mission-7279e49cebe7",
-      "agent_id": "agent-1",
-      "title": "Research mission context",
-      "status": "pending",
-      "priority": "high",
-      "depends_on": [],
-      "details_json": "{\"mode\": \"feature_extension\"}",
-      "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00",
-      "details": {
-        "mode": "feature_extension"
-      }
-    },
-    {
-      "id": "task-78d0391bf388",
-      "mission_id": "mission-7279e49cebe7",
-      "agent_id": "agent-3",
-      "title": "Implement deliverable",
-      "status": "pending",
-      "priority": "high",
-      "depends_on": [],
-      "details_json": "{\"mode\": \"feature_extension\"}",
-      "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00",
-      "details": {
-        "mode": "feature_extension"
-      }
-    },
-    {
-      "id": "task-fc59fe594728",
-      "mission_id": "mission-7279e49cebe7",
-      "agent_id": "agent-4",
-      "title": "Review and harden output",
-      "status": "pending",
-      "priority": "high",
-      "depends_on": [],
-      "details_json": "{\"mode\": \"feature_extension\"}",
-      "created_at": "2026-03-28T04:21:26+00:00",
-      "updated_at": "2026-03-28T04:21:26+00:00",
-      "details": {
-        "mode": "feature_extension"
+      "created_at": "2026-04-07T05:01:27+00:00",
+      "updated_at": "2026-04-07T05:01:58+00:00",
+      "mission_control": {
+        "mission_id": "mission-08ee5646982a",
+        "max_autonomous_steps": 18,
+        "autonomous_steps_used": 7,
+        "max_estimated_tokens": 16000,
+        "estimated_tokens_used": 11500,
+        "max_runtime_ticks": 64,
+        "runtime_ticks_used": 7,
+        "max_dynamic_hires": 3,
+        "dynamic_hires_used": 0,
+        "action_budgets_json": "{\"financial_commitment\": 1, \"legal_release\": 1, \"outreach\": 2, \"publish\": 1}",
+        "action_usage_json": "{}",
+        "status": "active",
+        "notes": null,
+        "created_at": "2026-04-07T05:01:27+00:00",
+        "updated_at": "2026-04-07T05:01:58+00:00",
+        "action_budgets": {
+          "financial_commitment": 1,
+          "legal_release": 1,
+          "outreach": 2,
+          "publish": 1
+        },
+        "action_usage": {}
       }
     }
   ],
+  "activeMission": null,
+  "activeMissionControl": null,
+  "tasks": [],
   "agents": [
     {
       "agent_id": "agent-0",
-      "display_name": "Supervisor",
+      "display_name": "Project Lead",
       "role": "director",
       "state": "idle",
       "active_mission_id": null,
       "current_task_id": null,
-      "personality": "Analytical, direct, focused on deliverables and priority management.",
-      "updated_at": "2026-03-29T16:47:32+00:00"
+      "personality": "Analytical, adaptive, calm under pressure. Project lead capable of orchestrating any domain — from software to marketing to research — by hiring the right specialists from the template catalog on demand.",
+      "updated_at": "2026-04-08T04:21:02+00:00",
+      "reports_to": null,
+      "capabilities_json": "[]",
+      "budget_monthly_cents": 0,
+      "origin": "core",
+      "mission_scope_id": null,
+      "metadata_json": "{}",
+      "capabilities": [],
+      "metadata": {}
     },
     {
       "agent_id": "agent-1",
@@ -158,7 +277,15 @@
       "active_mission_id": null,
       "current_task_id": null,
       "personality": "Curious, factual, meticulous with sources and context.",
-      "updated_at": "2026-03-29T16:47:32+00:00"
+      "updated_at": "2026-04-08T03:59:02+00:00",
+      "reports_to": null,
+      "capabilities_json": "[]",
+      "budget_monthly_cents": 0,
+      "origin": "core",
+      "mission_scope_id": null,
+      "metadata_json": "{}",
+      "capabilities": [],
+      "metadata": {}
     },
     {
       "agent_id": "agent-2",
@@ -168,382 +295,388 @@
       "active_mission_id": null,
       "current_task_id": null,
       "personality": "Visually sharp, structured, practical about UX and references.",
-      "updated_at": "2026-03-29T16:47:32+00:00"
-    },
-    {
-      "agent_id": "agent-3",
-      "display_name": "Developer",
-      "role": "builder",
-      "state": "idle",
-      "active_mission_id": null,
-      "current_task_id": null,
-      "personality": "Productive, pragmatic, implementation-focused and detail-oriented.",
-      "updated_at": "2026-03-29T16:47:32+00:00"
-    },
-    {
-      "agent_id": "agent-4",
-      "display_name": "QA",
-      "role": "improver",
-      "state": "idle",
-      "active_mission_id": null,
-      "current_task_id": null,
-      "personality": "Critical, supportive, perfectionist and reliability-focused.",
-      "updated_at": "2026-03-29T16:47:32+00:00"
+      "updated_at": "2026-04-08T03:59:02+00:00",
+      "reports_to": null,
+      "capabilities_json": "[]",
+      "budget_monthly_cents": 0,
+      "origin": "core",
+      "mission_scope_id": null,
+      "metadata_json": "{}",
+      "capabilities": [],
+      "metadata": {}
     }
   ],
+  "intakeRequests": [],
+  "hireRequests": [],
+  "sharedMemory": [],
+  "agentMessages": [],
+  "actionApprovals": [],
   "stream": {
     "events": [
       {
-        "id": 17,
-        "mission_id": "mission-b79affdbffcf",
-        "event_type": "workflow_seeded",
-        "actor": "planner",
-        "summary": "Base workflow seeded",
-        "payload_json": "{\"agents\": [\"agent-0\", \"agent-1\", \"agent-3\", \"agent-4\"], \"mode\": \"maintenance_cycle\", \"tasks\": [\"task-95826e994428\", \"task-124a38521d80\", \"task-720372327d0e\", \"task-1bb18c1292d2\"]}",
-        "created_at": "2026-03-29T05:35:12+00:00",
-        "payload": {
-          "agents": [
-            "agent-0",
-            "agent-1",
-            "agent-3",
-            "agent-4"
-          ],
-          "mode": "maintenance_cycle",
-          "tasks": [
-            "task-95826e994428",
-            "task-124a38521d80",
-            "task-720372327d0e",
-            "task-1bb18c1292d2"
-          ]
-        }
-      },
-      {
-        "id": 16,
-        "mission_id": "mission-b79affdbffcf",
-        "event_type": "mission_created",
-        "actor": "system",
-        "summary": "Mission created: Scheduled maintenance cycle",
-        "payload_json": "{\"mode\": \"maintenance_cycle\", \"priority\": \"medium\", \"schedule\": \"cron:test\", \"source\": \"scheduled\"}",
-        "created_at": "2026-03-29T05:35:12+00:00",
-        "payload": {
-          "mode": "maintenance_cycle",
-          "priority": "medium",
-          "schedule": "cron:test",
-          "source": "scheduled"
-        }
-      },
-      {
-        "id": 15,
-        "mission_id": "mission-7279e49cebe7",
-        "event_type": "workflow_seeded",
-        "actor": "planner",
-        "summary": "Base workflow seeded",
-        "payload_json": "{\"agents\": [\"agent-0\", \"agent-1\", \"agent-3\", \"agent-4\"], \"mode\": \"feature_extension\", \"tasks\": [\"task-d34bb191cf55\", \"task-9d4c32d465ac\", \"task-78d0391bf388\", \"task-fc59fe594728\"]}",
-        "created_at": "2026-03-28T04:21:26+00:00",
-        "payload": {
-          "agents": [
-            "agent-0",
-            "agent-1",
-            "agent-3",
-            "agent-4"
-          ],
-          "mode": "feature_extension",
-          "tasks": [
-            "task-d34bb191cf55",
-            "task-9d4c32d465ac",
-            "task-78d0391bf388",
-            "task-fc59fe594728"
-          ]
-        }
-      },
-      {
-        "id": 14,
-        "mission_id": "mission-7279e49cebe7",
-        "event_type": "mission_created",
-        "actor": "system",
-        "summary": "Mission created: Mission Control timeline refinement",
-        "payload_json": "{\"mode\": \"feature_extension\", \"priority\": \"high\", \"source\": \"manual\"}",
-        "created_at": "2026-03-28T04:21:26+00:00",
-        "payload": {
-          "mode": "feature_extension",
-          "priority": "high",
-          "source": "manual"
-        }
-      },
-      {
-        "id": 13,
-        "mission_id": "mission-1079d9c3e089",
+        "id": 37,
+        "mission_id": "mission-08ee5646982a",
         "event_type": "mission_completed",
         "actor": "system",
         "summary": "Mission completed successfully",
         "payload_json": "{}",
-        "created_at": "2026-03-28T04:14:46+00:00",
+        "created_at": "2026-04-07T05:01:58+00:00",
         "payload": {}
       },
       {
-        "id": 12,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_completed",
-        "actor": "agent-4",
-        "summary": "Task completed: Review and harden output",
-        "payload_json": "{\"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:46+00:00",
-        "payload": {
-          "task_id": "task-299b84d7c471"
-        }
-      },
-      {
-        "id": 11,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_started",
-        "actor": "agent-4",
-        "summary": "Task started: Review and harden output",
-        "payload_json": "{\"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:41+00:00",
-        "payload": {
-          "task_id": "task-299b84d7c471"
-        }
-      },
-      {
-        "id": 10,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_completed",
-        "actor": "agent-3",
-        "summary": "Task completed: Implement deliverable",
-        "payload_json": "{\"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-28T04:14:41+00:00",
-        "payload": {
-          "task_id": "task-ca8fceb97373"
-        }
-      },
-      {
-        "id": 9,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_started",
-        "actor": "agent-3",
-        "summary": "Task started: Implement deliverable",
-        "payload_json": "{\"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-27T23:07:57+00:00",
-        "payload": {
-          "task_id": "task-ca8fceb97373"
-        }
-      },
-      {
-        "id": 8,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_completed",
-        "actor": "agent-2",
-        "summary": "Task completed: Produce design/prototype guidance",
-        "payload_json": "{\"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T23:07:57+00:00",
-        "payload": {
-          "task_id": "task-30817942c472"
-        }
-      },
-      {
-        "id": 7,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_started",
-        "actor": "agent-2",
-        "summary": "Task started: Produce design/prototype guidance",
-        "payload_json": "{\"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T22:51:59+00:00",
-        "payload": {
-          "task_id": "task-30817942c472"
-        }
-      },
-      {
-        "id": 6,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_completed",
-        "actor": "agent-1",
-        "summary": "Task completed: Research mission context",
-        "payload_json": "{\"task_id\": \"task-5691f8833a2c\"}",
-        "created_at": "2026-03-27T22:51:59+00:00",
-        "payload": {
-          "task_id": "task-5691f8833a2c"
-        }
-      },
-      {
-        "id": 5,
-        "mission_id": "mission-1079d9c3e089",
-        "event_type": "task_started",
-        "actor": "agent-1",
-        "summary": "Task started: Research mission context",
-        "payload_json": "{\"task_id\": \"task-5691f8833a2c\"}",
-        "created_at": "2026-03-27T22:46:33+00:00",
-        "payload": {
-          "task_id": "task-5691f8833a2c"
-        }
-      },
-      {
-        "id": 4,
-        "mission_id": "mission-1079d9c3e089",
+        "id": 36,
+        "mission_id": "mission-08ee5646982a",
         "event_type": "task_completed",
         "actor": "agent-0",
-        "summary": "Task completed: Plan mission",
-        "payload_json": "{\"task_id\": \"task-855a3f35d022\"}",
-        "created_at": "2026-03-27T22:46:33+00:00",
+        "summary": "Task completed: Consolidate the outputs, decide next action, and close the mission",
+        "payload_json": "{\"task_id\": \"task-6c3a409dc9f6\", \"task_title\": \"Consolidate the outputs, decide next action, and close the mission\"}",
+        "created_at": "2026-04-07T05:01:58+00:00",
         "payload": {
-          "task_id": "task-855a3f35d022"
+          "task_id": "task-6c3a409dc9f6",
+          "task_title": "Consolidate the outputs, decide next action, and close the mission"
         }
       },
       {
-        "id": 3,
-        "mission_id": "mission-1079d9c3e089",
+        "id": 35,
+        "mission_id": "mission-08ee5646982a",
         "event_type": "task_started",
         "actor": "agent-0",
-        "summary": "Task started: Plan mission",
-        "payload_json": "{\"task_id\": \"task-855a3f35d022\"}",
-        "created_at": "2026-03-27T22:46:33+00:00",
+        "summary": "Task started: Consolidate the outputs, decide next action, and close the mission",
+        "payload_json": "{\"depends_on\": [\"task-83a9139e8cf3\"], \"task_id\": \"task-6c3a409dc9f6\"}",
+        "created_at": "2026-04-07T05:01:53+00:00",
         "payload": {
-          "task_id": "task-855a3f35d022"
+          "depends_on": [
+            "task-83a9139e8cf3"
+          ],
+          "task_id": "task-6c3a409dc9f6"
+        }
+      },
+      {
+        "id": 34,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_unblocked",
+        "actor": "agent-0",
+        "summary": "Task unblocked: Consolidate the outputs, decide next action, and close the mission",
+        "payload_json": "{\"depends_on\": [\"task-83a9139e8cf3\"], \"task_id\": \"task-6c3a409dc9f6\"}",
+        "created_at": "2026-04-07T05:01:53+00:00",
+        "payload": {
+          "depends_on": [
+            "task-83a9139e8cf3"
+          ],
+          "task_id": "task-6c3a409dc9f6"
+        }
+      },
+      {
+        "id": 33,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_completed",
+        "actor": "agent-4",
+        "summary": "Task completed: Validate outputs, quality, and mission readiness",
+        "payload_json": "{\"task_id\": \"task-83a9139e8cf3\", \"task_title\": \"Validate outputs, quality, and mission readiness\"}",
+        "created_at": "2026-04-07T05:01:53+00:00",
+        "payload": {
+          "task_id": "task-83a9139e8cf3",
+          "task_title": "Validate outputs, quality, and mission readiness"
+        }
+      },
+      {
+        "id": 32,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_started",
+        "actor": "agent-4",
+        "summary": "Task started: Validate outputs, quality, and mission readiness",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\", \"task-f6a8e510908d\", \"task-4d38c59ef4de\", \"task-20a27beb7494\"], \"task_id\": \"task-83a9139e8cf3\"}",
+        "created_at": "2026-04-07T05:01:48+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38",
+            "task-f6a8e510908d",
+            "task-4d38c59ef4de",
+            "task-20a27beb7494"
+          ],
+          "task_id": "task-83a9139e8cf3"
+        }
+      },
+      {
+        "id": 31,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_unblocked",
+        "actor": "agent-4",
+        "summary": "Task unblocked: Validate outputs, quality, and mission readiness",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\", \"task-f6a8e510908d\", \"task-4d38c59ef4de\", \"task-20a27beb7494\"], \"task_id\": \"task-83a9139e8cf3\"}",
+        "created_at": "2026-04-07T05:01:48+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38",
+            "task-f6a8e510908d",
+            "task-4d38c59ef4de",
+            "task-20a27beb7494"
+          ],
+          "task_id": "task-83a9139e8cf3"
+        }
+      },
+      {
+        "id": 30,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_completed",
+        "actor": "agent-2",
+        "summary": "Task completed: Own the Product workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"task_id\": \"task-20a27beb7494\", \"task_title\": \"Own the Product workstream and deliver its mission-specific outputs\"}",
+        "created_at": "2026-04-07T05:01:48+00:00",
+        "payload": {
+          "task_id": "task-20a27beb7494",
+          "task_title": "Own the Product workstream and deliver its mission-specific outputs"
+        }
+      },
+      {
+        "id": 29,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_started",
+        "actor": "agent-2",
+        "summary": "Task started: Own the Product workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\"], \"task_id\": \"task-20a27beb7494\"}",
+        "created_at": "2026-04-07T05:01:43+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38"
+          ],
+          "task_id": "task-20a27beb7494"
+        }
+      },
+      {
+        "id": 28,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_completed",
+        "actor": "agent-2",
+        "summary": "Task completed: Own the Design workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"task_id\": \"task-4d38c59ef4de\", \"task_title\": \"Own the Design workstream and deliver its mission-specific outputs\"}",
+        "created_at": "2026-04-07T05:01:43+00:00",
+        "payload": {
+          "task_id": "task-4d38c59ef4de",
+          "task_title": "Own the Design workstream and deliver its mission-specific outputs"
+        }
+      },
+      {
+        "id": 27,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_completed",
+        "actor": "agent-3",
+        "summary": "Task completed: Produce the working technical solution and implementation artifacts",
+        "payload_json": "{\"task_id\": \"task-f6a8e510908d\", \"task_title\": \"Produce the working technical solution and implementation artifacts\"}",
+        "created_at": "2026-04-07T05:01:43+00:00",
+        "payload": {
+          "task_id": "task-f6a8e510908d",
+          "task_title": "Produce the working technical solution and implementation artifacts"
+        }
+      },
+      {
+        "id": 26,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_started",
+        "actor": "agent-2",
+        "summary": "Task started: Own the Design workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\"], \"task_id\": \"task-4d38c59ef4de\"}",
+        "created_at": "2026-04-07T05:01:38+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38"
+          ],
+          "task_id": "task-4d38c59ef4de"
+        }
+      },
+      {
+        "id": 25,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_started",
+        "actor": "agent-3",
+        "summary": "Task started: Produce the working technical solution and implementation artifacts",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\"], \"task_id\": \"task-f6a8e510908d\"}",
+        "created_at": "2026-04-07T05:01:38+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38"
+          ],
+          "task_id": "task-f6a8e510908d"
+        }
+      },
+      {
+        "id": 24,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_unblocked",
+        "actor": "agent-2",
+        "summary": "Task unblocked: Own the Product workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\"], \"task_id\": \"task-20a27beb7494\"}",
+        "created_at": "2026-04-07T05:01:38+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38"
+          ],
+          "task_id": "task-20a27beb7494"
+        }
+      },
+      {
+        "id": 23,
+        "mission_id": "mission-08ee5646982a",
+        "event_type": "task_unblocked",
+        "actor": "agent-2",
+        "summary": "Task unblocked: Own the Design workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"depends_on\": [\"task-552b9bc0fb38\"], \"task_id\": \"task-4d38c59ef4de\"}",
+        "created_at": "2026-04-07T05:01:38+00:00",
+        "payload": {
+          "depends_on": [
+            "task-552b9bc0fb38"
+          ],
+          "task_id": "task-4d38c59ef4de"
         }
       }
     ],
     "notifications": [
       {
-        "id": 13,
+        "id": 23,
         "channel": "telegram",
         "kind": "progress_update",
         "status": "queued",
-        "summary": "Nueva misión creada: Scheduled maintenance cycle",
-        "payload_json": "{\"event_kind\": \"mission_created\", \"mission_id\": \"mission-b79affdbffcf\", \"mode\": \"maintenance_cycle\", \"priority\": \"medium\"}",
-        "created_at": "2026-03-29T05:35:12+00:00",
-        "payload": {
-          "event_kind": "mission_created",
-          "mission_id": "mission-b79affdbffcf",
-          "mode": "maintenance_cycle",
-          "priority": "medium"
-        }
-      },
-      {
-        "id": 12,
-        "channel": "telegram",
-        "kind": "mission_submitted",
-        "status": "queued",
-        "summary": "Mission queued: Scheduled maintenance cycle",
-        "payload_json": "{\"mission_id\": \"mission-b79affdbffcf\", \"mode\": \"maintenance_cycle\"}",
-        "created_at": "2026-03-29T05:35:12+00:00",
-        "payload": {
-          "mission_id": "mission-b79affdbffcf",
-          "mode": "maintenance_cycle"
-        }
-      },
-      {
-        "id": 11,
-        "channel": "telegram",
-        "kind": "progress_update",
-        "status": "queued",
-        "summary": "Nueva misión creada: Mission Control timeline refinement",
-        "payload_json": "{\"event_kind\": \"mission_created\", \"mission_id\": \"mission-7279e49cebe7\", \"mode\": \"feature_extension\", \"priority\": \"high\"}",
-        "created_at": "2026-03-28T04:21:26+00:00",
-        "payload": {
-          "event_kind": "mission_created",
-          "mission_id": "mission-7279e49cebe7",
-          "mode": "feature_extension",
-          "priority": "high"
-        }
-      },
-      {
-        "id": 10,
-        "channel": "telegram",
-        "kind": "mission_submitted",
-        "status": "queued",
-        "summary": "Mission queued: Mission Control timeline refinement",
-        "payload_json": "{\"mission_id\": \"mission-7279e49cebe7\", \"mode\": \"feature_extension\"}",
-        "created_at": "2026-03-28T04:21:26+00:00",
-        "payload": {
-          "mission_id": "mission-7279e49cebe7",
-          "mode": "feature_extension"
-        }
-      },
-      {
-        "id": 9,
-        "channel": "telegram",
-        "kind": "progress_update",
-        "status": "queued",
-        "summary": "La misión se completó correctamente.",
-        "payload_json": "{\"event_kind\": \"mission_completed\", \"mission_id\": \"mission-1079d9c3e089\"}",
-        "created_at": "2026-03-28T04:14:46+00:00",
+        "summary": "La mision se completo correctamente.",
+        "payload_json": "{\"event_kind\": \"mission_completed\", \"mission_id\": \"mission-08ee5646982a\"}",
+        "created_at": "2026-04-07T05:01:58+00:00",
         "payload": {
           "event_kind": "mission_completed",
-          "mission_id": "mission-1079d9c3e089"
+          "mission_id": "mission-08ee5646982a"
         }
       },
       {
-        "id": 8,
+        "id": 22,
         "channel": "telegram",
         "kind": "progress_update",
         "status": "queued",
-        "summary": "agent-4 completó: Review and harden output",
-        "payload_json": "{\"agent_id\": \"agent-4\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:46+00:00",
+        "summary": "agent-0 completó: Consolidate the outputs, decide next action, and close the mission",
+        "payload_json": "{\"agent_id\": \"agent-0\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-6c3a409dc9f6\"}",
+        "created_at": "2026-04-07T05:01:58+00:00",
+        "payload": {
+          "agent_id": "agent-0",
+          "event_kind": "task_completed",
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-6c3a409dc9f6"
+        }
+      },
+      {
+        "id": 21,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "agent-0 inicio: Consolidate the outputs, decide next action, and close the mission",
+        "payload_json": "{\"agent_id\": \"agent-0\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-6c3a409dc9f6\"}",
+        "created_at": "2026-04-07T05:01:53+00:00",
+        "payload": {
+          "agent_id": "agent-0",
+          "event_kind": "task_started",
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-6c3a409dc9f6"
+        }
+      },
+      {
+        "id": 20,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "agent-4 completó: Validate outputs, quality, and mission readiness",
+        "payload_json": "{\"agent_id\": \"agent-4\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-83a9139e8cf3\"}",
+        "created_at": "2026-04-07T05:01:53+00:00",
         "payload": {
           "agent_id": "agent-4",
           "event_kind": "task_completed",
-          "mission_id": "mission-1079d9c3e089",
-          "task_id": "task-299b84d7c471"
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-83a9139e8cf3"
         }
       },
       {
-        "id": 7,
+        "id": 19,
         "channel": "telegram",
         "kind": "progress_update",
         "status": "queued",
-        "summary": "agent-4 inició: Review and harden output",
-        "payload_json": "{\"agent_id\": \"agent-4\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-299b84d7c471\"}",
-        "created_at": "2026-03-28T04:14:41+00:00",
+        "summary": "agent-4 inicio: Validate outputs, quality, and mission readiness",
+        "payload_json": "{\"agent_id\": \"agent-4\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-83a9139e8cf3\"}",
+        "created_at": "2026-04-07T05:01:48+00:00",
         "payload": {
           "agent_id": "agent-4",
           "event_kind": "task_started",
-          "mission_id": "mission-1079d9c3e089",
-          "task_id": "task-299b84d7c471"
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-83a9139e8cf3"
         }
       },
       {
-        "id": 6,
+        "id": 18,
         "channel": "telegram",
         "kind": "progress_update",
         "status": "queued",
-        "summary": "agent-3 completó: Implement deliverable",
-        "payload_json": "{\"agent_id\": \"agent-3\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-28T04:14:41+00:00",
-        "payload": {
-          "agent_id": "agent-3",
-          "event_kind": "task_completed",
-          "mission_id": "mission-1079d9c3e089",
-          "task_id": "task-ca8fceb97373"
-        }
-      },
-      {
-        "id": 5,
-        "channel": "telegram",
-        "kind": "progress_update",
-        "status": "queued",
-        "summary": "agent-3 inició: Implement deliverable",
-        "payload_json": "{\"agent_id\": \"agent-3\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-ca8fceb97373\"}",
-        "created_at": "2026-03-27T23:07:57+00:00",
-        "payload": {
-          "agent_id": "agent-3",
-          "event_kind": "task_started",
-          "mission_id": "mission-1079d9c3e089",
-          "task_id": "task-ca8fceb97373"
-        }
-      },
-      {
-        "id": 4,
-        "channel": "telegram",
-        "kind": "progress_update",
-        "status": "queued",
-        "summary": "agent-2 completó: Produce design/prototype guidance",
-        "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-1079d9c3e089\", \"task_id\": \"task-30817942c472\"}",
-        "created_at": "2026-03-27T23:07:57+00:00",
+        "summary": "agent-2 completó: Own the Product workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-20a27beb7494\"}",
+        "created_at": "2026-04-07T05:01:48+00:00",
         "payload": {
           "agent_id": "agent-2",
           "event_kind": "task_completed",
-          "mission_id": "mission-1079d9c3e089",
-          "task_id": "task-30817942c472"
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-20a27beb7494"
+        }
+      },
+      {
+        "id": 17,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "agent-2 inicio: Own the Product workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-20a27beb7494\"}",
+        "created_at": "2026-04-07T05:01:43+00:00",
+        "payload": {
+          "agent_id": "agent-2",
+          "event_kind": "task_started",
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-20a27beb7494"
+        }
+      },
+      {
+        "id": 16,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "agent-2 completó: Own the Design workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-4d38c59ef4de\"}",
+        "created_at": "2026-04-07T05:01:43+00:00",
+        "payload": {
+          "agent_id": "agent-2",
+          "event_kind": "task_completed",
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-4d38c59ef4de"
+        }
+      },
+      {
+        "id": 15,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "agent-3 completó: Produce the working technical solution and implementation artifacts",
+        "payload_json": "{\"agent_id\": \"agent-3\", \"event_kind\": \"task_completed\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-f6a8e510908d\"}",
+        "created_at": "2026-04-07T05:01:43+00:00",
+        "payload": {
+          "agent_id": "agent-3",
+          "event_kind": "task_completed",
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-f6a8e510908d"
+        }
+      },
+      {
+        "id": 14,
+        "channel": "telegram",
+        "kind": "progress_update",
+        "status": "queued",
+        "summary": "agent-2 inicio: Own the Design workstream and deliver its mission-specific outputs",
+        "payload_json": "{\"agent_id\": \"agent-2\", \"event_kind\": \"task_started\", \"mission_id\": \"mission-08ee5646982a\", \"task_id\": \"task-4d38c59ef4de\"}",
+        "created_at": "2026-04-07T05:01:38+00:00",
+        "payload": {
+          "agent_id": "agent-2",
+          "event_kind": "task_started",
+          "mission_id": "mission-08ee5646982a",
+          "task_id": "task-4d38c59ef4de"
         }
       }
     ]

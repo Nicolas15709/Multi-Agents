@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Rocket, Terminal as TerminalIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { createMission } from '../runtimeApi'
 
 const MODES = [
   'software_build',
@@ -17,11 +18,41 @@ export function MissionLauncher() {
   const [goal, setGoal] = useState('')
   const [mode, setMode] = useState('feature_extension')
   const [priority, setPriority] = useState('medium')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState(null)
 
   const preview = useMemo(() => {
     if (!title && !goal) return null
     return `python3 submit_mission.py "${title || 'Mission title'}" "${goal || 'Mission goal'}" --mode ${mode} --priority ${priority}`
   }, [title, goal, mode, priority])
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    if (!title.trim() || !goal.trim()) {
+      setFeedback({ kind: 'error', text: 'Completa el título y el objetivo.' })
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      setFeedback(null)
+      const result = await createMission({
+        title: title.trim(),
+        goal: goal.trim(),
+        mode,
+        priority,
+        source: 'api',
+        allow_24x7: true,
+      })
+      setFeedback({ kind: 'success', text: `Misión creada: ${result.mission_id}` })
+      setTitle('')
+      setGoal('')
+    } catch (error) {
+      setFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'No se pudo crear la misión.' })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <section className="panel panel-section" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05), transparent)' }}>
@@ -29,10 +60,10 @@ export function MissionLauncher() {
         <h2 className="section-title">
           <Rocket size={12} /> Launch Protocol
         </h2>
-        <span className="section-count">CLI-Ready</span>
+        <span className="section-count">API + CLI</span>
       </div>
 
-      <div className="launcher-form">
+      <form className="launcher-form" onSubmit={handleSubmit}>
         <label className="field-label">
           <span>Mission Title</span>
           <input 
@@ -70,7 +101,34 @@ export function MissionLauncher() {
             </select>
           </label>
         </div>
-      </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              background: 'rgba(16, 185, 129, 0.14)',
+              color: '#8bf3d4',
+              fontWeight: 700,
+              cursor: isSubmitting ? 'wait' : 'pointer',
+            }}
+          >
+            <Rocket size={14} />
+            {isSubmitting ? 'Creando...' : 'Crear misión'}
+          </button>
+          {feedback && (
+            <span style={{ fontSize: '12px', color: feedback.kind === 'success' ? 'var(--accent)' : 'var(--danger)' }}>
+              {feedback.text}
+            </span>
+          )}
+        </div>
+      </form>
 
       <motion.div 
         className="launcher-output" 

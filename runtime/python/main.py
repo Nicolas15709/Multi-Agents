@@ -1,4 +1,4 @@
-"""Mission Control Python runtime entrypoint (working scaffold)."""
+"""Virtual Agency Python runtime entrypoint (working scaffold)."""
 
 from agents import AgentRegistry
 from agent_state import AgentStateManager
@@ -80,7 +80,7 @@ def main() -> None:
 
     if not mission_repository.list_missions():
         result = mission_service.submit_mission(
-            title="Mission Control bootstrap mission",
+            title="Virtual Agency bootstrap mission",
             goal="Initialize the orchestrator scaffold and validate core runtime pieces.",
             mode="software_build",
             priority="medium",
@@ -98,7 +98,7 @@ def main() -> None:
     snapshot = snapshot_api.snapshot()
     publisher.publish_snapshot(snapshot)
 
-    print("Mission Control runtime")
+    print("Virtual Agency runtime")
     print({
         "environment": config.environment,
         "db_path": config.db_path,
@@ -125,3 +125,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -1,9 +1,14 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-from api_snapshot import RuntimeSnapshotAPI
-from mission_lifecycle import MissionLifecycleService
-from startup_recovery import StartupRecoveryService
+try:
+    from .api_snapshot import RuntimeSnapshotAPI
+    from .mission_lifecycle import MissionLifecycleService
+    from .startup_recovery import StartupRecoveryService
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from api_snapshot import RuntimeSnapshotAPI
+    from mission_lifecycle import MissionLifecycleService
+    from startup_recovery import StartupRecoveryService
 
 
 @dataclass
@@ -18,6 +23,7 @@ class StatusReportService:
         mission = progress.get("mission") or snapshot.get("activeMission")
         counts = progress.get("progress", {})
         mission_summary = snapshot.get("missionSummary") or {}
+        mission_control = snapshot.get("activeMissionControl") or {}
         events = snapshot.get("stream", {}).get("events", [])
         notifications = snapshot.get("stream", {}).get("notifications", [])
         recovery_summary = self.recovery.inspect()
@@ -28,6 +34,7 @@ class StatusReportService:
             "mission": mission,
             "progress": counts,
             "mission_summary": mission_summary,
+            "mission_control": mission_control,
             "meta": snapshot.get("meta", {}),
             "runtime": {
                 "focus_mission_id": snapshot.get("activeMission", {}).get("id") if snapshot.get("activeMission") else None,
@@ -55,6 +62,7 @@ class StatusReportService:
                 "queued_mission_count": len(scheduler_meta.get("queued_missions", [])),
                 "blocked_mission_count": len(scheduler_meta.get("blocked_missions", [])),
                 "recovery_required": recovery_summary.get("status") == "needs_recovery",
+                "budget_status": mission_control.get("status"),
             },
         }
 

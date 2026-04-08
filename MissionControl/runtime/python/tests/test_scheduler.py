@@ -63,7 +63,7 @@ class TestScheduler:
         assert top is not None
         assert top["id"] == "m2"  # critical and ready gets top
 
-    def test_should_interrupt(self):
+    def test_should_interrupt(self, scheduler):
         assert scheduler.should_interrupt("low", "high") is True
         assert scheduler.should_interrupt("high", "low") is False
         assert scheduler.should_interrupt("medium", "medium") is False

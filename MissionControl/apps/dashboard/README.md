@@ -1,4 +1,4 @@
-# Mission Control Dashboard
+# Virtual Agency Dashboard
 
 Frontend placeholder for the visual dashboard.
 
@@ -28,3 +28,4 @@ Frontend placeholder for the visual dashboard.
 2. connect the new mission inspector/timeline to richer event payloads and filtering
 3. implement Supabase auth/login-first flow
 4. replace mock-only visual room state with real runtime positioning/activity
+

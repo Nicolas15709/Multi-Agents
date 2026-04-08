@@ -1,22 +1,23 @@
-# Mission Control Runtime (Python)
+# Virtual Agency Runtime (Python)
 
-Este directorio será el runtime principal del orquestador.
+Este directorio serÃ¡ el runtime principal del orquestador.
 
 ## Stack previsto
 - Python
 - LangGraph
 - SQLite
 - WebSocket local
-- integración futura con Supabase
+- integraciÃ³n futura con Supabase
 
 ## Responsabilidades
-- planificación
+- planificaciÃ³n
 - agenda interna avanzada
-- ejecución multiagente
-- manejo de políticas
+- ejecuciÃ³n multiagente
+- manejo de polÃ­ticas
 - persistencia operativa
 - notificaciones
 - streaming de eventos al dashboard
 
 ## Estado
-Scaffold inicial. Aún no contiene la implementación final del runtime real.
+Scaffold inicial. AÃºn no contiene la implementaciÃ³n final del runtime real.
+

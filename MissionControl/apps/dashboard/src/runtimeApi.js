@@ -228,3 +228,15 @@ export async function resumeMission(missionId, payload = {}) {
   }
   return json
 }
+
+export async function deleteAgent(agentId) {
+  const res = await fetch(`${resolveApiBaseUrl()}/agents/${agentId}`, {
+    method: 'DELETE',
+    headers: buildAuthHeaders(),
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok || json.ok === false) {
+    throw new Error(json.error || `delete agent failed (${res.status})`)
+  }
+  return json
+}

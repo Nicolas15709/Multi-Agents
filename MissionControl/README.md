@@ -1,10 +1,10 @@
-# Mission Control
+# Virtual Agency
 
-Mission Control es una plataforma multiagente autónoma con dashboard visual, pensada para coordinar desarrollo, marketing, auditoría digital, investigación, seguridad defensiva y ejecución híbrida con una experiencia tipo centro de operaciones.
+Virtual Agency es una plataforma multiagente autÃ³noma con dashboard visual, pensada para coordinar desarrollo, marketing, auditorÃ­a digital, investigaciÃ³n, seguridad defensiva y ejecuciÃ³n hÃ­brida con una experiencia tipo centro de operaciones.
 
-## Visión
+## VisiÃ³n
 
-Mission Control no será solo un chat. Será un centro de operaciones donde un equipo de agentes especializados trabaja con autonomía, agenda propia, prioridades, memoria operativa y reglas de seguridad, mientras el usuario supervisa desde un dashboard visual tipo videojuego.
+Virtual Agency no serÃ¡ solo un chat. SerÃ¡ un centro de operaciones donde un equipo de agentes especializados trabaja con autonomÃ­a, agenda propia, prioridades, memoria operativa y reglas de seguridad, mientras el usuario supervisa desde un dashboard visual tipo videojuego.
 
 ## Objetivo principal
 
@@ -12,7 +12,7 @@ Permitir que un equipo de agentes:
 - reciba misiones
 - las descomponga
 - investigue
-- diseñe
+- diseÃ±e
 - construya
 - revise
 - endurezca seguridad
@@ -25,8 +25,8 @@ Permitir que un equipo de agentes:
 - Vite + React
 - desplegado en Vercel
 - login primero
-- dashboard visual híbrido, cálido + tecnológico
-- estilo isométrico / 2.5D ilustrado
+- dashboard visual hÃ­brido, cÃ¡lido + tecnolÃ³gico
+- estilo isomÃ©trico / 2.5D ilustrado
 - animaciones ligeras en tiempo real
 - cards de agentes, inspector, feed, mission room
 
@@ -38,50 +38,60 @@ Permitir que un equipo de agentes:
 - misiones
 - eventos persistidos
 - preferencias
-- permisos/políticas
+- permisos/polÃ­ticas
 - artifacts importantes
 - storage final
 
-### Sistema de Memoria (Vector + Sesión)
-- **Memoria Vectorial**: Supabase pgvector para búsqueda semántica a largo plazo (experiencias, eventos, artifacts)
-- **Memoria por Sesión**: SQLite local con state diffing y snapshots comprimidos (estado en tiempo real)
+### Sistema de Memoria (Vector + SesiÃ³n)
+- **Memoria Vectorial**: Supabase pgvector para bÃºsqueda semÃ¡ntica a largo plazo (experiencias, eventos, artifacts)
+- **Memoria por SesiÃ³n**: SQLite local con state diffing y snapshots comprimidos (estado en tiempo real)
 - **Embeddings**: OpenAI o Groq (text-embedding-ada-002)
-- **TTL automático**: Políticas configurables de retención y limpieza
-- **Sync**: Cola de sincronización para consistencia eventual
+- **TTL automÃ¡tico**: PolÃ­ticas configurables de retenciÃ³n y limpieza
+- **Sync**: Cola de sincronizaciÃ³n para consistencia eventual
 
-> Consulta `MEMORY.md` para la guía completa de configuración, API y operación.
+> Consulta `MEMORY.md` para la guÃ­a completa de configuraciÃ³n, API y operaciÃ³n.
 
-### Runtime de ejecución
+### Runtime de ejecuciÃ³n
 - Python
 - LangGraph
 - self-hosted orchestrator
 - SQLite al inicio para estado interno
 - WebSocket local para tiempo real
-- preparado para migrar a hardware más potente en el futuro
-- preparado para Docker por agente más adelante
+- preparado para migrar a hardware mÃ¡s potente en el futuro
+- preparado para Docker por agente mÃ¡s adelante
+
+## Despliegue recomendado
+
+- `Vercel` para el dashboard frontend
+- `VPS` para runtime Python, API, WebSocket y OpenClaw
+- `Nginx` en el VPS como reverse proxy para `/api` y `/ws`
+
+Guia:
+
+[`deployment/VERCEL_VPS.md`](/C:/Users/Nicolas/Documents/Multi-Agents/Multi-Agents/MissionControl/deployment/VERCEL_VPS.md)
 
 ## Seguridad
 
-Mission Control sigue un enfoque security-first.
+Virtual Agency sigue un enfoque security-first.
 
 ### Reglas base
 - login siempre primero
-- nada de secretos en código
+- nada de secretos en cÃ³digo
 - nada de tokens expuestos al frontend
 - todo secreto sensible en variables de entorno o capa segura
-- separación estricta entre frontend, backend de producto y runtime
-- validación fuerte de inputs
-- mínimo privilegio
+- separaciÃ³n estricta entre frontend, backend de producto y runtime
+- validaciÃ³n fuerte de inputs
+- mÃ­nimo privilegio
 - RLS en Supabase
 - logs sin secretos
-- permisos granulares por integración, cuenta/recurso y acción
-- fuera de política explícita, no se ejecuta
+- permisos granulares por integraciÃ³n, cuenta/recurso y acciÃ³n
+- fuera de polÃ­tica explÃ­cita, no se ejecuta
 - arquitectura portable y migrable
-- autonomía alta con guardrails
+- autonomÃ­a alta con guardrails
 
 ## Equipo base
 
-Mission Control mantiene un núcleo fijo de 5 agentes:
+Virtual Agency mantiene un nÃºcleo fijo de 5 agentes:
 
 1. Supervisor
 2. Researcher
@@ -95,18 +105,18 @@ Mission Control mantiene un núcleo fijo de 5 agentes:
 3. Designer define prototipo, UX/UI y stack visual recomendado
 4. Developer implementa
 5. QA revisa
-6. Security templates y hardening pueden agregar ciclos adicionales según la misión
+6. Security templates y hardening pueden agregar ciclos adicionales segÃºn la misiÃ³n
 
-## Núcleo + modos
+## NÃºcleo + modos
 
-El sistema no crecerá inicialmente añadiendo demasiados agentes. En su lugar:
-- mantiene un núcleo fijo de 5 agentes
-- usa modos y plantillas de misión
-- adapta prioridades, entregables y peso de cada agente según el trabajo
+El sistema no crecerÃ¡ inicialmente aÃ±adiendo demasiados agentes. En su lugar:
+- mantiene un nÃºcleo fijo de 5 agentes
+- usa modos y plantillas de misiÃ³n
+- adapta prioridades, entregables y peso de cada agente segÃºn el trabajo
 
-## Plantillas de misión
+## Plantillas de misiÃ³n
 
-Mission Control incluirá plantillas amplias y completas, además de misiones libres.
+Virtual Agency incluirÃ¡ plantillas amplias y completas, ademÃ¡s de misiones libres.
 
 ### Desarrollo / producto
 - software_build
@@ -127,12 +137,12 @@ Mission Control incluirá plantillas amplias y completas, además de misiones li
 - content_engine
 - social_presence_audit
 
-### Negocio / prospección
+### Negocio / prospecciÃ³n
 - business_audit_proposal
 - competitor_intelligence
 - offer_design
 
-### Investigación / operación
+### InvestigaciÃ³n / operaciÃ³n
 - research_only
 - monitor_and_report
 - launch_mode
@@ -140,65 +150,65 @@ Mission Control incluirá plantillas amplias y completas, además de misiones li
 
 ## Agenda interna avanzada
 
-Mission Control incorpora una capa de agenda autónoma avanzada:
+Virtual Agency incorpora una capa de agenda autÃ³noma avanzada:
 - backlog
 - prioridades
 - tareas programadas
 - dependencias
 - ventanas horarias
 - objetivos recurrentes
-- planificación futura
+- planificaciÃ³n futura
 - cooldowns
 - memoria de trabajo
-- próximos pasos
-- prevención de loops absurdos
+- prÃ³ximos pasos
+- prevenciÃ³n de loops absurdos
 
 ## Prioridades e interrupciones
 
-Si entra una misión nueva mientras otra está en curso, el sistema debe:
+Si entra una misiÃ³n nueva mientras otra estÃ¡ en curso, el sistema debe:
 - comparar prioridad
 - evaluar impacto
 - decidir si ejecutar, encolar, diferir o consultar
 
-### Política
-- resolución mixta
+### PolÃ­tica
+- resoluciÃ³n mixta
 - auto-decide en casos claros
 - consulta al usuario por Telegram en casos ambiguos o sensibles
 
 ## Acciones externas y permisos
 
-### Política general
+### PolÃ­tica general
 - externas controladas
 - no globales
-- se habilitan por política explícita
+- se habilitan por polÃ­tica explÃ­cita
 
 ### Granularidad
 Permisos por:
-- integración
+- integraciÃ³n
 - cuenta/recurso
-- acción
+- acciÃ³n
 
 ### Modos posibles
 - prohibido
-- automático permitido
+- automÃ¡tico permitido
 - permitido con condiciones
-- aprobación puntual
+- aprobaciÃ³n puntual
 
-## Políticas, secretos y artifacts
+## PolÃ­ticas, secretos y artifacts
 
-### Políticas
-- modelo híbrido
-- Supabase como configuración central
-- runtime con caché local aplicada
+### PolÃ­ticas
+- modelo hÃ­brido
+- Supabase como configuraciÃ³n central
+- runtime con cachÃ© local aplicada
 
 ### Secretos
-- modelo híbrido
-- metadata/configuración en backend de producto
+- modelo hÃ­brido
+- metadata/configuraciÃ³n en backend de producto
 - secretos reales en entorno seguro del runtime
 - nunca expuestos al frontend
 
 ### Artifacts
-- modelo híbrido
+- modelo hÃ­brido
 - local para temporales/intermedios/pesados
 - Supabase Storage para artifacts importantes/finales/compartibles
 
@@ -214,9 +224,9 @@ Permisos por:
 - permisos
 - misiones
 - integraciones
-- configuración
-- políticas
-- aprobación de acciones
+- configuraciÃ³n
+- polÃ­ticas
+- aprobaciÃ³n de acciones
 
 #### Viewer / read-only
 - ve dashboard
@@ -226,22 +236,22 @@ Permisos por:
 ## Telegram vs Dashboard
 
 ### Telegram
-Se usará para:
+Se usarÃ¡ para:
 - notificaciones
 - alertas
-- decisiones rápidas
+- decisiones rÃ¡pidas
 - conflictos de prioridad
 - aprobaciones pendientes
 - bloqueos
 - retries agotados
-- misión completada
+- misiÃ³n completada
 - aviso de resumen disponible
 
 ### Dashboard
-Se usará para:
-- resúmenes completos
+Se usarÃ¡ para:
+- resÃºmenes completos
 - historial
-- análisis
+- anÃ¡lisis
 - cards de agentes
 - inspector
 - mission room
@@ -255,27 +265,27 @@ Se usará para:
 
 ### Entrada principal
 - command center general
-- acceso a misión activa
+- acceso a misiÃ³n activa
 
-### Dentro de una misión
-- escena visual isométrica / 2.5D
+### Dentro de una misiÃ³n
+- escena visual isomÃ©trica / 2.5D
 - agentes como personajes con movimiento y actividad en tiempo real
 - cards de agentes
 - feed de eventos
 - inspector del agente
-- panel de misión
+- panel de misiÃ³n
 - timeline
 - artifacts
 
 ### Estilo visual
-- híbrido: tecnológico + cálido
+- hÃ­brido: tecnolÃ³gico + cÃ¡lido
 - amigable
 - premium
 - con personalidad
-- no corporativo frío
+- no corporativo frÃ­o
 
 ### Agent cards
-Cada agente tendrá card con:
+Cada agente tendrÃ¡ card con:
 - avatar acorde al personaje
 - nombre
 - rol
@@ -284,13 +294,13 @@ Cada agente tendrá card con:
 - tarea activa
 - trabajo reciente
 - artifacts recientes
-- historial diario útil
+- historial diario Ãºtil
 - nivel de actividad
 - bloqueo o salud operativa
 
 ## Visibilidad del trabajo interno
 
-### Política
+### PolÃ­tica
 Equilibrada y filtrada.
 
 ### Se muestra
@@ -310,7 +320,7 @@ Equilibrada y filtrada.
 - ruido excesivo
 - contexto bruto innecesario
 
-## Creación de misiones
+## CreaciÃ³n de misiones
 
 Ambos:
 - formulario simple
@@ -319,21 +329,21 @@ Ambos:
 ## Misiones programadas
 
 - manuales + programadas
-- soporte para seguimiento continuo, monitoreo, mantenimiento y campañas recurrentes
+- soporte para seguimiento continuo, monitoreo, mantenimiento y campaÃ±as recurrentes
 
 ## Horario operativo
 
 Mixto:
 - ciertas tareas 24/7
 - otras con ventanas horarias
-- configurable según prioridad, misión, integración o política
+- configurable segÃºn prioridad, misiÃ³n, integraciÃ³n o polÃ­tica
 
 ## Integraciones prioritarias v1
 - Telegram
 - Web search / fetch
 - GitHub
 - Google Maps / negocio local
-- Instagram research / análisis
+- Instagram research / anÃ¡lisis
 
 ## MVP
 
@@ -348,73 +358,73 @@ Equilibrado:
 
 ```text
 MissionControl/
-├── README.md
-├── package.json
-├── .env.example
-├── .gitignore
-├── docs/
-│   ├── MASTER_PLAN.md
-│   ├── SECURITY_MODEL.md
-│   ├── PRODUCT_REQUIREMENTS.md
-│   ├── AGENTS_OVERVIEW.md
-│   └── TEMPLATES.md
-├── config/
-│   ├── agents.json
-│   ├── orchestrator.json
-│   ├── mission-templates.json
-│   ├── project.decisions.json
-│   └── docker.future.json
-├── apps/
-│   └── dashboard/
-│       ├── README.md
-│       └── src/
-│           └── placeholder.md
-├── prompts/
-│   ├── supervisor.AGENTS.md
-│   ├── researcher.AGENTS.md
-│   ├── designer.AGENTS.md
-│   ├── developer.AGENTS.md
-│   └── qa.AGENTS.md
-├── runtime/
-│   ├── python/
-│   │   ├── README.md
-│   │   ├── requirements.txt
-│   │   ├── main.py
-│   │   ├── config.py
-│   │   ├── db.py
-│   │   ├── models.py
-│   │   ├── planner.py
-│   │   ├── policies.py
-│   │   ├── notifications.py
-│   │   ├── websocket_server.py
-│   │   └── templates.py
-│   └── node-legacy/
-│       └── README.md
-├── src/
-│   ├── legacy/
-│   │   ├── agents.js
-│   │   ├── context.js
-│   │   ├── db.js
-│   │   ├── logger.js
-│   │   ├── main_orchestrator.js
-│   │   ├── retry.js
-│   │   ├── schema.sql
-│   │   ├── supabase.js
-│   │   └── workflow.js
-├── supabase/
-│   ├── schema.sql
-│   └── policies.sql
-├── data/
-│   └── .gitkeep
-├── logs/
-│   └── .gitkeep
-└── systemd/
-    └── mission-control.service
+â”œâ”€â”€ README.md
+â”œâ”€â”€ package.json
+â”œâ”€â”€ .env.example
+â”œâ”€â”€ .gitignore
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ MASTER_PLAN.md
+â”‚   â”œâ”€â”€ SECURITY_MODEL.md
+â”‚   â”œâ”€â”€ PRODUCT_REQUIREMENTS.md
+â”‚   â”œâ”€â”€ AGENTS_OVERVIEW.md
+â”‚   â””â”€â”€ TEMPLATES.md
+â”œâ”€â”€ config/
+â”‚   â”œâ”€â”€ agents.json
+â”‚   â”œâ”€â”€ orchestrator.json
+â”‚   â”œâ”€â”€ mission-templates.json
+â”‚   â”œâ”€â”€ project.decisions.json
+â”‚   â””â”€â”€ docker.future.json
+â”œâ”€â”€ apps/
+â”‚   â””â”€â”€ dashboard/
+â”‚       â”œâ”€â”€ README.md
+â”‚       â””â”€â”€ src/
+â”‚           â””â”€â”€ placeholder.md
+â”œâ”€â”€ prompts/
+â”‚   â”œâ”€â”€ supervisor.AGENTS.md
+â”‚   â”œâ”€â”€ researcher.AGENTS.md
+â”‚   â”œâ”€â”€ designer.AGENTS.md
+â”‚   â”œâ”€â”€ developer.AGENTS.md
+â”‚   â””â”€â”€ qa.AGENTS.md
+â”œâ”€â”€ runtime/
+â”‚   â”œâ”€â”€ python/
+â”‚   â”‚   â”œâ”€â”€ README.md
+â”‚   â”‚   â”œâ”€â”€ requirements.txt
+â”‚   â”‚   â”œâ”€â”€ main.py
+â”‚   â”‚   â”œâ”€â”€ config.py
+â”‚   â”‚   â”œâ”€â”€ db.py
+â”‚   â”‚   â”œâ”€â”€ models.py
+â”‚   â”‚   â”œâ”€â”€ planner.py
+â”‚   â”‚   â”œâ”€â”€ policies.py
+â”‚   â”‚   â”œâ”€â”€ notifications.py
+â”‚   â”‚   â”œâ”€â”€ websocket_server.py
+â”‚   â”‚   â””â”€â”€ templates.py
+â”‚   â””â”€â”€ node-legacy/
+â”‚       â””â”€â”€ README.md
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ legacy/
+â”‚   â”‚   â”œâ”€â”€ agents.js
+â”‚   â”‚   â”œâ”€â”€ context.js
+â”‚   â”‚   â”œâ”€â”€ db.js
+â”‚   â”‚   â”œâ”€â”€ logger.js
+â”‚   â”‚   â”œâ”€â”€ main_orchestrator.js
+â”‚   â”‚   â”œâ”€â”€ retry.js
+â”‚   â”‚   â”œâ”€â”€ schema.sql
+â”‚   â”‚   â”œâ”€â”€ supabase.js
+â”‚   â”‚   â””â”€â”€ workflow.js
+â”œâ”€â”€ supabase/
+â”‚   â”œâ”€â”€ schema.sql
+â”‚   â””â”€â”€ policies.sql
+â”œâ”€â”€ data/
+â”‚   â””â”€â”€ .gitkeep
+â”œâ”€â”€ logs/
+â”‚   â””â”€â”€ .gitkeep
+â””â”€â”€ systemd/
+    â””â”€â”€ virtual-agency.service
 ```
 
-## Automatización operativa añadida
+## AutomatizaciÃ³n operativa aÃ±adida
 
-Mission Control ahora incluye un helper cron-friendly para sembrar automáticamente una misión `maintenance_cycle` cuando toque, sin duplicarla si ya hay una activa o si la última ejecución sigue dentro de la ventana mínima.
+Virtual Agency ahora incluye un helper cron-friendly para sembrar automÃ¡ticamente una misiÃ³n `maintenance_cycle` cuando toque, sin duplicarla si ya hay una activa o si la Ãºltima ejecuciÃ³n sigue dentro de la ventana mÃ­nima.
 
 Ejemplo:
 
@@ -422,49 +432,49 @@ Ejemplo:
 npm run runtime:ensure-maintenance -- --min-interval-hours 24 --schedule-label cron:daily
 ```
 
-El comando responde JSON (`created` o `skipped`) para que sea fácil integrarlo con cron, systemd timers o scripts de health/ops.
+El comando responde JSON (`created` o `skipped`) para que sea fÃ¡cil integrarlo con cron, systemd timers o scripts de health/ops.
 
-## Diagnóstico operativo
+## DiagnÃ³stico operativo
 
-Para revisar rápidamente si el runtime está sano, si el snapshot del dashboard está fresco, si hay trabajo bloqueado o si el WebSocket/systemd parecen caídos, ahora existe un comando de diagnóstico orientado a operaciones:
+Para revisar rÃ¡pidamente si el runtime estÃ¡ sano, si el snapshot del dashboard estÃ¡ fresco, si hay trabajo bloqueado o si el WebSocket/systemd parecen caÃ­dos, ahora existe un comando de diagnÃ³stico orientado a operaciones:
 
 ```bash
 npm run runtime:doctor
 ```
 
-Opciones útiles:
+Opciones Ãºtiles:
 
 ```bash
 npm run runtime:doctor -- --json
 npm run runtime:doctor -- --snapshot-max-age-minutes 30
-npm run runtime:doctor -- --systemd-unit mission-control.service
+npm run runtime:doctor -- --systemd-unit virtual-agency.service
 ```
 
-El diagnóstico revisa:
-- presencia y ubicación de la base SQLite
-- misión foco y estado general del runtime
+El diagnÃ³stico revisa:
+- presencia y ubicaciÃ³n de la base SQLite
+- misiÃ³n foco y estado general del runtime
 - tareas/misiones bloqueadas
 - necesidad potencial de recovery tras reinicio
 - frescura de `apps/dashboard/public/snapshot.json` y `dist/snapshot.json`
 - reachability del WebSocket configurado
-- estado del unit de systemd si `systemctl` está disponible
+- estado del unit de systemd si `systemctl` estÃ¡ disponible
 
-## Próximos pasos
+## PrÃ³ximos pasos
 
 1. Consolidar runtime Python + LangGraph
 2. Definir dashboard Vite + React con login-first
-3. Conectar Supabase Auth, roles y políticas
+3. Conectar Supabase Auth, roles y polÃ­ticas
 4. Implementar planner, agenda avanzada y scheduling
 5. Implementar event stream por WebSocket local
-6. Diseñar cards, mission room y command center
-7. Añadir catálogo completo de plantillas
-8. Preparar futura dockerización por agente
+6. DiseÃ±ar cards, mission room y command center
+7. AÃ±adir catÃ¡logo completo de plantillas
+8. Preparar futura dockerizaciÃ³n por agente
 
 ---
 
 # CI/CD y Testing
 
-Mission Control incluye integración continua con GitHub Actions y una suite de pruebas automáticas para el runtime Python.
+Virtual Agency incluye integraciÃ³n continua con GitHub Actions y una suite de pruebas automÃ¡ticas para el runtime Python.
 
 ## Ejecutar pruebas localmente
 
@@ -485,7 +495,7 @@ cd runtime/python && python -m pytest --cov=. --cov-report=html
 ```
 
 ### Cobertura esperada
-El objetivo de cobertura es >90% para el runtime Python (módulos core: db, repository, config, models, scheduler, etc.)
+El objetivo de cobertura es >90% para el runtime Python (mÃ³dulos core: db, repository, config, models, scheduler, etc.)
 
 ## Flujo de CI/CD
 
@@ -498,7 +508,7 @@ El workflow de CI (.github/workflows/ci.yml) se ejecuta en:
 ### Pasos del workflow
 
 1. **Setup Python**: Usa matrices para Python 3.11 y 3.12
-2. **Instalación**: Instala dependencias de producción y testing
+2. **InstalaciÃ³n**: Instala dependencias de producciÃ³n y testing
 3. **Tests**: Ejecuta pytest con coverage, genera reportes XML y terminal
 4. **Upload a Codecov**: Sube la cobertura a codecov.io (opcional)
 5. **Lint**: Ejecuta flake8 para detectar errores de estilo y calidad
@@ -511,7 +521,7 @@ ParaCodecov (opcional):
 
 ## Notificaciones externas
 
-Mission Control soporta notificaciones a través de **Telegram** y **Slack**. Estas se usan para alertas, actualizaciones de misión, bloqueos y decisiones que requieren intervención humana.
+Virtual Agency soporta notificaciones a travÃ©s de **Telegram** y **Slack**. Estas se usan para alertas, actualizaciones de misiÃ³n, bloqueos y decisiones que requieren intervenciÃ³n humana.
 
 ### Configurar Telegram
 
@@ -525,33 +535,33 @@ Mission Control soporta notificaciones a través de **Telegram** y **Slack**. Es
    TELEGRAM_BOT_TOKEN=tu_bot_token
    TELEGRAM_CHAT_ID=tu_chat_id
    ```
-4. Habilitar en el runtime: `MISSION_CONTROL_TELEGRAM_NOTIFICATIONS=true` (por defecto está true)
+4. Habilitar en el runtime: `MISSION_CONTROL_TELEGRAM_NOTIFICATIONS=true` (por defecto estÃ¡ true)
 
 ### Configurar Slack
 
 1. Crear un Incoming Webhook en Slack:
-   - Ve a tu workspace → Apps → "Incoming Webhooks"
-   - Actítalo y crea un nuevo webhook
+   - Ve a tu workspace â†’ Apps â†’ "Incoming Webhooks"
+   - ActÃ­talo y crea un nuevo webhook
    - Copia la URL (ej: `https://hooks.slack.com/services/T000/B000/XXXX`)
 2. Configurar variable de entorno:
    ```bash
    SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
    ```
-3. El webhook se activa automáticamente si está configurado
+3. El webhook se activa automÃ¡ticamente si estÃ¡ configurado
 
 ### Tipos de notificaciones (kinds)
 
-- `mission_complete`: Misión completada
-- `mission_failed`: Misión falló
+- `mission_complete`: MisiÃ³n completada
+- `mission_failed`: MisiÃ³n fallÃ³
 - `agent_blocked`: Agente bloqueado
 - `error`: Error general del sistema
 - `heartbeat`: Latido del sistema (silencioso, no notifica en Telegram)
-- `progress`: Actualización de progreso (opcionalmente silencioso)
+- `progress`: ActualizaciÃ³n de progreso (opcionalmente silencioso)
 - `alert`: Alertas generales
 
 ### Procesar notificaciones manualmente
 
-El runtime procesa notificaciones automáticamente cada tick. También puedes procesar la cola manualmente:
+El runtime procesa notificaciones automÃ¡ticamente cada tick. TambiÃ©n puedes procesar la cola manualmente:
 
 ```bash
 # Procesar hasta 100 notificaciones pendientes
@@ -564,21 +574,21 @@ npm run runtime:notifications:process -- --dry-run
 npm run runtime:notifications:process -- --json
 ```
 
-### CLI de通知下称处理
+### CLI deé€šçŸ¥ä¸‹ç§°å¤„ç†
 
-El script `runtime/python/notification_processor_cli.py` permite procesar notificaciones desde la línea de comandos, útil para cron jobs o debugging.
+El script `runtime/python/notification_processor_cli.py` permite procesar notificaciones desde la lÃ­nea de comandos, Ãºtil para cron jobs o debugging.
 
 ---
 
-# Despliegue en Producción (VPS)
+# Despliegue en ProducciÃ³n (VPS)
 
-Mission Control incluye una configuración completa para despliegue 24/7 en un VPS usando Docker Compose.
+Virtual Agency incluye una configuraciÃ³n completa para despliegue 24/7 en un VPS usando Docker Compose.
 
 ## Requisitos del VPS
 
 - **Sistema Operativo**: Ubuntu 22.04+ o Debian 11+ (x64 o ARM64)
 - **Docker**: 20.10+ con Docker Compose v2
-- **RAM**: Mínimo 2GB, recomendado 4GB+
+- **RAM**: MÃ­nimo 2GB, recomendado 4GB+
 - **Almacenamiento**: 10GB libres (para base de datos, logs y contenedores)
 - **Puertos**: 80 (HTTP) y opcionalmente 8765 (WebSocket)
 - **Dominio** (opcional): Apuntando a la IP del VPS
@@ -587,15 +597,15 @@ Mission Control incluye una configuración completa para despliegue 24/7 en un V
 
 ```text
 MissionControl/
-├── deployment/
-│   ├── Dockerfile          # Imagen multi-stage (dashboard + runtime)
-│   ├── nginx.conf          # Configuración de nginx
-│   ├── start.sh            # Script de inicio del contenedor
-│   └── init-db.sh          # Script de inicialización de BD
-├── docker-compose.yml      # Orquestación de contenedores
-├── .env.vps.example        # Variables de entorno de ejemplo
-├── .dockerignore           # Archivos excluidos del build
-└── ... (código fuente)
+â”œâ”€â”€ deployment/
+â”‚   â”œâ”€â”€ Dockerfile          # Imagen multi-stage (dashboard + runtime)
+â”‚   â”œâ”€â”€ nginx.conf          # ConfiguraciÃ³n de nginx
+â”‚   â”œâ”€â”€ start.sh            # Script de inicio del contenedor
+â”‚   â””â”€â”€ init-db.sh          # Script de inicializaciÃ³n de BD
+â”œâ”€â”€ docker-compose.yml      # OrquestaciÃ³n de contenedores
+â”œâ”€â”€ .env.vps.example        # Variables de entorno de ejemplo
+â”œâ”€â”€ .dockerignore           # Archivos excluidos del build
+â””â”€â”€ ... (cÃ³digo fuente)
 ```
 
 ## Pasos de despliegue
@@ -609,15 +619,15 @@ sudo apt update && sudo apt upgrade -y
 # Instalar Docker y Compose
 sudo apt install -y docker.io docker-compose
 
-# Añadir usuario actual a grupo docker (logout/login requerido)
+# AÃ±adir usuario actual a grupo docker (logout/login requerido)
 sudo usermod -aG docker $USER
 ```
 
 ### 2. Clona el repositorio en el VPS
 
 ```bash
-git clone <tu-repositorio> /opt/mission-control
-cd /opt/mission-control
+git clone <tu-repositorio> /opt/virtual-agency
+cd /opt/virtual-agency
 ```
 
 ### 3. Configura variables de entorno
@@ -630,17 +640,17 @@ cp MissionControl/.env.vps.example .env.vps
 nano .env.vps
 ```
 
-Variables críticas a configurar:
+Variables crÃ­ticas a configurar:
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (si usas Supabase)
 - `OPENROUTER_API_KEY` (para que los agentes puedan usar LLMs)
 - `JWT_SECRET` (genera uno: `openssl rand -base64 32`)
 
-> **Nota**: Si no configuras Supabase, Mission Control funcionará en modo standalone con SQLite local (solo para pruebas o uso personal).
+> **Nota**: Si no configuras Supabase, Virtual Agency funcionarÃ¡ en modo standalone con SQLite local (solo para pruebas o uso personal).
 
 ### 4. Inicializar la base de datos
 
 ```bash
-# Dar permisos de ejecución
+# Dar permisos de ejecuciÃ³n
 chmod +x MissionControl/deployment/init-db.sh
 
 # Inicializar (esto crea la SQLite y siembra los agentes iniciales)
@@ -669,23 +679,23 @@ docker-compose ps
 # Health check (debe responder "healthy")
 curl http://localhost/health
 
-# Logs de la aplicación
-docker-compose logs mission-control
+# Logs de la aplicaciÃ³n
+docker-compose logs virtual-agency
 ```
 
 ### 7. Acceder al dashboard
 
 Abre en tu navegador: `http://IP-DE-TU-VPS/`
 
-- La primera carga puede tardar unos segundos mientras el runtime初始化.
-- El dashboard se conecta automáticamente via WebSocket a `ws://IP/ws`.
-- Los agentes aparecerán en estado `idle` hasta que se envíe una misión.
+- La primera carga puede tardar unos segundos mientras el runtimeåˆå§‹åŒ–.
+- El dashboard se conecta automÃ¡ticamente via WebSocket a `ws://IP/ws`.
+- Los agentes aparecerÃ¡n en estado `idle` hasta que se envÃ­e una misiÃ³n.
 
 ### 8. (Opcional) Configurar HTTPS con Let's Encrypt
 
 Recomendamos usar **Caddy** o **nginx + certbot** para SSL gratis:
 
-**Con Caddy (más simple)**:
+**Con Caddy (mÃ¡s simple)**:
 ```bash
 # Instalar Caddy
 sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
@@ -693,7 +703,7 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --d
 echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" | sudo tee /etc/apt/sources.list.d/caddy-stable.list
 sudo apt update && sudo apt install caddy
 
-# Configurar Caddy para proxy a Mission Control (puerto 80)
+# Configurar Caddy para proxy a Virtual Agency (puerto 80)
 sudo nano /etc/caddy/Caddyfile
 ```
 
@@ -708,7 +718,7 @@ tu-dominio.com {
 sudo systemctl reload caddy
 ```
 
-## Comandos útiles de Docker Compose
+## Comandos Ãºtiles de Docker Compose
 
 ```bash
 # Reiniciar servicios
@@ -717,28 +727,28 @@ docker-compose restart
 # Parar servicios
 docker-compose down
 
-# Parar y eliminar volúmenes (¡CUIDADO: borra la base de datos!)
+# Parar y eliminar volÃºmenes (Â¡CUIDADO: borra la base de datos!)
 docker-compose down -v
 
 # Ver logs
-docker-compose logs -f mission-control
+docker-compose logs -f virtual-agency
 
 # Acceder a shell del contenedor
-docker-compose exec mission-control bash
+docker-compose exec virtual-agency bash
 
-# Rebuild tras cambios en el código
+# Rebuild tras cambios en el cÃ³digo
 docker-compose build --no-cache
 docker-compose up -d
 ```
 
 ## Directorios persistentes
 
-- `./data` → Base de datos SQLite y archivos temporales
-- `./logs` → Logs de la aplicación (dentro del contenedor)
+- `./data` â†’ Base de datos SQLite y archivos temporales
+- `./logs` â†’ Logs de la aplicaciÃ³n (dentro del contenedor)
 
-Estos directorios están montados como volúmenes, por lo que sobreviven a recreaciones de contenedores.
+Estos directorios estÃ¡n montados como volÃºmenes, por lo que sobreviven a recreaciones de contenedores.
 
-## Monitorización
+## MonitorizaciÃ³n
 
 ### Healthcheck
 Docker Compose verifica cada 30 segundos que `http://localhost/health` responde. El estado se ve con:
@@ -749,16 +759,16 @@ docker-compose ps
 ### Logs
 Los logs del Python runtime y nginx se mezclan. Para filtar:
 ```bash
-docker-compose logs -f mission-control | grep -i error
+docker-compose logs -f virtual-agency | grep -i error
 ```
 
-### Revisión manual
+### RevisiÃ³n manual
 ```bash
 # Estado de la base de datos
-docker-compose exec mission-control python3 -c "from db import Database; db = Database('/app/data/sessions.db'); print('Missions:', db.fetchone('SELECT COUNT(*) as c FROM missions')['c'])"
+docker-compose exec virtual-agency python3 -c "from db import Database; db = Database('/app/data/sessions.db'); print('Missions:', db.fetchone('SELECT COUNT(*) as c FROM missions')['c'])"
 
 # Generar snapshot inmediato
-docker-compose exec mission-control python3 export_snapshot.py
+docker-compose exec virtual-agency python3 export_snapshot.py
 ```
 
 ## Copias de seguridad (Backup)
@@ -770,10 +780,10 @@ La base de datos es un archivo SQLite en `data/sessions.db`:
 cp data/sessions.db "backups/sessions-$(date +%Y%m%d-%H%M%S).db"
 
 # Automatizar con cron (diario a las 2am)
-0 2 * * * cp /opt/mission-control/data/sessions.db /opt/mission-control/backups/sessions-$(date +\%Y\%m\%d).db
+0 2 * * * cp /opt/virtual-agency/data/sessions.db /opt/virtual-agency/backups/sessions-$(date +\%Y\%m\%d).db
 ```
 
-## Actualización
+## ActualizaciÃ³n
 
 ```bash
 # 1. Pull de cambios
@@ -789,12 +799,12 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
-## Solución de problemas
+## SoluciÃ³n de problemas
 
 ### El contenedor se reinicia constantemente
-Ver logs: `docker-compose logs mission-control`
-- Error de conexión a Supabase → revisar `.env.vps`
-- Puerto 80 ocupado → cambiar puerto en `docker-compose.yml` o liberar puerto
+Ver logs: `docker-compose logs virtual-agency`
+- Error de conexiÃ³n a Supabase â†’ revisar `.env.vps`
+- Puerto 80 ocupado â†’ cambiar puerto en `docker-compose.yml` o liberar puerto
 
 ### Base de datos corrupta
 Eliminar volumen y reinicializar:
@@ -813,21 +823,21 @@ docker-compose up -d
 
 ### WebSocket no conecta
 - Asegurarse de que `MISSION_CONTROL_WEBSOCKET=true` en `.env.vps`
-- Verificar que el puerto 8765 no está bloqueado por firewall (si se accede externamente)
-- En el dashboard, abrir consola del navegador (F12) y revisar errores de conexión WebSocket
+- Verificar que el puerto 8765 no estÃ¡ bloqueado por firewall (si se accede externamente)
+- En el dashboard, abrir consola del navegador (F12) y revisar errores de conexiÃ³n WebSocket
 
 ### Agentes no aparecen
 - Esperar ~5 segundos (tick interval)
-- Verificar que el runtime está vivo: `docker-compose logs mission-control | grep "Mission Control bootstrap"`
-- Si no, puede que la base de datos no esté inicializada
+- Verificar que el runtime estÃ¡ vivo: `docker-compose logs virtual-agency | grep "Virtual Agency bootstrap"`
+- Si no, puede que la base de datos no estÃ© inicializada
 
-## Migración de base de datos
+## MigraciÃ³n de base de datos
 
-Si en el futuro se modifican las tablas, se agregarán scripts de migración en `deployment/migrations/`. Por ahora, el esquema inicial es fijo y se aplica en `init-db.sh`.
+Si en el futuro se modifican las tablas, se agregarÃ¡n scripts de migraciÃ³n en `deployment/migrations/`. Por ahora, el esquema inicial es fijo y se aplica en `init-db.sh`.
 
 Para migrar manualmente:
 ```bash
-docker-compose exec mission-control python3 -c "
+docker-compose exec virtual-agency python3 -c "
 from db import Database
 db = Database('/app/data/sessions.db')
 # Ejecutar SQL manualmente
@@ -835,13 +845,13 @@ db.execute('ALTER TABLE missions ADD COLUMN nueva_columna TEXT')
 "
 ```
 
-## Seguridad en producción
+## Seguridad en producciÃ³n
 
 - Cambiar el usuario por defecto de nginx (se ejecuta como root por simplicidad; considerar usuario `nginx` en hardening)
 - Configurar firewall (ufw/iptables) para solo abrir puertos 80/443
-- Usar HTTPS (ver sección anterior)
-- Rotar secretos periódicamente
-- No commitear `.env.vps` (ya está en `.gitignore`)
+- Usar HTTPS (ver secciÃ³n anterior)
+- Rotar secretos periÃ³dicamente
+- No commitear `.env.vps` (ya estÃ¡ en `.gitignore`)
 - Limitar logs (evitar log de secrets)
 - Usar `restart: unless-stopped` en docker-compose (ya configurado)
 
@@ -851,5 +861,7 @@ Para reportar bugs o solicitar features, usar issues del repositorio.
 
 ---
 
-*Desarrollado con ❤️ para operaciones 24/7*
+*Desarrollado con â¤ï¸ para operaciones 24/7*
+
+
 

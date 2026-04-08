@@ -47,9 +47,10 @@ create table if not exists saved_artifacts (
 
 create table if not exists ui_preferences (
   user_id uuid primary key,
-  theme text default 'mission-control-dark',
+  theme text default 'virtual-agency-dark',
   density text default 'comfortable',
   motion_enabled boolean not null default true,
   layout jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
+

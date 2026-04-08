@@ -1,10 +1,10 @@
 # Multi-Agents
 
-Workspace principal de Mission Control / Multi-Agents.
+Workspace principal de Virtual Agency / Multi-Agents.
 
-## Arranque rápido
+## Arranque rÃ¡pido
 
-### Dashboard (desde la raíz)
+### Dashboard (desde la raÃ­z)
 ```bash
 npm run dev
 ```
@@ -25,8 +25,9 @@ npm run snapshot
 ```
 
 ## Nota importante
-La implementación activa del proyecto vive en:
+La implementaciÃ³n activa del proyecto vive en:
 - `MissionControl/apps/dashboard`
 - `MissionControl/runtime/python`
 
-Los scripts de la raíz están alineados para ejecutar esas rutas directamente y evitar el flujo legacy que apuntaba a `src/main_orchestrator.js`.
+Los scripts de la raÃ­z estÃ¡n alineados para ejecutar esas rutas directamente y evitar el flujo legacy que apuntaba a `src/main_orchestrator.js`.
+

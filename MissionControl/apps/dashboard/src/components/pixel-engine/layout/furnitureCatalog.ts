@@ -1,16 +1,16 @@
 import { FurnitureType } from '../types.js'
-import type { FurnitureCatalogEntry, SpriteData, PixelTextConfig } from '../types.js'
+import type { FurnitureCatalogEntry, PixelTextConfig, SpriteData } from '../types.js'
 import {
-  DESK_SQUARE_SPRITE,
   BOOKSHELF_SPRITE,
-  PLANT_SPRITE,
-  COOLER_SPRITE,
-  WHITEBOARD_SPRITE,
   CHAIR_SPRITE,
-  PC_SPRITE,
+  COOLER_SPRITE,
+  DESK_SQUARE_SPRITE,
   LAMP_SPRITE,
+  PC_SPRITE,
+  PLANT_SPRITE,
+  WHITEBOARD_SPRITE,
 } from '../sprites/spriteData.js'
-import { getTextSprite, getTextFootprint } from '../sprites/textSpriteCache.js'
+import { getTextFootprint, getTextSprite } from '../sprites/textSpriteCache.js'
 
 export interface LoadedAssetData {
   catalog: Array<{
@@ -23,174 +23,216 @@ export interface LoadedAssetData {
     footprintH: number
     isDesk: boolean
     groupId?: string
-    orientation?: string  // 'front' | 'back' | 'left' | 'right'
-    state?: string        // 'on' | 'off'
+    orientation?: string
+    state?: string
     canPlaceOnSurfaces?: boolean
     backgroundTiles?: number
     canPlaceOnWalls?: boolean
+    mirrorSide?: boolean
+    rotationScheme?: string
+    animationGroup?: string
+    frame?: number
   }>
   sprites: Record<string, SpriteData>
 }
 
-export type FurnitureCategory = 'desks' | 'chairs' | 'storage' | 'decor' | 'electronics' | 'wall' | 'misc'
+export type FurnitureCategory =
+  | 'desks'
+  | 'chairs'
+  | 'storage'
+  | 'decor'
+  | 'electronics'
+  | 'wall'
+  | 'misc'
 
 export interface CatalogEntryWithCategory extends FurnitureCatalogEntry {
   category: FurnitureCategory
 }
 
 export const FURNITURE_CATALOG: CatalogEntryWithCategory[] = [
-  // ── Original hand-drawn sprites ──
-  { type: FurnitureType.DESK,       label: 'Desk',       footprintW: 2, footprintH: 2, sprite: DESK_SQUARE_SPRITE,  isDesk: true,  category: 'desks' },
-  { type: FurnitureType.BOOKSHELF,  label: 'Bookshelf',  footprintW: 1, footprintH: 2, sprite: BOOKSHELF_SPRITE,    isDesk: false, category: 'storage' },
-  { type: FurnitureType.PLANT,      label: 'Plant',      footprintW: 1, footprintH: 1, sprite: PLANT_SPRITE,        isDesk: false, category: 'decor' },
-  { type: FurnitureType.COOLER,     label: 'Cooler',     footprintW: 1, footprintH: 1, sprite: COOLER_SPRITE,       isDesk: false, category: 'misc' },
-  { type: FurnitureType.WHITEBOARD, label: 'Whiteboard', footprintW: 2, footprintH: 1, sprite: WHITEBOARD_SPRITE,   isDesk: false, category: 'decor' },
-  { type: FurnitureType.CHAIR,      label: 'Chair',      footprintW: 1, footprintH: 1, sprite: CHAIR_SPRITE,        isDesk: false, category: 'chairs' },
-  { type: FurnitureType.PC,         label: 'PC',         footprintW: 1, footprintH: 1, sprite: PC_SPRITE,           isDesk: false, category: 'electronics' },
-  { type: FurnitureType.LAMP,       label: 'Lamp',       footprintW: 1, footprintH: 1, sprite: LAMP_SPRITE,         isDesk: false, category: 'decor' },
-  { type: FurnitureType.PIXEL_TEXT, label: 'Pixel Text', footprintW: 1, footprintH: 1, sprite: (() => {
-    // "Tx" icon sprite for catalog thumbnail (16x16) - green bg with white T
-    const t = '#FFFFFF', b = '#2A6A2A', g = '#3A8A3A', _ = ''
-    return [
-      [_,b,b,b,b,b,b,b,b,b,b,b,b,b,b,_],
-      [b,g,g,g,g,g,g,g,g,g,g,g,g,g,g,b],
-      [b,g,t,t,t,t,t,t,t,t,t,t,t,t,g,b],
-      [b,g,t,t,t,t,t,t,t,t,t,t,t,t,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,t,t,t,t,g,g,g,g,g,b],
-      [b,g,g,g,g,g,g,g,g,g,g,g,g,g,g,b],
-      [_,b,b,b,b,b,b,b,b,b,b,b,b,b,b,_],
-    ]
-  })(), isDesk: false, category: 'decor' },
-
+  { type: FurnitureType.DESK, label: 'Desk', footprintW: 2, footprintH: 2, sprite: DESK_SQUARE_SPRITE, isDesk: true, category: 'desks' },
+  { type: FurnitureType.BOOKSHELF, label: 'Bookshelf', footprintW: 1, footprintH: 2, sprite: BOOKSHELF_SPRITE, isDesk: false, category: 'storage' },
+  { type: FurnitureType.PLANT, label: 'Plant', footprintW: 1, footprintH: 1, sprite: PLANT_SPRITE, isDesk: false, category: 'decor' },
+  { type: FurnitureType.COOLER, label: 'Cooler', footprintW: 1, footprintH: 1, sprite: COOLER_SPRITE, isDesk: false, category: 'misc' },
+  { type: FurnitureType.WHITEBOARD, label: 'Whiteboard', footprintW: 2, footprintH: 1, sprite: WHITEBOARD_SPRITE, isDesk: false, category: 'decor' },
+  { type: FurnitureType.CHAIR, label: 'Chair', footprintW: 1, footprintH: 1, sprite: CHAIR_SPRITE, isDesk: false, category: 'chairs' },
+  { type: FurnitureType.PC, label: 'PC', footprintW: 1, footprintH: 1, sprite: PC_SPRITE, isDesk: false, category: 'electronics' },
+  { type: FurnitureType.LAMP, label: 'Lamp', footprintW: 1, footprintH: 1, sprite: LAMP_SPRITE, isDesk: false, category: 'decor' },
+  {
+    type: FurnitureType.PIXEL_TEXT,
+    label: 'Pixel Text',
+    footprintW: 1,
+    footprintH: 1,
+    sprite: (() => {
+      const t = '#FFFFFF'
+      const b = '#2A6A2A'
+      const g = '#3A8A3A'
+      const _ = ''
+      return [
+        [_, b, b, b, b, b, b, b, b, b, b, b, b, b, b, _],
+        [b, g, g, g, g, g, g, g, g, g, g, g, g, g, g, b],
+        [b, g, t, t, t, t, t, t, t, t, t, t, t, t, g, b],
+        [b, g, t, t, t, t, t, t, t, t, t, t, t, t, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, t, t, t, t, g, g, g, g, g, b],
+        [b, g, g, g, g, g, g, g, g, g, g, g, g, g, g, b],
+        [_, b, b, b, b, b, b, b, b, b, b, b, b, b, b, _],
+      ]
+    })(),
+    isDesk: false,
+    category: 'decor',
+  },
 ]
 
-// ── Rotation groups ──────────────────────────────────────────────
-// Flexible rotation: supports 2+ orientations (not just all 4)
 interface RotationGroup {
-  /** Ordered list of orientations available for this group */
   orientations: string[]
-  /** Maps orientation → asset ID (for the default/off state) */
   members: Record<string, string>
 }
 
-// Maps any member asset ID → its rotation group
 const rotationGroups = new Map<string, RotationGroup>()
-
-// ── State groups ────────────────────────────────────────────────
-// Maps asset ID → its on/off counterpart (symmetric for toggle)
 const stateGroups = new Map<string, string>()
-// Directional maps for getOnStateType / getOffStateType
-const offToOn = new Map<string, string>()  // off asset → on asset
-const onToOff = new Map<string, string>()  // on asset → off asset
+const offToOn = new Map<string, string>()
+const onToOff = new Map<string, string>()
+const animationGroups = new Map<string, string[]>()
 
-// Internal catalog (includes all variants for getCatalogEntry lookups)
 let internalCatalog: CatalogEntryWithCategory[] | null = null
-
-// Dynamic catalog built from loaded assets (when available)
-// Only includes "front" variants for grouped items (shown in editor palette)
 let dynamicCatalog: CatalogEntryWithCategory[] | null = null
 let dynamicCategories: FurnitureCategory[] | null = null
 
-/**
- * Build catalog from loaded assets. Returns true if successful.
- * Once built, all getCatalog* functions use the dynamic catalog.
- * Uses ONLY custom assets (excludes hardcoded furniture when assets are loaded).
- */
 export function buildDynamicCatalog(assets: LoadedAssetData): boolean {
   if (!assets?.catalog || !assets?.sprites) return false
 
-  // Build all entries (including non-front variants)
-  const allEntries = assets.catalog.map((asset) => {
-    const sprite = assets.sprites[asset.id]
-    if (!sprite) {
-      console.warn(`No sprite data for asset ${asset.id}`)
-      return null
+  const allEntries = assets.catalog
+    .map((asset) => {
+      const sprite = assets.sprites[asset.id]
+      if (!sprite) {
+        console.warn(`No sprite data for asset ${asset.id}`)
+        return null
+      }
+      return {
+        type: asset.id,
+        label: asset.label,
+        footprintW: asset.footprintW,
+        footprintH: asset.footprintH,
+        sprite,
+        isDesk: asset.isDesk,
+        category: asset.category as FurnitureCategory,
+        ...(asset.orientation ? { orientation: asset.orientation } : {}),
+        ...(asset.canPlaceOnSurfaces ? { canPlaceOnSurfaces: true } : {}),
+        ...(asset.backgroundTiles ? { backgroundTiles: asset.backgroundTiles } : {}),
+        ...(asset.canPlaceOnWalls ? { canPlaceOnWalls: true } : {}),
+        ...(asset.mirrorSide ? { mirrorSide: true } : {}),
+      }
+    })
+    .filter((entry): entry is CatalogEntryWithCategory => entry !== null)
+
+  for (const asset of assets.catalog) {
+    if (asset.mirrorSide && asset.orientation === 'side') {
+      const sideEntry = allEntries.find((entry) => entry.type === asset.id)
+      if (sideEntry) {
+        allEntries.push({
+          ...sideEntry,
+          type: `${asset.id}:left`,
+          orientation: 'left',
+          mirrorSide: true,
+        })
+      }
     }
-    return {
-      type: asset.id,
-      label: asset.label,
-      footprintW: asset.footprintW,
-      footprintH: asset.footprintH,
-      sprite,
-      isDesk: asset.isDesk,
-      category: asset.category as FurnitureCategory,
-      ...(asset.orientation ? { orientation: asset.orientation } : {}),
-      ...(asset.canPlaceOnSurfaces ? { canPlaceOnSurfaces: true } : {}),
-      ...(asset.backgroundTiles ? { backgroundTiles: asset.backgroundTiles } : {}),
-      ...(asset.canPlaceOnWalls ? { canPlaceOnWalls: true } : {}),
-    }
-  }).filter((e): e is CatalogEntryWithCategory => e !== null)
+  }
 
   if (allEntries.length === 0) return false
 
-  // Build rotation groups from groupId + orientation metadata
   rotationGroups.clear()
   stateGroups.clear()
   offToOn.clear()
   onToOff.clear()
+  animationGroups.clear()
 
-  // Phase 1: Collect orientations per group (only "off" or stateless variants for rotation)
-  const groupMap = new Map<string, Map<string, string>>() // groupId → (orientation → assetId)
+  const groupMap = new Map<string, Map<string, string>>()
   for (const asset of assets.catalog) {
     if (asset.groupId && asset.orientation) {
-      // For rotation groups, only use the "off" or stateless variant
       if (asset.state && asset.state !== 'off') continue
       let orientMap = groupMap.get(asset.groupId)
       if (!orientMap) {
         orientMap = new Map()
         groupMap.set(asset.groupId, orientMap)
       }
-      orientMap.set(asset.orientation, asset.id)
+
+      if (asset.orientation === 'side') {
+        orientMap.set('right', asset.id)
+        if (asset.mirrorSide) {
+          orientMap.set('left', `${asset.id}:left`)
+        }
+      } else {
+        orientMap.set(asset.orientation, asset.id)
+      }
     }
   }
 
-  // Phase 2: Register rotation groups with 2+ orientations
+  const rotationSchemes = new Map<string, string>()
+  for (const asset of assets.catalog) {
+    if (asset.groupId && asset.rotationScheme) {
+      rotationSchemes.set(asset.groupId, asset.rotationScheme)
+    }
+  }
+
   const nonFrontIds = new Set<string>()
   const orientationOrder = ['front', 'right', 'back', 'left']
-  for (const orientMap of groupMap.values()) {
+  for (const [groupId, orientMap] of groupMap) {
     if (orientMap.size < 2) continue
-    // Build ordered list of available orientations
-    const orderedOrients = orientationOrder.filter((o) => orientMap.has(o))
+    const scheme = rotationSchemes.get(groupId)
+    let allowedOrients = orientationOrder
+    if (scheme === '2-way') {
+      allowedOrients = ['front', 'right']
+    }
+
+    const orderedOrients = allowedOrients.filter((orientation) => orientMap.has(orientation))
     if (orderedOrients.length < 2) continue
+
     const members: Record<string, string> = {}
-    for (const o of orderedOrients) {
-      members[o] = orientMap.get(o)!
+    for (const orientation of orderedOrients) {
+      members[orientation] = orientMap.get(orientation)!
     }
-    const rg: RotationGroup = { orientations: orderedOrients, members }
+
+    const group: RotationGroup = { orientations: orderedOrients, members }
+    const registeredIds = new Set<string>()
     for (const id of Object.values(members)) {
-      rotationGroups.set(id, rg)
+      if (!registeredIds.has(id)) {
+        rotationGroups.set(id, group)
+        registeredIds.add(id)
+      }
     }
-    // Track non-front IDs to exclude from visible catalog
-    for (const [orient, id] of Object.entries(members)) {
-      if (orient !== 'front') nonFrontIds.add(id)
+
+    for (const [orientation, id] of Object.entries(members)) {
+      if (orientation !== 'front') nonFrontIds.add(id)
     }
   }
 
-  // Phase 3: Build state groups (on ↔ off pairs within same groupId + orientation)
-  const stateMap = new Map<string, Map<string, string>>() // "groupId|orientation" → (state → assetId)
+  const stateMap = new Map<string, Map<string, string>>()
   for (const asset of assets.catalog) {
     if (asset.groupId && asset.state) {
       const key = `${asset.groupId}|${asset.orientation || ''}`
-      let sm = stateMap.get(key)
-      if (!sm) {
-        sm = new Map()
-        stateMap.set(key, sm)
+      let group = stateMap.get(key)
+      if (!group) {
+        group = new Map()
+        stateMap.set(key, group)
       }
-      sm.set(asset.state, asset.id)
+      if (asset.animationGroup && asset.frame !== undefined && asset.frame > 0) continue
+      group.set(asset.state, asset.id)
     }
   }
-  for (const sm of stateMap.values()) {
-    const onId = sm.get('on')
-    const offId = sm.get('off')
+
+  for (const group of stateMap.values()) {
+    const onId = group.get('on')
+    const offId = group.get('off')
     if (onId && offId) {
       stateGroups.set(onId, offId)
       stateGroups.set(offId, onId)
@@ -199,23 +241,24 @@ export function buildDynamicCatalog(assets: LoadedAssetData): boolean {
     }
   }
 
-  // Also register rotation groups for "on" state variants (so rotation works on on-state items too)
   for (const asset of assets.catalog) {
     if (asset.groupId && asset.orientation && asset.state === 'on') {
-      // Find the off-variant's rotation group
+      if (asset.animationGroup && asset.frame !== undefined && asset.frame > 0) continue
+
       const offCounterpart = stateGroups.get(asset.id)
       if (offCounterpart) {
         const offGroup = rotationGroups.get(offCounterpart)
         if (offGroup) {
-          // Build an equivalent group for the "on" state
           const onMembers: Record<string, string> = {}
-          for (const orient of offGroup.orientations) {
-            const offId = offGroup.members[orient]
+          for (const orientation of offGroup.orientations) {
+            const offId = offGroup.members[orientation]
             const onId = stateGroups.get(offId)
-            // Use on-state variant if available, otherwise fall back to off-state
-            onMembers[orient] = onId ?? offId
+            onMembers[orientation] = onId ?? offId
           }
-          const onGroup: RotationGroup = { orientations: offGroup.orientations, members: onMembers }
+          const onGroup: RotationGroup = {
+            orientations: offGroup.orientations,
+            members: onMembers,
+          }
           for (const id of Object.values(onMembers)) {
             if (!rotationGroups.has(id)) {
               rotationGroups.set(id, onGroup)
@@ -226,25 +269,39 @@ export function buildDynamicCatalog(assets: LoadedAssetData): boolean {
     }
   }
 
-  // Track "on" variant IDs to exclude from visible catalog
+  const animGroupCollector = new Map<string, Array<{ id: string; frame: number }>>()
+  for (const asset of assets.catalog) {
+    if (asset.animationGroup && asset.frame !== undefined) {
+      let frames = animGroupCollector.get(asset.animationGroup)
+      if (!frames) {
+        frames = []
+        animGroupCollector.set(asset.animationGroup, frames)
+      }
+      frames.push({ id: asset.id, frame: asset.frame })
+    }
+  }
+
+  for (const [groupId, frames] of animGroupCollector) {
+    frames.sort((a, b) => a.frame - b.frame)
+    animationGroups.set(groupId, frames.map((frame) => frame.id))
+  }
+
   const onStateIds = new Set<string>()
   for (const asset of assets.catalog) {
     if (asset.state === 'on') onStateIds.add(asset.id)
   }
 
-  // Inject built-in pixel_text entry into the asset-based catalog
-  const pixelTextEntry = FURNITURE_CATALOG.find((e) => e.type === FurnitureType.PIXEL_TEXT)
+  const pixelTextEntry = FURNITURE_CATALOG.find((entry) => entry.type === FurnitureType.PIXEL_TEXT)
   if (pixelTextEntry) {
     allEntries.push(pixelTextEntry)
   }
 
-  // Store full internal catalog (all variants — for getCatalogEntry lookups)
   internalCatalog = allEntries
 
-  // Visible catalog: exclude non-front variants and "on" state variants
-  const visibleEntries = allEntries.filter((e) => !nonFrontIds.has(e.type) && !onStateIds.has(e.type))
+  const visibleEntries = allEntries.filter(
+    (entry) => !nonFrontIds.has(entry.type) && !onStateIds.has(entry.type),
+  )
 
-  // Strip orientation/state suffix from labels for grouped variants
   for (const entry of visibleEntries) {
     if (rotationGroups.has(entry.type) || stateGroups.has(entry.type)) {
       entry.label = entry.label
@@ -255,28 +312,30 @@ export function buildDynamicCatalog(assets: LoadedAssetData): boolean {
   }
 
   dynamicCatalog = visibleEntries
-  const categorySet = new Set(visibleEntries.map((e) => e.category))
+  const categorySet = new Set(visibleEntries.map((entry) => entry.category))
   dynamicCategories = Array.from(categorySet)
-    .filter((c): c is FurnitureCategory => !!c)
+    .filter((category): category is FurnitureCategory => !!category)
     .sort()
 
-  const rotGroupCount = new Set(Array.from(rotationGroups.values())).size
-  console.log(`✓ Built dynamic catalog with ${allEntries.length} assets (${visibleEntries.length} visible, ${rotGroupCount} rotation groups, ${stateGroups.size / 2} state pairs)`)
+  const rotationGroupCount = new Set(Array.from(rotationGroups.values())).size
+  const animationGroupCount = animationGroups.size
+  console.log(
+    `Built dynamic catalog with ${allEntries.length} assets (${visibleEntries.length} visible, ${rotationGroupCount} rotation groups, ${stateGroups.size / 2} state pairs, ${animationGroupCount} animation groups)`,
+  )
   return true
 }
 
 export function getCatalogEntry(type: string): CatalogEntryWithCategory | undefined {
-  // Check internal catalog first (includes all variants, e.g., non-front rotations)
   if (internalCatalog) {
-    return internalCatalog.find((e) => e.type === type)
+    return internalCatalog.find((entry) => entry.type === type)
   }
   const catalog = dynamicCatalog || FURNITURE_CATALOG
-  return catalog.find((e) => e.type === type)
+  return catalog.find((entry) => entry.type === type)
 }
 
 export function getCatalogByCategory(category: FurnitureCategory): CatalogEntryWithCategory[] {
   const catalog = dynamicCatalog || FURNITURE_CATALOG
-  return catalog.filter((e) => e.category === category)
+  return catalog.filter((entry) => entry.category === category)
 }
 
 export function getActiveCatalog(): CatalogEntryWithCategory[] {
@@ -284,8 +343,9 @@ export function getActiveCatalog(): CatalogEntryWithCategory[] {
 }
 
 export function getActiveCategories(): Array<{ id: FurnitureCategory; label: string }> {
-  const categories = dynamicCategories || (FURNITURE_CATEGORIES.map((c) => c.id) as FurnitureCategory[])
-  return FURNITURE_CATEGORIES.filter((c) => categories.includes(c.id))
+  const categories =
+    dynamicCategories || (FURNITURE_CATEGORIES.map((category) => category.id) as FurnitureCategory[])
+  return FURNITURE_CATEGORIES.filter((category) => categories.includes(category.id))
 }
 
 export const FURNITURE_CATEGORIES: Array<{ id: FurnitureCategory; label: string }> = [
@@ -298,10 +358,10 @@ export const FURNITURE_CATEGORIES: Array<{ id: FurnitureCategory; label: string 
   { id: 'misc', label: 'Misc' },
 ]
 
-// ── Pixel text helpers ──────────────────────────────────────────
-
-/** Returns a catalog entry with dynamic sprite/footprint for pixel_text items. */
-export function getEffectiveCatalogEntry(type: string, textConfig?: PixelTextConfig): CatalogEntryWithCategory | undefined {
+export function getEffectiveCatalogEntry(
+  type: string,
+  textConfig?: PixelTextConfig,
+): CatalogEntryWithCategory | undefined {
   const entry = getCatalogEntry(type)
   if (!entry) return undefined
   if (type !== FurnitureType.PIXEL_TEXT || !textConfig) return entry
@@ -310,36 +370,45 @@ export function getEffectiveCatalogEntry(type: string, textConfig?: PixelTextCon
   return { ...entry, sprite, footprintW: footprint.w, footprintH: footprint.h }
 }
 
-// ── Rotation helpers ─────────────────────────────────────────────
-
-/** Returns the next asset ID in the rotation group (cw or ccw), or null if not rotatable. */
 export function getRotatedType(currentType: string, direction: 'cw' | 'ccw'): string | null {
   const group = rotationGroups.get(currentType)
   if (!group) return null
-  const order = group.orientations.map((o) => group.members[o])
-  const idx = order.indexOf(currentType)
-  if (idx === -1) return null
+  const order = group.orientations.map((orientation) => group.members[orientation])
+  const index = order.indexOf(currentType)
+  if (index === -1) return null
   const step = direction === 'cw' ? 1 : -1
-  const nextIdx = (idx + step + order.length) % order.length
-  return order[nextIdx]
+  const nextIndex = (index + step + order.length) % order.length
+  return order[nextIndex]
 }
 
-/** Returns the toggled state variant (on↔off), or null if no state variant exists. */
 export function getToggledType(currentType: string): string | null {
   return stateGroups.get(currentType) ?? null
 }
 
-/** Returns the "on" variant if this type has one, otherwise returns the type unchanged. */
 export function getOnStateType(currentType: string): string {
   return offToOn.get(currentType) ?? currentType
 }
 
-/** Returns the "off" variant if this type has one, otherwise returns the type unchanged. */
 export function getOffStateType(currentType: string): string {
   return onToOff.get(currentType) ?? currentType
 }
 
-/** Returns true if the given furniture type is part of a rotation group. */
 export function isRotatable(type: string): boolean {
   return rotationGroups.has(type)
+}
+
+export function getAnimationFrames(type: string): string[] | null {
+  for (const [, frames] of animationGroups) {
+    if (frames.includes(type)) return frames
+  }
+  return null
+}
+
+export function getOrientationInGroup(type: string): string | undefined {
+  const group = rotationGroups.get(type)
+  if (!group) return undefined
+  for (const [orientation, id] of Object.entries(group.members)) {
+    if (id === type) return orientation
+  }
+  return undefined
 }

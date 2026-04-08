@@ -13,7 +13,7 @@ from event_stream import EventStreamService
 from mission_lifecycle import MissionLifecycleService
 from mission_summary import MissionSummaryService
 from progress_summary import ProgressSummaryService
-from repository import AgentRepository, MissionRepository, NotificationRepository, TaskRepository
+from repository import AgentHireRequestRepository, AgentRepository, IntakeRequestRepository, MissionControlRepository, MissionRepository, NotificationRepository, TaskRepository
 from scheduler import Scheduler
 from startup_recovery import StartupRecoveryService
 from status_report import StatusReportService
@@ -22,7 +22,7 @@ SEVERITY_ORDER = {"critical": 3, "warning": 2, "info": 1}
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Operational diagnostics for Mission Control runtime")
+    parser = argparse.ArgumentParser(description="Operational diagnostics for Virtual Agency runtime")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON instead of a text report")
     parser.add_argument(
         "--snapshot-max-age-minutes",
@@ -32,7 +32,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--systemd-unit",
-        default="mission-control.service",
+        default="virtual-agency.service",
         help="systemd unit name to inspect when systemctl is available",
     )
     return parser.parse_args()
@@ -86,6 +86,9 @@ def build_snapshot_api(config: RuntimeConfig, db: Database) -> Tuple[RuntimeSnap
     task_repository = TaskRepository(db)
     agent_repository = AgentRepository(db)
     notification_repository = NotificationRepository(db)
+    intake_repository = IntakeRequestRepository(db)
+    hire_request_repository = AgentHireRequestRepository(db)
+    mission_control_repository = MissionControlRepository(db)
     scheduler = Scheduler(mission_repository=mission_repository, task_repository=task_repository)
     snapshot_api = RuntimeSnapshotAPI(
         mission_repository=mission_repository,
@@ -105,6 +108,9 @@ def build_snapshot_api(config: RuntimeConfig, db: Database) -> Tuple[RuntimeSnap
             task_repository=task_repository,
         ),
         scheduler=scheduler,
+        intake_repository=intake_repository,
+        hire_request_repository=hire_request_repository,
+        mission_control_repository=mission_control_repository,
     )
     return snapshot_api, scheduler, mission_repository, task_repository, agent_repository, notification_repository
 
@@ -112,6 +118,7 @@ def build_snapshot_api(config: RuntimeConfig, db: Database) -> Tuple[RuntimeSnap
 def evaluate(config: RuntimeConfig, snapshot_max_age_minutes: float, systemd_unit: str) -> Dict:
     checks: List[Dict] = []
     db_path = Path(config.db_path).resolve()
+    specialist_templates_root = Path(config.specialist_templates_root).resolve()
     dashboard_dir = Path(__file__).resolve().parent.parent.parent / "apps" / "dashboard"
     snapshot_paths = [dashboard_dir / "public" / "snapshot.json", dashboard_dir / "dist" / "snapshot.json"]
 
@@ -134,6 +141,14 @@ def evaluate(config: RuntimeConfig, snapshot_max_age_minutes: float, systemd_uni
             {"path": str(db_path.parent)},
         )
 
+    add_check(
+        checks,
+        "specialist_catalog",
+        "ok" if specialist_templates_root.exists() else "warning",
+        f"Specialist template catalog {'found' if specialist_templates_root.exists() else 'missing'} at {specialist_templates_root}",
+        {"path": str(specialist_templates_root)},
+    )
+
     db = Database(config.db_path)
     db.init()
     try:
@@ -148,6 +163,7 @@ def evaluate(config: RuntimeConfig, snapshot_max_age_minutes: float, systemd_uni
         status = StatusReportService(snapshot_api=snapshot_api, lifecycle=lifecycle, recovery=recovery).build()
 
         mission = status.get("mission")
+        mission_control = status.get("mission_control") or {}
         health = status.get("health", {})
         recovery_summary = status.get("runtime", {}).get("recovery", {})
         active_agents = status.get("runtime", {}).get("active_agents", [])
@@ -194,6 +210,24 @@ def evaluate(config: RuntimeConfig, snapshot_max_age_minutes: float, systemd_uni
                 "Runtime has active execution flow or no active work is expected",
                 {"active_agents": len(active_agents), "running_tasks": progress.get("running", 0)},
             )
+
+        if mission_control:
+            if mission_control.get("status") == "exhausted":
+                add_check(
+                    checks,
+                    "autonomy_budget",
+                    "warning",
+                    "Active mission autonomy budget is exhausted; operator approval or budget increase is required",
+                    mission_control,
+                )
+            else:
+                add_check(
+                    checks,
+                    "autonomy_budget",
+                    "ok",
+                    "Active mission autonomy budget is available",
+                    mission_control,
+                )
 
         if recovery_summary.get("status") == "needs_recovery":
             add_check(
@@ -324,9 +358,14 @@ def evaluate(config: RuntimeConfig, snapshot_max_age_minutes: float, systemd_uni
             "websocket_enabled": config.websocket_enabled,
             "websocket_host": config.websocket_host,
             "websocket_port": config.websocket_port,
+            "max_autonomous_steps": config.max_autonomous_steps,
+            "max_estimated_tokens": config.max_estimated_tokens,
+            "max_runtime_ticks": config.max_runtime_ticks,
+            "max_dynamic_hires": config.max_dynamic_hires,
             "tick_interval_seconds": config.tick_interval_seconds,
             "agents_registry_path": config.agents_registry_path,
             "templates_path": config.templates_path,
+            "specialist_templates_root": config.specialist_templates_root,
         },
         "checks": sorted(checks, key=lambda item: SEVERITY_ORDER.get(item["status"], 0), reverse=True),
     }
@@ -334,7 +373,7 @@ def evaluate(config: RuntimeConfig, snapshot_max_age_minutes: float, systemd_uni
 
 def render_text(report: Dict) -> str:
     lines = [
-        f"Mission Control doctor: {report['overall_status'].upper()}",
+        f"Virtual Agency doctor: {report['overall_status'].upper()}",
         f"Generated at: {report['generated_at']}",
         "",
     ]
@@ -363,3 +402,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+

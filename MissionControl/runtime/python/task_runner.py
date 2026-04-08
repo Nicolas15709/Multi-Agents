@@ -9,6 +9,7 @@ try:
     from .approval_service import ActionApprovalService
     from .agent_state import AgentStateManager
     from .coordination_service import CoordinationService
+    from .llm_support import detect_execution_backend
     from .progress import ProgressNotifier
     from .replanner import DynamicReplanner, _apply_replan
     from .repository import MissionControlRepository, MissionRepository, TaskRepository
@@ -18,6 +19,7 @@ except ImportError:  # pragma: no cover - runtime script compatibility
     from approval_service import ActionApprovalService
     from agent_state import AgentStateManager
     from coordination_service import CoordinationService
+    from llm_support import detect_execution_backend
     from progress import ProgressNotifier
     from replanner import DynamicReplanner, _apply_replan
     from repository import MissionControlRepository, MissionRepository, TaskRepository
@@ -64,20 +66,29 @@ class TaskRunner:
     replanner: Optional[DynamicReplanner] = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
-        import os
-        has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
+        backend = detect_execution_backend()
         if self.execution_manager is None:
-            if has_key:
+            if backend.get("supported"):
                 self.execution_manager = get_execution_manager()
-                logger.info("LLM execution enabled (ANTHROPIC_API_KEY found)")
+                logger.info(
+                    "Live task execution enabled (%s, model=%s)",
+                    backend.get("provider"),
+                    backend.get("model") or "default",
+                )
             else:
                 logger.warning(
                     "ANTHROPIC_API_KEY not set — running in simulation mode. "
                     "Tasks will be marked done without real LLM execution."
                 )
-        if self.replanner is None and has_key:
+        if self.replanner is None and backend.get("provider") == "anthropic" and backend.get("supported"):
             self.replanner = DynamicReplanner()
             logger.info("Dynamic replanner enabled")
+        if not backend.get("supported") and backend.get("provider"):
+            logger.warning(
+                "Detected %s configuration (model=%s), but the current live task execution layer still runs only with Anthropic. Runtime stays in simulation mode.",
+                backend.get("provider"),
+                backend.get("model") or "default",
+            )
 
     def _estimate_task_tokens(self, task: Dict) -> int:
         details = task.get("details") or {}

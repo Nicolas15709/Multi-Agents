@@ -1,6 +1,9 @@
 from typing import Dict, List
 
-from repository import MissionRepository, NotificationRepository
+try:
+    from .repository import MissionRepository, NotificationRepository
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import MissionRepository, NotificationRepository
 
 
 class EventStreamService:

@@ -1,4 +1,4 @@
-# Mission Control Dashboard
+# Virtual Agency Dashboard
 
 Frontend placeholder for the visual dashboard.
 
@@ -15,3 +15,4 @@ Frontend placeholder for the visual dashboard.
 2. define design tokens
 3. define live data transport
 4. implement first room scene
+

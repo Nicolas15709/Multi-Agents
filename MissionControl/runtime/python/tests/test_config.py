@@ -58,3 +58,6 @@ def test_runtime_config_paths():
     assert Path(config.templates_path).is_absolute() or Path(
         config.templates_path
     ).exists()
+    assert Path(config.specialist_templates_root).is_absolute() or Path(
+        config.specialist_templates_root
+    ).exists()

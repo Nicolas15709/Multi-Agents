@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { mockSnapshot } from './mockData'
+import { fetchRuntimeSnapshot } from './runtimeApi'
 import { useRuntimeFeed } from './useRuntimeFeed'
 
 const REFRESH_INTERVAL_MS = 4000
+const STATIC_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_STATIC_SNAPSHOT_FALLBACK === 'true'
 
 function isRuntimeSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return false
@@ -48,12 +50,7 @@ export function useSnapshot() {
 
     async function load() {
       try {
-        const res = await fetch(`/snapshot.json?t=${Date.now()}`, { cache: 'no-store' })
-        if (!res.ok) {
-          throw new Error(`snapshot fetch failed (${res.status})`)
-        }
-
-        const json = await res.json()
+        let json = await fetchRuntimeSnapshot()
         if (!isRuntimeSnapshot(json)) {
           throw new Error('snapshot loaded but does not match runtime snapshot shape yet')
         }
@@ -61,13 +58,39 @@ export function useSnapshot() {
           applySnapshot(json, 'runtime')
         }
       } catch (error) {
-        if (!cancelled) {
-          setData((current) => current || mockSnapshot)
-          setStatus((current) => ({
-            source: current?.source === 'runtime' ? current.source : 'mock',
-            lastUpdated: current?.lastUpdated || mockSnapshot.generatedAt || null,
-            error: error instanceof Error ? error.message : 'snapshot unavailable',
-          }))
+        if (!STATIC_FALLBACK_ENABLED) {
+          if (!cancelled) {
+            setData((current) => current || mockSnapshot)
+            setStatus((current) => ({
+              source: current?.source === 'runtime' ? current.source : 'mock',
+              lastUpdated: current?.lastUpdated || mockSnapshot.generatedAt || null,
+              error: error instanceof Error ? error.message : 'snapshot unavailable',
+            }))
+          }
+          return
+        }
+
+        try {
+          const res = await fetch(`/snapshot.json?t=${Date.now()}`, { cache: 'no-store' })
+          if (!res.ok) {
+            throw new Error(`snapshot fetch failed (${res.status})`)
+          }
+          const json = await res.json()
+          if (!isRuntimeSnapshot(json)) {
+            throw new Error('snapshot loaded but does not match runtime snapshot shape yet')
+          }
+          if (!cancelled && connection.state !== 'connected') {
+            applySnapshot(json, 'static-fallback')
+          }
+        } catch (fallbackError) {
+          if (!cancelled) {
+            setData((current) => current || mockSnapshot)
+            setStatus((current) => ({
+              source: current?.source === 'runtime' ? current.source : 'mock',
+              lastUpdated: current?.lastUpdated || mockSnapshot.generatedAt || null,
+              error: fallbackError instanceof Error ? fallbackError.message : 'snapshot unavailable',
+            }))
+          }
         }
       }
     }

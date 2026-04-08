@@ -186,6 +186,10 @@ class ConfigLoader:
                 "MISSION_CONTROL_TEMPLATES_PATH",
                 str(base_dir.parent.parent / "config" / "mission-templates.json")
             ),
+            "specialist_templates_root": env.get(
+                "MISSION_CONTROL_SPECIALIST_TEMPLATES_ROOT",
+                str(base_dir.parent.parent.parent / "references" / "agency-agents")
+            ),
         }
 
         # Load additional config files if specified

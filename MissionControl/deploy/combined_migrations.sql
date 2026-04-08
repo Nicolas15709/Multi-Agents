@@ -55,7 +55,7 @@ create table if not exists saved_artifacts (
 
 create table if not exists ui_preferences (
   user_id uuid primary key,
-  theme text default 'mission-control-dark',
+  theme text default 'virtual-agency-dark',
   density text default 'comfortable',
   motion_enabled boolean not null default true,
   layout jsonb not null default '{}'::jsonb,
@@ -66,7 +66,7 @@ create table if not exists ui_preferences (
 -- ----------------------------------------
 -- Migration: 002_vector_schema.sql
 -- ----------------------------------------
--- Supabase pgvector schema for Mission Control Memory
+-- Supabase pgvector schema for Virtual Agency Memory
 -- IMPORTANT: Enable the extension first in your Supabase dashboard SQL editor:
 -- CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -291,5 +291,6 @@ $$;
 
 -- Grant execute on RPC functions to service role (implicitly via owner)
 -- No additional grants needed for service role
+
 
 

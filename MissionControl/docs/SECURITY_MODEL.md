@@ -1,7 +1,7 @@
 # Security Model
 
 ## Objetivo
-Diseñar Mission Control con seguridad por defecto, separación de privilegios y sin exposición de secretos.
+DiseÃ±ar Virtual Agency con seguridad por defecto, separaciÃ³n de privilegios y sin exposiciÃ³n de secretos.
 
 ## Principios
 - Nada de secretos hardcodeados
@@ -11,15 +11,15 @@ Diseñar Mission Control con seguridad por defecto, separación de privilegios y
 - Service role nunca en frontend
 - Runtime como frontera privilegiada
 - RLS obligatorio
-- mínimo privilegio por rol y por agente
-- validación de inputs en frontend y runtime
+- mÃ­nimo privilegio por rol y por agente
+- validaciÃ³n de inputs en frontend y runtime
 - queries parametrizadas
 - logs sin datos sensibles
-- políticas granulares por integración/cuenta/acción
-- sin política explícita, no se ejecuta
+- polÃ­ticas granulares por integraciÃ³n/cuenta/acciÃ³n
+- sin polÃ­tica explÃ­cita, no se ejecuta
 
 ## Amenazas consideradas
-- exposición de secretos
+- exposiciÃ³n de secretos
 - SQL injection
 - XSS
 - CSRF donde aplique
@@ -29,10 +29,11 @@ Diseñar Mission Control con seguridad por defecto, separación de privilegios y
 - filtrado excesivo de razonamiento interno
 
 ## Decisiones operativas
-- Telegram como canal de notificación, no como volcado de resúmenes largos
-- Dashboard para resúmenes y trazabilidad
-- Viewer sin acceso a secretos ni configuración sensible
-- runtime con caché local de políticas
+- Telegram como canal de notificaciÃ³n, no como volcado de resÃºmenes largos
+- Dashboard para resÃºmenes y trazabilidad
+- Viewer sin acceso a secretos ni configuraciÃ³n sensible
+- runtime con cachÃ© local de polÃ­ticas
 
 ## Futuro Docker
-Cada agente tendrá aislamiento, networking controlado, secretos mínimos y filesystem acotado.
+Cada agente tendrÃ¡ aislamiento, networking controlado, secretos mÃ­nimos y filesystem acotado.
+

@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from repository import MissionRepository
+try:
+    from .repository import MissionRepository
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import MissionRepository
 
 
 @dataclass

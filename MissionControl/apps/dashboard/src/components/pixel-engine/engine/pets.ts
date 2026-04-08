@@ -133,11 +133,12 @@ export function updatePet(
               pet.frame = 0
               pet.frameTimer = 0
             } else {
-              // Already near agent, sit
+              // Already near agent, transition to sit state
               pet.state = PetState.SIT
               pet.stateTimer = randomRange(PET_SIT_DURATION_MIN_SEC, PET_SIT_DURATION_MAX_SEC)
-              pet.frame = 0
-              pet.frameTimer = 0
+              // Note: We don't reset frame/frameTimer here because SIT and IDLE share the 
+              // same animation cycle. Resetting to 0 would cause the animal to 
+              // 're-trigger' the start of the animation (e.g. sitting down again).
             }
           } else {
             tryWander(pet, walkableTiles, tileMap, blockedTiles)

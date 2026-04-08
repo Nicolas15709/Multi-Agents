@@ -3,10 +3,16 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from agent_state import AgentStateManager
-from repository import MissionRepository, TaskRepository
-from scheduler import Scheduler
-from state_machine import StateReconciler, TransactionalStateUpdater
+try:
+    from .agent_state import AgentStateManager
+    from .repository import MissionRepository, TaskRepository
+    from .scheduler import Scheduler
+    from .state_machine import StateReconciler, TransactionalStateUpdater
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from agent_state import AgentStateManager
+    from repository import MissionRepository, TaskRepository
+    from scheduler import Scheduler
+    from state_machine import StateReconciler, TransactionalStateUpdater
 
 
 @dataclass
@@ -86,7 +92,7 @@ class StartupRecoveryService:
                                 self.state_updater.begin_transaction()
                                 self.state_updater.transition_task(
                                     task["id"],
-                                    "pending",
+                                    "failed",
                                     reason="startup_recovery_stale_task",
                                     actor="startup_recovery"
                                 )
@@ -95,7 +101,7 @@ class StartupRecoveryService:
                                 self.state_updater.rollback_transaction()
                                 raise
                         else:
-                            self.task_repository.update_task_status(task["id"], "pending")
+                            self.task_repository.update_task_status(task["id"], "failed")
                         # Reset agent to idle
                         self.agent_state_manager.set_state(task["agent_id"], "idle")
                     counts["tasks_reset"] += 1
@@ -114,7 +120,7 @@ class StartupRecoveryService:
             focus_tasks = self.task_repository.list_tasks_for_mission(focus_id)
             # After recovery, focus mission should be either queued (has ready tasks) or running (has running tasks)
             # We trust the scheduler's highest_priority_mission but ensure it's not in an invalid state
-            focus_status = focus["status"]
+            focus_status = focus.get("status") or "queued"
             if focus_status == "completed":
                 # Completed missions are fine
                 pass

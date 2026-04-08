@@ -2,33 +2,9 @@
   "agents": [
     {
       "id": "agent-0",
-      "name": "Supervisor",
+      "name": "Project Lead",
       "role": "director",
       "promptFile": "prompts/supervisor.AGENTS.md"
-    },
-    {
-      "id": "agent-1",
-      "name": "Researcher",
-      "role": "finder",
-      "promptFile": "prompts/researcher.AGENTS.md"
-    },
-    {
-      "id": "agent-2",
-      "name": "Designer",
-      "role": "prototype-architect",
-      "promptFile": "prompts/designer.AGENTS.md"
-    },
-    {
-      "id": "agent-3",
-      "name": "Developer",
-      "role": "doer",
-      "promptFile": "prompts/developer.AGENTS.md"
-    },
-    {
-      "id": "agent-4",
-      "name": "QA",
-      "role": "improver",
-      "promptFile": "prompts/qa.AGENTS.md"
     }
   ]
 }

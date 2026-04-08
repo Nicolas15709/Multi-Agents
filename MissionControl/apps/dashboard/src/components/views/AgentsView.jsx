@@ -395,11 +395,13 @@ function AgentCard({ agent, idx, active, onClick }) {
   )
 }
 
-function AgentDetailModal({ agent, idx, tasks, onClose }) {
+function AgentDetailModal({ agent, idx, tasks, onClose, onDelete }) {
   const color = getAvatarColor(agent, idx)
   const st = agentStatus(agent.state)
   const agentTasks = tasks.filter(t => t.agent_id === agent.agent_id || t.assigned_to === agent.agent_id)
   const palette = agent.pixel_palette ?? 0
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const isLead = agent.agent_id === 'agent-0'
 
   // Large pixel sprite dimensions
   const frameW = 16, frameH = 32, scale = 4
@@ -511,6 +513,35 @@ function AgentDetailModal({ agent, idx, tasks, onClose }) {
               {agent.agent_id}
             </div>
           </DetailSection>
+
+          {/* Delete */}
+          {!isLead && (
+            <div style={{ marginTop: '8px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              {confirmDelete ? (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => { onDelete?.(agent.agent_id); onClose() }}
+                    style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ff4d6d50', background: '#ff4d6d18', color: '#ff4d6d', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,77,109,0.2)', background: 'transparent', color: 'rgba(255,77,109,0.7)', fontSize: '12px', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif', transition: 'all 0.15s' }}
+                >
+                  Eliminar agente
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -559,7 +590,7 @@ function EmptyAgents({ onCreate }) {
   )
 }
 
-export function AgentsView({ agents, tasks, onCreateAgent }) {
+export function AgentsView({ agents, tasks, onCreateAgent, onDeleteAgent }) {
   const [tab, setTab] = useState('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
@@ -680,6 +711,7 @@ export function AgentsView({ agents, tasks, onCreateAgent }) {
             idx={selectedIdx}
             tasks={tasks}
             onClose={() => setSelected(null)}
+            onDelete={(agentId) => { onDeleteAgent?.(agentId); setSelected(null) }}
           />
         )}
       </AnimatePresence>

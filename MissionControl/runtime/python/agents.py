@@ -2,7 +2,10 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
-from models import AgentRecord
+try:
+    from .models import AgentRecord
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from models import AgentRecord
 
 
 class AgentRegistry:

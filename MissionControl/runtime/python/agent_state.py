@@ -2,8 +2,12 @@
 
 from typing import Dict, Optional
 
-from repository import AgentRepository
-from state_machine import AgentStateMachine, TransactionalStateUpdater, StateValidationError
+try:
+    from .repository import AgentRepository
+    from .state_machine import AgentStateMachine, TransactionalStateUpdater, StateValidationError
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import AgentRepository
+    from state_machine import AgentStateMachine, TransactionalStateUpdater, StateValidationError
 
 
 class AgentStateManager:
@@ -24,6 +28,8 @@ class AgentStateManager:
             agent = self._agents_cache.get(agent_id)
             if agent:
                 from_state = agent["state"]
+                if from_state == state:
+                    return
                 if not AgentStateMachine.can_transition(from_state, state):
                     raise StateValidationError(
                         f"Invalid agent state transition: {agent_id} {from_state} -> {state}"
@@ -44,6 +50,12 @@ class AgentStateManager:
                     "display_name": agent_id,
                     "role": "unknown",
                     "personality": None,
+                    "reports_to": None,
+                    "capabilities": [],
+                    "budget_monthly_cents": 0,
+                    "origin": "runtime",
+                    "mission_scope_id": mission_id,
+                    "metadata": {},
                     "state": state,  # initial state
                 }
 
@@ -59,6 +71,12 @@ class AgentStateManager:
                     "active_mission_id": mission_id,
                     "current_task_id": task_id,
                     "personality": agent_meta.get("personality"),
+                    "reports_to": agent_meta.get("reports_to"),
+                    "capabilities": agent_meta.get("capabilities") or [],
+                    "budget_monthly_cents": agent_meta.get("budget_monthly_cents") or 0,
+                    "origin": agent_meta.get("origin") or "runtime",
+                    "mission_scope_id": agent_meta.get("mission_scope_id"),
+                    "metadata": agent_meta.get("metadata") or {},
                 })()
             )
             # TODO: Integrate agent state transitions into state_updater transaction for full ACID
@@ -73,6 +91,12 @@ class AgentStateManager:
                     "active_mission_id": mission_id,
                     "current_task_id": task_id,
                     "personality": agent_meta.get("personality"),
+                    "reports_to": agent_meta.get("reports_to"),
+                    "capabilities": agent_meta.get("capabilities") or [],
+                    "budget_monthly_cents": agent_meta.get("budget_monthly_cents") or 0,
+                    "origin": agent_meta.get("origin") or "runtime",
+                    "mission_scope_id": agent_meta.get("mission_scope_id"),
+                    "metadata": agent_meta.get("metadata") or {},
                 })()
             )
 
@@ -85,6 +109,12 @@ class AgentStateManager:
             "active_mission_id": mission_id,
             "current_task_id": task_id,
             "personality": agent_meta.get("personality"),
+            "reports_to": agent_meta.get("reports_to"),
+            "capabilities": agent_meta.get("capabilities") or [],
+            "budget_monthly_cents": agent_meta.get("budget_monthly_cents") or 0,
+            "origin": agent_meta.get("origin") or "runtime",
+            "mission_scope_id": agent_meta.get("mission_scope_id"),
+            "metadata": agent_meta.get("metadata") or {},
         }
 
     def summary(self) -> Dict:

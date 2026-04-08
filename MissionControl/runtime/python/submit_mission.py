@@ -8,14 +8,14 @@ from mission_service import MissionService
 from notifications import NotificationService
 from planner import Planner
 from progress import ProgressNotifier
-from repository import AgentRepository, MissionRepository, NotificationRepository, TaskRepository
+from repository import AgentRepository, MissionControlRepository, MissionRepository, NotificationRepository, TaskRepository
 from scheduler import Scheduler
 from settings import ProgressSettings
 from templates import TemplateRegistry
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Submit a Mission Control mission")
+    parser = argparse.ArgumentParser(description="Submit a Virtual Agency mission")
     parser.add_argument("title", help="Mission title")
     parser.add_argument("goal", help="Mission goal")
     parser.add_argument("--mode", default="software_build", help="Mission template/mode")
@@ -38,6 +38,7 @@ def main() -> None:
     task_repository = TaskRepository(db)
     agent_repository = AgentRepository(db)
     notification_repository = NotificationRepository(db)
+    mission_control_repository = MissionControlRepository(db)
 
     planner = Planner(
         config=config,
@@ -58,6 +59,14 @@ def main() -> None:
         scheduler=scheduler,
         notifications=notifications,
         progress_notifier=progress_notifier,
+        mission_control_repository=mission_control_repository,
+        mission_control_defaults={
+            "max_autonomous_steps": config.max_autonomous_steps,
+            "max_estimated_tokens": config.max_estimated_tokens,
+            "max_runtime_ticks": config.max_runtime_ticks,
+            "max_dynamic_hires": config.max_dynamic_hires,
+            "action_budgets": config.action_budgets,
+        },
     )
 
     result = mission_service.submit_mission(
@@ -86,3 +95,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

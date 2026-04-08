@@ -1,5 +1,5 @@
-"""
-Mission Control Memory System - Python Client
+﻿"""
+Virtual Agency Memory System - Python Client
 Provides unified access to vector store and session store
 """
 
@@ -16,3 +16,4 @@ __all__ = [
     'SessionClient',
     'MemoryClient'
 ]
+

@@ -1,7 +1,7 @@
 {
   "name": "multi-agents",
   "version": "0.1.0",
-  "description": "Mission Control multi-agent workspace",
+  "description": "Virtual Agency multi-agent workspace",
   "type": "module",
   "scripts": {
     "dev": "npm --prefix MissionControl/apps/dashboard run dev -- --host 127.0.0.1 --port 4173",
@@ -15,11 +15,12 @@
     "runtime": "python3 MissionControl/runtime/python/main.py",
     "runtime:submit": "python3 MissionControl/runtime/python/submit_mission.py",
     "snapshot": "python3 MissionControl/runtime/python/export_snapshot.py",
-    "legacy:dev": "node --watch src/main_orchestrator.js",
-    "legacy:start": "node src/main_orchestrator.js"
+    "legacy:dev": "node --watch src/legacy/main_orchestrator.js",
+    "legacy:start": "node src/legacy/main_orchestrator.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
     "dotenv": "^16.4.7"
   }
 }
+

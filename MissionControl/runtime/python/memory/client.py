@@ -1,5 +1,5 @@
-"""
-MemoryClient - Unified interface for Mission Control Memory
+﻿"""
+MemoryClient - Unified interface for Virtual Agency Memory
 Combines vector store (Supabase) and session store (SQLite)
 """
 
@@ -152,3 +152,4 @@ class MemoryClient:
             limit=limit,
             similarity_threshold=threshold
         )
+

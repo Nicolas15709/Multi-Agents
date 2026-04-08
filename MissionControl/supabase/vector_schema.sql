@@ -1,4 +1,4 @@
--- Supabase pgvector schema for Mission Control Memory
+-- Supabase pgvector schema for Virtual Agency Memory
 -- IMPORTANT: Enable the extension first in your Supabase dashboard SQL editor:
 -- CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -84,3 +84,4 @@ CREATE TABLE IF NOT EXISTS memory_cleanup_log (
 
 -- Policies (Row Level Security disabled for service role; enable if using auth)
 -- enable_rls on all tables as needed in production
+

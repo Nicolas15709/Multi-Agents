@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from .models import NotificationRecord
-from .repository import NotificationRepository
+try:
+    from .models import NotificationRecord
+    from .repository import NotificationRepository
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from models import NotificationRecord
+    from repository import NotificationRepository
 
 
 @dataclass

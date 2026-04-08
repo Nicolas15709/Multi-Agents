@@ -10,6 +10,22 @@ import type { SpriteData, FloorColor } from './types.js'
 import { getColorizedSprite, clearColorizeCache } from './colorize.js'
 import { TILE_SIZE, FALLBACK_FLOOR_COLOR } from '../constants.js'
 
+const FLAT_FLOOR_SPRITE: SpriteData = Array.from(
+  { length: TILE_SIZE },
+  () => Array(TILE_SIZE).fill(FALLBACK_FLOOR_COLOR) as string[],
+)
+
+const BATHROOM_FLOOR_SPRITE: SpriteData = Array.from(
+  { length: TILE_SIZE },
+  (_, y) =>
+    Array.from({ length: TILE_SIZE }, (_, x) => {
+      const onBorder = x === 0 || y === 0 || x === TILE_SIZE - 1 || y === TILE_SIZE - 1
+      if (onBorder) return '#686868'
+      if (x === 1 || y === 1) return '#A0A0A0'
+      return '#808080'
+    }) as string[],
+)
+
 /** Default solid gray 16×16 tile used when floors.png is not loaded */
 const DEFAULT_FLOOR_SPRITE: SpriteData = Array.from(
   { length: TILE_SIZE },
@@ -62,7 +78,10 @@ export function getAllFloorSprites(): SpriteData[] {
 export function getColorizedFloorSprite(patternIndex: number, color: FloorColor): SpriteData {
   const key = `floor-${patternIndex}-${color.h}-${color.s}-${color.b}-${color.c}`
 
-  const base = getFloorSprite(patternIndex)
+  const loadedSprite = getFloorSprite(patternIndex)
+  const base =
+    loadedSprite ??
+    (patternIndex === 1 ? BATHROOM_FLOOR_SPRITE : FLAT_FLOOR_SPRITE)
   if (!base) {
     // Return a 16x16 magenta error tile
     const err: SpriteData = Array.from({ length: 16 }, () => Array(16).fill('#FF00FF'))

@@ -1,33 +1,49 @@
-import { TileType, FurnitureType, DEFAULT_COLS, DEFAULT_ROWS, TILE_SIZE, Direction } from '../types.js'
-import type { TileType as TileTypeVal, OfficeLayout, PlacedFurniture, Seat, FurnitureInstance, FloorColor } from '../types.js'
-import { getCatalogEntry, getEffectiveCatalogEntry } from './furnitureCatalog.js'
+import {
+  DEFAULT_COLS,
+  DEFAULT_ROWS,
+  Direction,
+  FurnitureType,
+  TILE_SIZE,
+  TileType,
+} from '../types.js'
+import { AUTO_ON_FACING_DEPTH } from '../../constants.js'
+import type {
+  FloorColor,
+  FurnitureInstance,
+  OfficeLayout,
+  PlacedFurniture,
+  Seat,
+  TileType as TileTypeVal,
+} from '../types.js'
 import { getColorizedSprite } from '../colorize.js'
+import {
+  getCatalogEntry,
+  getEffectiveCatalogEntry,
+  getOrientationInGroup,
+} from './furnitureCatalog.js'
 
-/** Convert flat tile array from layout into 2D grid */
 export function layoutToTileMap(layout: OfficeLayout): TileTypeVal[][] {
   const map: TileTypeVal[][] = []
-  for (let r = 0; r < layout.rows; r++) {
-    const row: TileTypeVal[] = []
-    for (let c = 0; c < layout.cols; c++) {
-      row.push(layout.tiles[r * layout.cols + c])
+  for (let row = 0; row < layout.rows; row++) {
+    const tileRow: TileTypeVal[] = []
+    for (let col = 0; col < layout.cols; col++) {
+      tileRow.push(layout.tiles[row * layout.cols + col])
     }
-    map.push(row)
+    map.push(tileRow)
   }
   return map
 }
 
-/** Convert placed furniture into renderable FurnitureInstance[] */
 export function layoutToFurnitureInstances(
   furniture: PlacedFurniture[],
   tiles?: TileTypeVal[],
   cols?: number,
 ): FurnitureInstance[] {
-  // Pre-compute desk zY per tile so surface items can sort in front of desks
   const deskZByTile = new Map<string, number>()
   for (const item of furniture) {
     const entry = getCatalogEntry(item.type)
     if (!entry || !entry.isDesk) continue
-    const deskZY = (item.row + entry.footprintH) * TILE_SIZE
+    const deskZY = item.row * TILE_SIZE + entry.sprite.length
     for (let dr = 0; dr < entry.footprintH; dr++) {
       for (let dc = 0; dc < entry.footprintW; dc++) {
         const key = `${item.col + dc},${item.row + dr}`
@@ -39,29 +55,25 @@ export function layoutToFurnitureInstances(
 
   const instances: FurnitureInstance[] = []
   for (const item of furniture) {
-    // Use effective entry for pixel_text (dynamic sprite/footprint)
-    const entry = item.type === FurnitureType.PIXEL_TEXT
-      ? getEffectiveCatalogEntry(item.type, item.textConfig)
-      : getCatalogEntry(item.type)
+    const entry =
+      item.type === FurnitureType.PIXEL_TEXT
+        ? getEffectiveCatalogEntry(item.type, item.textConfig)
+        : getCatalogEntry(item.type)
     if (!entry) continue
+
     const x = item.col * TILE_SIZE
     const y = item.row * TILE_SIZE
-    let zY = (item.row + entry.footprintH) * TILE_SIZE
+    const spriteH = entry.sprite.length
+    let zY = y + spriteH
 
-    // Chair z-sorting: ensure characters sitting on chairs render correctly
     if (entry.category === 'chairs') {
       if (entry.orientation === 'back') {
-        // Back-facing chairs render IN FRONT of the seated character
-        // (the chair back visually occludes the character behind it)
-        zY = (item.row + 1) * TILE_SIZE + 1
+        zY = (item.row + entry.footprintH) * TILE_SIZE + 1
       } else {
-        // All other chairs: cap zY to first row bottom so characters
-        // at any seat tile render in front of the chair
         zY = (item.row + 1) * TILE_SIZE
       }
     }
 
-    // Surface items render in front of the desk they sit on
     if (entry.canPlaceOnSurfaces) {
       for (let dr = 0; dr < entry.footprintH; dr++) {
         for (let dc = 0; dc < entry.footprintW; dc++) {
@@ -71,70 +83,79 @@ export function layoutToFurnitureInstances(
       }
     }
 
-    // Wall-mounted items render in front of the wall they're on
     if (entry.canPlaceOnWalls && tiles && cols) {
-      // Scan downward from bottom of footprint to find lowest contiguous WALL tile
       const bottomRow = item.row + entry.footprintH - 1
       let lowestWallRow = bottomRow
-      for (let r = bottomRow; r < (tiles.length / cols); r++) {
+      for (let row = bottomRow; row < tiles.length / cols; row++) {
         let hasWall = false
         for (let dc = 0; dc < entry.footprintW; dc++) {
-          const idx = r * cols + (item.col + dc)
+          const idx = row * cols + (item.col + dc)
           if (idx >= 0 && idx < tiles.length && tiles[idx] === TileType.WALL) {
             hasWall = true
             break
           }
         }
-        if (hasWall) lowestWallRow = r
+        if (hasWall) lowestWallRow = row
         else break
       }
       zY = (lowestWallRow + 1) * TILE_SIZE + 0.5
     }
 
-    // Bring-to-front: render above walls but below characters
     if (item.zLayer && item.zLayer > 0 && tiles && cols) {
       const bottomRow = item.row + entry.footprintH - 1
       let lowestWallRow = bottomRow
-      for (let r = bottomRow; r < (tiles.length / cols); r++) {
+      for (let row = bottomRow; row < tiles.length / cols; row++) {
         let hasWall = false
         for (let dc = 0; dc < entry.footprintW; dc++) {
-          const idx = r * cols + (item.col + dc)
+          const idx = row * cols + (item.col + dc)
           if (idx >= 0 && idx < tiles.length && tiles[idx] === TileType.WALL) {
             hasWall = true
             break
           }
         }
-        if (hasWall) lowestWallRow = r
+        if (hasWall) lowestWallRow = row
         else break
       }
       const wallZY = (lowestWallRow + 1) * TILE_SIZE + 0.5
       zY = Math.max(zY, wallZY)
     }
 
-    // Colorize sprite if this furniture has a color override (skip for pixel_text — color is baked in)
     let sprite = entry.sprite
     if (item.color && item.type !== FurnitureType.PIXEL_TEXT) {
-      const { h, s, b: bv, c: cv } = item.color
-      sprite = getColorizedSprite(`furn-${item.type}-${h}-${s}-${bv}-${cv}-${item.color.colorize ? 1 : 0}`, entry.sprite, item.color)
+      const { h, s, b: brightness, c: contrast } = item.color
+      sprite = getColorizedSprite(
+        `furn-${item.type}-${h}-${s}-${brightness}-${contrast}-${item.color.colorize ? 1 : 0}`,
+        entry.sprite,
+        item.color,
+      )
     }
 
-    instances.push({ sprite, x, y, zY })
+    let mirrored = false
+    if (entry.mirrorSide) {
+      const orientation = getOrientationInGroup(item.type)
+      if (orientation === 'left') mirrored = true
+    }
+
+    instances.push({ sprite, x, y, zY, ...(mirrored ? { mirrored: true } : {}) })
   }
+
   return instances
 }
 
-/** Get all tiles blocked by furniture footprints, optionally excluding a set of tiles.
- *  Skips top backgroundTiles rows so characters can walk through them. */
-export function getBlockedTiles(furniture: PlacedFurniture[], excludeTiles?: Set<string>): Set<string> {
+export function getBlockedTiles(
+  furniture: PlacedFurniture[],
+  excludeTiles?: Set<string>,
+): Set<string> {
   const tiles = new Set<string>()
   for (const item of furniture) {
-    const entry = item.type === FurnitureType.PIXEL_TEXT
-      ? getEffectiveCatalogEntry(item.type, item.textConfig)
-      : getCatalogEntry(item.type)
+    const entry =
+      item.type === FurnitureType.PIXEL_TEXT
+        ? getEffectiveCatalogEntry(item.type, item.textConfig)
+        : getCatalogEntry(item.type)
     if (!entry) continue
     const bgRows = entry.backgroundTiles || 0
     for (let dr = 0; dr < entry.footprintH; dr++) {
-      if (dr < bgRows) continue // skip background rows — characters can walk through
+      if (dr < bgRows) continue
       for (let dc = 0; dc < entry.footprintW; dc++) {
         const key = `${item.col + dc},${item.row + dr}`
         if (excludeTiles && excludeTiles.has(key)) continue
@@ -145,18 +166,21 @@ export function getBlockedTiles(furniture: PlacedFurniture[], excludeTiles?: Set
   return tiles
 }
 
-/** Get tiles blocked for placement purposes — skips top backgroundTiles rows per item */
-export function getPlacementBlockedTiles(furniture: PlacedFurniture[], excludeUid?: string): Set<string> {
+export function getPlacementBlockedTiles(
+  furniture: PlacedFurniture[],
+  excludeUid?: string,
+): Set<string> {
   const tiles = new Set<string>()
   for (const item of furniture) {
     if (item.uid === excludeUid) continue
-    const entry = item.type === FurnitureType.PIXEL_TEXT
-      ? getEffectiveCatalogEntry(item.type, item.textConfig)
-      : getCatalogEntry(item.type)
+    const entry =
+      item.type === FurnitureType.PIXEL_TEXT
+        ? getEffectiveCatalogEntry(item.type, item.textConfig)
+        : getCatalogEntry(item.type)
     if (!entry) continue
     const bgRows = entry.backgroundTiles || 0
     for (let dr = 0; dr < entry.footprintH; dr++) {
-      if (dr < bgRows) continue // skip background rows
+      if (dr < bgRows) continue
       for (let dc = 0; dc < entry.footprintW; dc++) {
         tiles.add(`${item.col + dc},${item.row + dr}`)
       }
@@ -165,24 +189,61 @@ export function getPlacementBlockedTiles(furniture: PlacedFurniture[], excludeUi
   return tiles
 }
 
-/** Map chair orientation to character facing direction */
 function orientationToFacing(orientation: string): Direction {
   switch (orientation) {
-    case 'front': return Direction.DOWN
-    case 'back': return Direction.UP
-    case 'left': return Direction.LEFT
-    case 'right': return Direction.RIGHT
-    default: return Direction.DOWN
+    case 'front':
+      return Direction.DOWN
+    case 'back':
+      return Direction.UP
+    case 'left':
+      return Direction.LEFT
+    case 'right':
+    case 'side':
+      return Direction.RIGHT
+    default:
+      return Direction.DOWN
   }
 }
 
-/** Generate seats from chair furniture.
- *  Facing priority: 1) chair orientation, 2) adjacent desk, 3) forward (DOWN). */
+function seatFacesElectronics(
+  seatCol: number,
+  seatRow: number,
+  facingDir: Direction,
+  electronicsTiles: Set<string>,
+): boolean {
+  const dCol =
+    facingDir === Direction.RIGHT ? 1 : facingDir === Direction.LEFT ? -1 : 0
+  const dRow =
+    facingDir === Direction.DOWN ? 1 : facingDir === Direction.UP ? -1 : 0
+
+  for (let depth = 1; depth <= AUTO_ON_FACING_DEPTH; depth++) {
+    const tileCol = seatCol + dCol * depth
+    const tileRow = seatRow + dRow * depth
+    if (electronicsTiles.has(`${tileCol},${tileRow}`)) return true
+
+    if (dCol !== 0) {
+      if (
+        electronicsTiles.has(`${tileCol},${tileRow - 1}`) ||
+        electronicsTiles.has(`${tileCol},${tileRow + 1}`)
+      ) {
+        return true
+      }
+    } else if (
+      electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
+      electronicsTiles.has(`${tileCol + 1},${tileRow}`)
+    ) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export function layoutToSeats(furniture: PlacedFurniture[]): Map<string, Seat> {
   const seats = new Map<string, Seat>()
-
-  // Build set of all desk tiles
   const deskTiles = new Set<string>()
+  const electronicsTiles = new Set<string>()
+
   for (const item of furniture) {
     const entry = getCatalogEntry(item.type)
     if (!entry || !entry.isDesk) continue
@@ -193,42 +254,51 @@ export function layoutToSeats(furniture: PlacedFurniture[]): Map<string, Seat> {
     }
   }
 
+  for (const item of furniture) {
+    const entry = getCatalogEntry(item.type)
+    if (!entry || entry.category !== 'electronics') continue
+    for (let dr = 0; dr < entry.footprintH; dr++) {
+      for (let dc = 0; dc < entry.footprintW; dc++) {
+        electronicsTiles.add(`${item.col + dc},${item.row + dr}`)
+      }
+    }
+  }
+
   const dirs: Array<{ dc: number; dr: number; facing: Direction }> = [
-    { dc: 0, dr: -1, facing: Direction.UP },    // desk is above chair → face UP
-    { dc: 0, dr: 1, facing: Direction.DOWN },   // desk is below chair → face DOWN
-    { dc: -1, dr: 0, facing: Direction.LEFT },   // desk is left of chair → face LEFT
-    { dc: 1, dr: 0, facing: Direction.RIGHT },   // desk is right of chair → face RIGHT
+    { dc: 0, dr: -1, facing: Direction.UP },
+    { dc: 0, dr: 1, facing: Direction.DOWN },
+    { dc: -1, dr: 0, facing: Direction.LEFT },
+    { dc: 1, dr: 0, facing: Direction.RIGHT },
   ]
 
-  // For each chair, every footprint tile becomes a seat.
-  // Multi-tile chairs (e.g. 2-tile couches) produce multiple seats.
   for (const item of furniture) {
     const entry = getCatalogEntry(item.type)
     if (!entry || entry.category !== 'chairs') continue
 
     let seatCount = 0
-    for (let dr = 0; dr < entry.footprintH; dr++) {
+    const bgRows = entry.backgroundTiles ?? 0
+    for (let dr = bgRows; dr < entry.footprintH; dr++) {
       for (let dc = 0; dc < entry.footprintW; dc++) {
         const tileCol = item.col + dc
         const tileRow = item.row + dr
 
-        // Determine facing direction:
-        // 1) Chair orientation takes priority
-        // 2) Adjacent desk direction
-        // 3) Default forward (DOWN)
         let facingDir: Direction = Direction.DOWN
         if (entry.orientation) {
           facingDir = orientationToFacing(entry.orientation)
         } else {
-          for (const d of dirs) {
-            if (deskTiles.has(`${tileCol + d.dc},${tileRow + d.dr}`)) {
-              facingDir = d.facing
+          for (const dir of dirs) {
+            if (deskTiles.has(`${tileCol + dir.dc},${tileRow + dir.dr}`)) {
+              facingDir = dir.facing
               break
             }
           }
         }
 
-        // First seat uses chair uid (backward compat), subsequent use uid:N
+        // Only workstation chairs become assignable seats.
+        if (!seatFacesElectronics(tileCol, tileRow, facingDir, electronicsTiles)) {
+          continue
+        }
+
         const seatUid = seatCount === 0 ? item.uid : `${item.uid}:${seatCount}`
         seats.set(seatUid, {
           uid: seatUid,
@@ -245,7 +315,6 @@ export function layoutToSeats(furniture: PlacedFurniture[]): Map<string, Seat> {
   return seats
 }
 
-/** Get the set of tiles occupied by seats (so they can be excluded from blocked tiles) */
 export function getSeatTiles(seats: Map<string, Seat>): Set<string> {
   const tiles = new Set<string>()
   for (const seat of seats.values()) {
@@ -254,125 +323,114 @@ export function getSeatTiles(seats: Map<string, Seat>): Set<string> {
   return tiles
 }
 
-/** Default floor colors for the two rooms */
-const DEFAULT_LEFT_ROOM_COLOR: FloorColor = { h: 35, s: 30, b: 15, c: 0 }  // warm beige
-const DEFAULT_RIGHT_ROOM_COLOR: FloorColor = { h: 25, s: 45, b: 5, c: 10 }  // warm brown
-const DEFAULT_CARPET_COLOR: FloorColor = { h: 280, s: 40, b: -5, c: 0 }     // purple
-const DEFAULT_DOORWAY_COLOR: FloorColor = { h: 35, s: 25, b: 10, c: 0 }     // tan
+const DEFAULT_LEFT_ROOM_COLOR: FloorColor = { h: 35, s: 30, b: 15, c: 0 }
+const DEFAULT_RIGHT_ROOM_COLOR: FloorColor = { h: 25, s: 45, b: 5, c: 10 }
 
-/** Create the default office layout matching the current hardcoded office */
 export function createDefaultLayout(): OfficeLayout {
-  const W = TileType.WALL
-  const F1 = TileType.FLOOR_1
-  const F2 = TileType.FLOOR_2
-  const F3 = TileType.FLOOR_3
-  const F4 = TileType.FLOOR_4
-
   const tiles: TileTypeVal[] = []
   const tileColors: Array<FloorColor | null> = []
 
-  for (let r = 0; r < DEFAULT_ROWS; r++) {
-    for (let c = 0; c < DEFAULT_COLS; c++) {
-      if (r === 0 || r === DEFAULT_ROWS - 1) { tiles.push(W); tileColors.push(null); continue }
-      if (c === 0 || c === DEFAULT_COLS - 1) { tiles.push(W); tileColors.push(null); continue }
-      if (c === 10) {
-        if (r >= 4 && r <= 6) {
-          tiles.push(F4); tileColors.push(DEFAULT_DOORWAY_COLOR)
-        } else {
-          tiles.push(W); tileColors.push(null)
-        }
-        continue
-      }
-      if (c >= 15 && c <= 18 && r >= 7 && r <= 9) {
-        tiles.push(F3); tileColors.push(DEFAULT_CARPET_COLOR); continue
-      }
-      if (c < 10) {
-        tiles.push(F1); tileColors.push(DEFAULT_LEFT_ROOM_COLOR)
+  for (let row = 0; row < DEFAULT_ROWS; row++) {
+    for (let col = 0; col < DEFAULT_COLS; col++) {
+      if (row === 0 || row === DEFAULT_ROWS - 1 || col === 0 || col === DEFAULT_COLS - 1) {
+        tiles.push(TileType.WALL)
+        tileColors.push(null)
+      } else if (col < Math.floor(DEFAULT_COLS / 2)) {
+        tiles.push(TileType.FLOOR_1)
+        tileColors.push(DEFAULT_LEFT_ROOM_COLOR)
       } else {
-        tiles.push(F2); tileColors.push(DEFAULT_RIGHT_ROOM_COLOR)
+        tiles.push(TileType.FLOOR_2)
+        tileColors.push(DEFAULT_RIGHT_ROOM_COLOR)
       }
     }
   }
 
-  const furniture: PlacedFurniture[] = [
-    { uid: 'desk-left', type: FurnitureType.DESK, col: 4, row: 3 },
-    { uid: 'desk-right', type: FurnitureType.DESK, col: 13, row: 3 },
-    { uid: 'bookshelf-1', type: FurnitureType.BOOKSHELF, col: 1, row: 5 },
-    { uid: 'plant-left', type: FurnitureType.PLANT, col: 1, row: 1 },
-    { uid: 'cooler-1', type: FurnitureType.COOLER, col: 17, row: 7 },
-    { uid: 'plant-right', type: FurnitureType.PLANT, col: 18, row: 1 },
-    { uid: 'whiteboard-1', type: FurnitureType.WHITEBOARD, col: 15, row: 0 },
-    // Left desk chairs
-    { uid: 'chair-l-top', type: FurnitureType.CHAIR, col: 4, row: 2 },
-    { uid: 'chair-l-bottom', type: FurnitureType.CHAIR, col: 5, row: 5 },
-    { uid: 'chair-l-left', type: FurnitureType.CHAIR, col: 3, row: 4 },
-    { uid: 'chair-l-right', type: FurnitureType.CHAIR, col: 6, row: 3 },
-    // Right desk chairs
-    { uid: 'chair-r-top', type: FurnitureType.CHAIR, col: 13, row: 2 },
-    { uid: 'chair-r-bottom', type: FurnitureType.CHAIR, col: 14, row: 5 },
-    { uid: 'chair-r-left', type: FurnitureType.CHAIR, col: 12, row: 4 },
-    { uid: 'chair-r-right', type: FurnitureType.CHAIR, col: 15, row: 3 },
-  ]
-
-  return { version: 1, cols: DEFAULT_COLS, rows: DEFAULT_ROWS, tiles, tileColors, furniture }
+  return { version: 1, cols: DEFAULT_COLS, rows: DEFAULT_ROWS, tiles, tileColors, furniture: [] }
 }
 
-/** Serialize layout to JSON string */
 export function serializeLayout(layout: OfficeLayout): string {
   return JSON.stringify(layout)
 }
 
-/** Deserialize layout from JSON string, migrating old tile types if needed */
+const LEGACY_TYPE_MAP: Record<string, string | null> = {
+  desk: 'DESK_FRONT',
+  chair: 'WOODEN_CHAIR_FRONT',
+  bookshelf: 'BOOKSHELF',
+  plant: 'PLANT',
+  cooler: null,
+  whiteboard: 'WHITEBOARD',
+  pc: 'PC_FRONT_OFF',
+  lamp: null,
+}
+
+function migrateFurnitureTypes(furniture: PlacedFurniture[]): PlacedFurniture[] {
+  const migrated: PlacedFurniture[] = []
+  for (const item of furniture) {
+    const newType = LEGACY_TYPE_MAP[item.type]
+    if (newType === undefined) {
+      migrated.push(item)
+    } else if (newType !== null) {
+      migrated.push({ ...item, type: newType })
+    }
+  }
+  return migrated
+}
+
 export function deserializeLayout(json: string): OfficeLayout | null {
   try {
     const obj = JSON.parse(json)
     if (obj && obj.version === 1 && Array.isArray(obj.tiles) && Array.isArray(obj.furniture)) {
       return migrateLayout(obj as OfficeLayout)
     }
-  } catch { /* ignore parse errors */ }
+  } catch {
+    // Ignore parse errors.
+  }
   return null
 }
 
-/**
- * Ensure layout has tileColors. If missing, generate defaults based on tile types.
- * Exported for use by message handlers that receive layouts over the wire.
- */
 export function migrateLayoutColors(layout: OfficeLayout): OfficeLayout {
   return migrateLayout(layout)
 }
 
-/**
- * Migrate old layouts that use legacy tile types (TILE_FLOOR=1, WOOD_FLOOR=2, CARPET=3, DOORWAY=4)
- * to the new pattern-based system. If tileColors is already present, no migration needed.
- */
 function migrateLayout(layout: OfficeLayout): OfficeLayout {
-  if (layout.tileColors && layout.tileColors.length === layout.tiles.length) {
-    return layout // Already migrated
+  layout = { ...layout, furniture: migrateFurnitureTypes(layout.furniture) }
+
+  const oldVoid = 8
+  if (!layout.layoutRevision && layout.tiles.includes(oldVoid as TileTypeVal)) {
+    layout = {
+      ...layout,
+      tiles: layout.tiles.map((tile) =>
+        tile === oldVoid ? (TileType.VOID as TileTypeVal) : tile,
+      ),
+    }
   }
 
-  // Check if any tiles use old values (1-4) — these map directly to FLOOR_1-4
-  // but need color assignments
+  if (layout.tileColors && layout.tileColors.length === layout.tiles.length) {
+    return layout
+  }
+
   const tileColors: Array<FloorColor | null> = []
   for (const tile of layout.tiles) {
     switch (tile) {
-      case 0: // WALL
+      case 0:
         tileColors.push(null)
         break
-      case 1: // was TILE_FLOOR → FLOOR_1 beige
+      case 1:
         tileColors.push(DEFAULT_LEFT_ROOM_COLOR)
         break
-      case 2: // was WOOD_FLOOR → FLOOR_2 brown
+      case 2:
         tileColors.push(DEFAULT_RIGHT_ROOM_COLOR)
         break
-      case 3: // was CARPET → FLOOR_3 purple
-        tileColors.push(DEFAULT_CARPET_COLOR)
+      case 3:
+        tileColors.push({ h: 280, s: 40, b: -5, c: 0 })
         break
-      case 4: // was DOORWAY → FLOOR_4 tan
-        tileColors.push(DEFAULT_DOORWAY_COLOR)
+      case 4:
+        tileColors.push({ h: 35, s: 25, b: 10, c: 0 })
         break
       default:
-        // New tile types (5-7) without colors — use neutral gray
-        tileColors.push(tile > 0 ? { h: 0, s: 0, b: 0, c: 0 } : null)
+        tileColors.push(
+          tile > 0 && tile !== TileType.VOID ? { h: 0, s: 0, b: 0, c: 0 } : null,
+        )
     }
   }
 

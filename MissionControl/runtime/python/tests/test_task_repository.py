@@ -40,7 +40,7 @@ def test_create_task(task_repository):
     tasks = task_repository.list_tasks_for_mission(task.mission_id)
     assert len(tasks) == 1
     assert tasks[0]["title"] == "Test Task"
-    assert tasks[0]["status"] == "queued"
+    assert tasks[0]["status"] == "pending"
 
 
 def test_list_tasks_for_mission(task_repository):

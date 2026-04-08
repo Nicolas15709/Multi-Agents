@@ -293,7 +293,7 @@ class RuntimeApiServer:
                     "Access-Control-Allow-Headers",
                     "Content-Type, Authorization, X-Mission-Control-Token",
                 )
-                self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
                 for name, value in _SECURITY_HEADERS:
                     self.send_header(name, value)
                 self.end_headers()
@@ -327,7 +327,7 @@ class RuntimeApiServer:
                     "Access-Control-Allow-Headers",
                     "Content-Type, Authorization, X-Mission-Control-Token",
                 )
-                self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
                 for name, value in _SECURITY_HEADERS:
                     self.send_header(name, value)
                 self.end_headers()
@@ -394,6 +394,31 @@ class RuntimeApiServer:
                     db.close()
 
             # ── POST ──────────────────────────────────────────────────────
+
+            def do_DELETE(self) -> None:  # noqa: N802
+                parsed = urlparse(self.path)
+                path = parsed.path.rstrip("/") or "/"
+
+                if not self._check_rate_limit(path):
+                    return self._send_json(429, {"ok": False, "error": "rate_limit_exceeded"})
+                if not self._check_auth(path):
+                    return self._send_json(401, {"ok": False, "error": "unauthorized"})
+
+                services = build_runtime_services(server_ref.config)
+                db = services["db"]
+                try:
+                    # DELETE /api/agents/:agent_id
+                    parts = path.strip("/").split("/")
+                    if len(parts) == 3 and parts[0] == "api" and parts[1] == "agents":
+                        agent_id = parts[2]
+                        if agent_id == "agent-0":
+                            return self._send_json(403, {"ok": False, "error": "cannot_delete_lead"})
+                        agent_repo = AgentRepository(db)
+                        agent_repo.delete_agent(agent_id)
+                        return self._send_json(200, {"ok": True, "deleted": agent_id})
+                    return self._send_json(404, {"ok": False, "error": "not_found"})
+                finally:
+                    db.close()
 
             def do_POST(self) -> None:  # noqa: N802
                 parsed = urlparse(self.path)

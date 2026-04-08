@@ -7,7 +7,7 @@ import { NavSidebar } from './components/NavSidebar'
 import { TopBar } from './components/TopBar'
 import { ToastContainer, useToasts, useEventToasts } from './components/Toast'
 import { LoginGate } from './components/LoginGate'
-import { isAuthenticated, setAuthToken, clearAuthToken } from './runtimeApi'
+import { isAuthenticated, setAuthToken, clearAuthToken, deleteAgent } from './runtimeApi'
 
 import { OverviewView }   from './components/views/OverviewView'
 import { MissionsView }   from './components/views/MissionsView'
@@ -101,6 +101,17 @@ export default function App() {
     })
   }
 
+  async function handleDeleteAgent(agentId) {
+    // Remove from local custom agents if it's one
+    setCustomAgents((current) => {
+      const next = current.filter(a => a.agent_id !== agentId)
+      saveCustomAgents(next)
+      return next
+    })
+    // Also delete from backend (fires and forgets — it's ok if agent wasn't in DB)
+    try { await deleteAgent(agentId) } catch { /* not in DB — ignore */ }
+  }
+
   const viewProps = {
     activeMission,
     missions,
@@ -118,6 +129,7 @@ export default function App() {
     officeConfig,
     connection,
     onCreateAgent: handleCreateAgent,
+    onDeleteAgent: handleDeleteAgent,
     onLogout: handleLogout,
   }
 

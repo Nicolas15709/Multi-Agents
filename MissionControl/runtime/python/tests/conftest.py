@@ -1,4 +1,4 @@
-"""Pytest configuration and fixtures for Mission Control tests."""
+"""Pytest configuration and fixtures for Virtual Agency tests."""
 
 import os
 import sys
@@ -16,7 +16,10 @@ import pytest
 
 from runtime.python.db import Database
 from runtime.python.repository import (
+    AgentHireRequestRepository,
     AgentRepository,
+    IntakeRequestRepository,
+    MissionControlRepository,
     MissionRepository,
     NotificationRepository,
     PolicyRepository,
@@ -77,6 +80,24 @@ def notification_repository(database):
 
 
 @pytest.fixture
+def intake_request_repository(database):
+    """Create an IntakeRequestRepository instance."""
+    return IntakeRequestRepository(database)
+
+
+@pytest.fixture
+def agent_hire_request_repository(database):
+    """Create an AgentHireRequestRepository instance."""
+    return AgentHireRequestRepository(database)
+
+
+@pytest.fixture
+def mission_control_repository(database):
+    """Create a MissionControlRepository instance."""
+    return MissionControlRepository(database)
+
+
+@pytest.fixture
 def mock_config():
     """Create a mock RuntimeConfig."""
     config = MagicMock(spec=RuntimeConfig)
@@ -84,6 +105,18 @@ def mock_config():
     config.websocket_enabled = False
     config.websocket_host = "127.0.0.1"
     config.websocket_port = 8765
+    config.api_enabled = False
+    config.api_host = "127.0.0.1"
+    config.api_port = 8787
+    config.api_cors_origin = "*"
+    config.api_auth_token = ""
+    config.hire_approvals_enabled = False
+    config.auto_propose_hires_enabled = True
+    config.max_autonomous_steps = 18
+    config.max_estimated_tokens = 16000
+    config.max_runtime_ticks = 64
+    config.max_dynamic_hires = 3
+    config.action_budgets = {"outreach": 2, "publish": 1, "legal_release": 1, "financial_commitment": 1}
     config.tick_interval_seconds = 1
     config.telegram_notifications_enabled = True
     config.environment = "test"
@@ -92,4 +125,8 @@ def mock_config():
     config.templates_path = str(
         base_dir.parent.parent / "config" / "mission-templates.json"
     )
+    config.specialist_templates_root = str(
+        base_dir.parent.parent.parent / "references" / "agency-agents"
+    )
     return config
+

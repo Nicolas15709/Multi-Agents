@@ -1,9 +1,14 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from agent_state import AgentStateManager
-from repository import MissionRepository, TaskRepository
-from scheduler import Scheduler
+try:
+    from .agent_state import AgentStateManager
+    from .repository import MissionRepository, TaskRepository
+    from .scheduler import Scheduler
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from agent_state import AgentStateManager
+    from repository import MissionRepository, TaskRepository
+    from scheduler import Scheduler
 
 STATE_BY_AGENT = {
     "agent-0": "planning",

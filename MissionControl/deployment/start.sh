@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-# Mission Control Startup Script
+# Virtual Agency Startup Script
 # =============================
 
-echo "=== Mission Control Starting ==="
+echo "=== Virtual Agency Starting ==="
 
 # Initialize database if it doesn't exist
 if [ ! -f "/app/data/runtime.db" ]; then
@@ -29,3 +29,4 @@ sleep 2
 echo "Starting Python runtime..."
 cd /app
 exec python3 main.py
+

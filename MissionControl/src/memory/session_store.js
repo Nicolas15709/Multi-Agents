@@ -1,5 +1,5 @@
-/**
- * Session Store for Mission Control
+﻿/**
+ * Session Store for Virtual Agency
  * Manages runtime session state, diffs, and local checkpoints
  */
 
@@ -241,7 +241,7 @@ function calculateStateHash(state) {
 function estimateTokenDelta(oldState, newState) {
   const oldStr = JSON.stringify(oldState);
   const newStr = JSON.stringify(newState);
-  // 1 token ≈ 4 characters (very rough)
+  // 1 token â‰ˆ 4 characters (very rough)
   return Math.max(0, Math.floor((newStr.length - oldStr.length) / 4));
 }
 
@@ -320,3 +320,4 @@ export function queueSyncOperation(direction, tableName, recordId, payload) {
   `);
   return stmt.run(direction, tableName, recordId, JSON.stringify(payload)).lastInsertRowid;
 }
+

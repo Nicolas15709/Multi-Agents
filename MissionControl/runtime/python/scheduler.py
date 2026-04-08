@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from repository import MissionRepository, TaskRepository
-from state_machine import MissionStateMachine, StateValidationError
+try:
+    from .repository import MissionRepository, TaskRepository
+    from .state_machine import MissionStateMachine, StateValidationError
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from repository import MissionRepository, TaskRepository
+    from state_machine import MissionStateMachine, StateValidationError
 
 PRIORITY_SCORE = {
     "low": 1,

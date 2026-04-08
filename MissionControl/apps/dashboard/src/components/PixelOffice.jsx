@@ -1,88 +1,125 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react'
-import { MapPin } from 'lucide-react'
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import { OfficeState } from './pixel-engine/engine/officeState'
 import { startGameLoop } from './pixel-engine/engine/gameLoop'
-import { renderFrame } from './pixel-engine/engine/renderer'
+import { computeContentBounds, renderFrame } from './pixel-engine/engine/renderer'
 import { loadAllAssets } from './pixel-engine/browserAssetLoader'
-import {
-  ZOOM_MIN,
-  ZOOM_MAX,
-  ZOOM_DEFAULT_DPR_FACTOR,
-  ZOOM_SCROLL_THRESHOLD,
-  PAN_MARGIN_FRACTION,
-  CAMERA_FOLLOW_LERP,
-  CAMERA_FOLLOW_SNAP_THRESHOLD,
-} from './constants'
 
 const TILE_SIZE = 16
+const FIT_PADDING_RATIO = 1
+const MIN_ZOOM = 0.5
+const EMPTY_AGENTS = []
 
-/**
- * PixelOffice — Canvas-rendered pixel art office for the Mission Control dashboard.
- * Loads all pixel assets, initializes the game engine, and renders the office scene.
- * Maps dashboard agent data into the pixel engine's character system.
- */
-export function PixelOffice({ agents = [] }) {
+export function PixelOffice({ agents = EMPTY_AGENTS, officeName = '' }) {
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
   const officeStateRef = useRef(null)
-  const panRef = useRef({ x: 0, y: 0 })
-  const zoomRef = useRef(Math.round(ZOOM_DEFAULT_DPR_FACTOR * (window.devicePixelRatio || 1)))
+  const zoomRef = useRef(1)
   const stopLoopRef = useRef(null)
   const [loading, setLoading] = useState(true)
-  const [zoom, setZoom] = useState(zoomRef.current)
-  const agentMapRef = useRef(new Map()) // track which agents are added
+  const agentMapRef = useRef(new Map())
 
-  // Middle-mouse pan state
-  const isPanningRef = useRef(false)
-  const panStartRef = useRef({ mouseX: 0, mouseY: 0, panX: 0, panY: 0 })
-  const zoomAccumulatorRef = useRef(0)
-
-  const clampPan = useCallback((px, py) => {
-    const canvas = canvasRef.current
-    const os = officeStateRef.current
-    if (!canvas || !os) return { x: px, y: py }
-    const layout = os.getLayout()
-    const z = zoomRef.current
-    const mapW = layout.cols * TILE_SIZE * z
-    const mapH = layout.rows * TILE_SIZE * z
-    const marginX = canvas.width * PAN_MARGIN_FRACTION
-    const marginY = canvas.height * PAN_MARGIN_FRACTION
-    const maxPanX = mapW / 2 + canvas.width / 2 - marginX
-    const maxPanY = mapH / 2 + canvas.height / 2 - marginY
-    return {
-      x: Math.max(-maxPanX, Math.min(maxPanX, px)),
-      y: Math.max(-maxPanY, Math.min(maxPanY, py)),
+  // --- Pet Management State ---
+  const [petsConfig, setPetsConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pixel-office-pets')
+      return saved ? JSON.parse(saved) : []
+    } catch (e) {
+      return []
     }
+  })
+
+  // Persist pets to localStorage
+  useEffect(() => {
+    localStorage.setItem('pixel-office-pets', JSON.stringify(petsConfig))
+  }, [petsConfig])
+
+  // Sync pets with engine when config or engine state changes
+  useEffect(() => {
+    if (loading) return
+    const os = officeStateRef.current
+    if (os && os.syncPets) {
+      os.syncPets(petsConfig)
+    }
+  }, [petsConfig, loading])
+
+  const [isPetMenuOpen, setIsPetMenuOpen] = useState(false)
+  const [petNameInput, setPetNameInput] = useState('Nuevo Amigo')
+
+  // --- Pet Management Methods ---
+  const addPet = useCallback((type) => {
+    if (!petNameInput.trim()) return
+    const id = `pet-${Date.now()}`
+    setPetsConfig(prev => [...prev, { id, name: petNameInput, type }])
+    setPetNameInput('Nuevo Amigo') // Reset for next pet
+  }, [petNameInput])
+
+  const removePet = useCallback((id) => {
+    setPetsConfig(prev => prev.filter(p => p.id !== id))
   }, [])
 
-  // Resize canvas to match container
+  const calcFitZoom = useCallback(() => {
+    const canvas = canvasRef.current
+    const os = officeStateRef.current
+    if (!canvas || !os) return 1
+
+    const layout = os.getLayout()
+    const bounds = computeContentBounds(
+      os.tileMap,
+      os.furniture,
+      layout.tileColors,
+      layout.cols,
+      layout.rows,
+    )
+    const contentWidth = bounds.width || layout.cols * TILE_SIZE
+    const contentHeight = bounds.height || layout.rows * TILE_SIZE
+    const exact = Math.min(canvas.width / contentWidth, canvas.height / contentHeight)
+    const padded = exact * FIT_PADDING_RATIO
+    // Use 1/8th-step snapping (finer than 1/4th) to minimize margin loss from rounding
+    return Math.max(MIN_ZOOM, Math.floor(padded * 8) / 8)
+  }, [])
+
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current
     const container = containerRef.current
     if (!canvas || !container) return
+
     const rect = container.getBoundingClientRect()
     const dpr = window.devicePixelRatio || 1
-    const w = Math.round(rect.width * dpr)
-    const h = Math.round(rect.height * dpr)
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w
-      canvas.height = h
-    }
-  }, [])
+    const width = Math.round(rect.width * dpr)
+    const height = Math.round(rect.height * dpr)
 
-  // Phase 1: Load assets only (no canvas needed)
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width
+      canvas.height = height
+      const fit = calcFitZoom()
+      if (fit > 0) {
+        zoomRef.current = fit
+      }
+    }
+  }, [calcFitZoom])
+
   useEffect(() => {
     let cancelled = false
+    setLoading(true)
 
     async function loadAssets() {
       const { layout } = await loadAllAssets('/pixel-assets')
       if (cancelled) return
+
+      // Patch sign text with custom office name
+      if (layout && officeName) {
+        const sign = layout.furniture?.find(f => f.uid === 'sign-office')
+        if (sign?.textConfig) {
+          sign.textConfig.text = officeName.toUpperCase()
+        }
+      }
+
       const officeState = new OfficeState(layout || undefined)
       officeStateRef.current = officeState
       setLoading(false)
     }
 
-    loadAssets().catch(err => {
+    loadAssets().catch((err) => {
       console.error('[PixelOffice] Failed to load assets:', err)
       if (!cancelled) setLoading(false)
     })
@@ -94,15 +131,16 @@ export function PixelOffice({ agents = [] }) {
         stopLoopRef.current = null
       }
     }
-  }, [])
+  }, [officeName])
 
-  // Phase 2: Start game loop once canvas is in the DOM (after loading=false)
   useEffect(() => {
     if (loading) return
     const officeState = officeStateRef.current
     if (!officeState) return
 
     resizeCanvas()
+    zoomRef.current = calcFitZoom()
+
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -113,52 +151,24 @@ export function PixelOffice({ agents = [] }) {
     const stop = startGameLoop(canvas, {
       update: (dt) => officeState.update(dt),
       render: (ctx2d) => {
-        const z = zoomRef.current
-        const cw = canvas.width
-        const ch = canvas.height
+        const zoom = zoomRef.current
+        const canvasWidth = canvas.width
+        const canvasHeight = canvas.height
         const layout = officeState.getLayout()
-
-        // Camera follow for selected agent
-        if (officeState.cameraFollowId !== null) {
-          const followCh = officeState.characters.get(officeState.cameraFollowId)
-          if (followCh) {
-            const mapW = layout.cols * TILE_SIZE * z
-            const mapH = layout.rows * TILE_SIZE * z
-            const targetX = -(followCh.x * z - cw / 2 + mapW / 2 - (layout.cols * TILE_SIZE * z) / 2)
-            const targetY = -(followCh.y * z - ch / 2 + mapH / 2 - (layout.rows * TILE_SIZE * z) / 2)
-            const dx = targetX - panRef.current.x
-            const dy = targetY - panRef.current.y
-            if (Math.abs(dx) > CAMERA_FOLLOW_SNAP_THRESHOLD || Math.abs(dy) > CAMERA_FOLLOW_SNAP_THRESHOLD) {
-              panRef.current.x += dx * CAMERA_FOLLOW_LERP
-              panRef.current.y += dy * CAMERA_FOLLOW_LERP
-            }
-          }
-        }
-
-        // Convert characters Map to array for renderer
         const charsArray = Array.from(officeState.characters.values())
-
-        // Build selection state
-        const selection = {
-          selectedAgentId: officeState.selectedAgentId,
-          hoveredAgentId: officeState.hoveredAgentId,
-          hoveredTile: officeState.hoveredTile,
-          seats: officeState.seats,
-          characters: officeState.characters,
-        }
 
         renderFrame(
           ctx2d,
-          cw,
-          ch,
+          canvasWidth,
+          canvasHeight,
           officeState.tileMap,
           officeState.furniture,
           charsArray,
-          z,
-          panRef.current.x,
-          panRef.current.y,
-          selection,
-          undefined, // editor state
+          zoom,
+          0,
+          0,
+          undefined,
+          undefined,
           layout.tileColors,
           layout.cols,
           layout.rows,
@@ -174,16 +184,14 @@ export function PixelOffice({ agents = [] }) {
         stopLoopRef.current = null
       }
     }
-  }, [loading, resizeCanvas])
+  }, [loading, resizeCanvas, calcFitZoom])
 
-  // Handle window resize
   useEffect(() => {
     const onResize = () => resizeCanvas()
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [resizeCanvas])
 
-  // Sync dashboard agents into the pixel engine
   useEffect(() => {
     const os = officeStateRef.current
     if (!os) return
@@ -195,19 +203,23 @@ export function PixelOffice({ agents = [] }) {
       currentIds.add(id)
 
       if (!os.characters.has(id)) {
-        // Add new agent
-        os.addAgent(id, undefined, undefined, undefined, false, agent.display_name || agent.name || '')
+        os.addAgent(
+          id,
+          agent.pixel_palette,
+          agent.pixel_hue_shift,
+          undefined,
+          false,
+          agent.display_name || agent.name || '',
+        )
         agentMapRef.current.set(id, agent.agent_id)
       }
 
-      // Update agent activity state
       const ch = os.characters.get(id)
       if (ch) {
         const isActive = agent.state !== 'idle'
         if (ch.isActive !== isActive) {
           os.setAgentActive(id, isActive)
         }
-        // Map agent state to tool for animation
         if (isActive) {
           const tool = ['planning', 'researching'].includes(agent.state) ? 'Read' : 'Write'
           if (ch.currentTool !== tool) {
@@ -216,14 +228,13 @@ export function PixelOffice({ agents = [] }) {
         } else if (ch.currentTool) {
           os.setAgentTool(id, null)
         }
-        // Update name
-        if (ch.name !== (agent.display_name || agent.name || '')) {
-          ch.name = agent.display_name || agent.name || ''
+        const name = agent.display_name || agent.name || ''
+        if (ch.name !== name) {
+          ch.name = name
         }
       }
     })
 
-    // Remove agents that no longer exist
     for (const [id] of os.characters) {
       if (id >= 0 && !currentIds.has(id)) {
         os.removeAgent(id)
@@ -232,288 +243,108 @@ export function PixelOffice({ agents = [] }) {
     }
   }, [agents])
 
-  // Mouse handlers for zoom + pan
-  const handleWheel = useCallback((e) => {
-    e.preventDefault()
-    zoomAccumulatorRef.current += e.deltaY
-    if (Math.abs(zoomAccumulatorRef.current) >= ZOOM_SCROLL_THRESHOLD) {
-      const delta = zoomAccumulatorRef.current < 0 ? 1 : -1
-      zoomAccumulatorRef.current = 0
-      const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomRef.current + delta))
-      if (newZoom !== zoomRef.current) {
-        zoomRef.current = newZoom
-        setZoom(newZoom)
-      }
-    }
-  }, [])
-
-  const handleMouseDown = useCallback((e) => {
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
-      // Middle-click or Alt+click for panning
-      e.preventDefault()
-      isPanningRef.current = true
-      panStartRef.current = {
-        mouseX: e.clientX,
-        mouseY: e.clientY,
-        panX: panRef.current.x,
-        panY: panRef.current.y,
-      }
-    } else if (e.button === 0) {
-      // Left click - hit test agents
-      const os = officeStateRef.current
-      const canvas = canvasRef.current
-      if (!os || !canvas) return
-
-      const rect = canvas.getBoundingClientRect()
-      const dpr = window.devicePixelRatio || 1
-      const z = zoomRef.current
-      const layout = os.getLayout()
-      const mapW = layout.cols * TILE_SIZE * z
-      const mapH = layout.rows * TILE_SIZE * z
-      const ox = (canvas.width / 2 - mapW / 2) + panRef.current.x
-      const oy = (canvas.height / 2 - mapH / 2) + panRef.current.y
-
-      const canvasX = (e.clientX - rect.left) * dpr
-      const canvasY = (e.clientY - rect.top) * dpr
-      const worldX = (canvasX - ox) / z
-      const worldY = (canvasY - oy) / z
-
-      // Check character hit boxes
-      let clickedId = null
-      for (const ch of os.characters.values()) {
-        const halfW = 8
-        const hitH = 24
-        if (worldX >= ch.x - halfW && worldX <= ch.x + halfW &&
-            worldY >= ch.y - hitH && worldY <= ch.y) {
-          clickedId = ch.id
-          break
-        }
-      }
-
-      if (clickedId !== null) {
-        os.selectedAgentId = clickedId
-        os.cameraFollowId = clickedId
-      } else {
-        os.selectedAgentId = null
-        os.cameraFollowId = null
-      }
-    }
-  }, [])
-
-  const handleMouseMove = useCallback((e) => {
-    if (isPanningRef.current) {
-      const dpr = window.devicePixelRatio || 1
-      const dx = (e.clientX - panStartRef.current.mouseX) * dpr
-      const dy = (e.clientY - panStartRef.current.mouseY) * dpr
-      const clamped = clampPan(panStartRef.current.panX + dx, panStartRef.current.panY + dy)
-      panRef.current.x = clamped.x
-      panRef.current.y = clamped.y
-    } else {
-      // Hover detection for agents
-      const os = officeStateRef.current
-      const canvas = canvasRef.current
-      if (!os || !canvas) return
-
-      const rect = canvas.getBoundingClientRect()
-      const dpr = window.devicePixelRatio || 1
-      const z = zoomRef.current
-      const layout = os.getLayout()
-      const mapW = layout.cols * TILE_SIZE * z
-      const mapH = layout.rows * TILE_SIZE * z
-      const ox = (canvas.width / 2 - mapW / 2) + panRef.current.x
-      const oy = (canvas.height / 2 - mapH / 2) + panRef.current.y
-
-      const canvasX = (e.clientX - rect.left) * dpr
-      const canvasY = (e.clientY - rect.top) * dpr
-      const worldX = (canvasX - ox) / z
-      const worldY = (canvasY - oy) / z
-
-      let hoveredId = null
-      for (const ch of os.characters.values()) {
-        const halfW = 8
-        const hitH = 24
-        if (worldX >= ch.x - halfW && worldX <= ch.x + halfW &&
-            worldY >= ch.y - hitH && worldY <= ch.y) {
-          hoveredId = ch.id
-          break
-        }
-      }
-      os.hoveredAgentId = hoveredId
-    }
-  }, [clampPan])
-
-  const handleMouseUp = useCallback(() => {
-    isPanningRef.current = false
-  }, [])
-
-  // Prevent context menu on canvas
-  const handleContextMenu = useCallback((e) => e.preventDefault(), [])
-
   return (
-    <section
-      className="panel iso-room-panel"
-      style={{
-        flex: 1,
-        minHeight: '400px',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: '12px',
-        background: '#0a0f1c',
-        border: '1px solid rgba(255,255,255,0.05)',
-      }}
-    >
-      {/* HUD Header */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 20,
-          zIndex: 10,
-        }}
-      >
-        <div
-          style={{
-            marginBottom: 0,
-            fontSize: '11px',
-            letterSpacing: '0.1em',
-            fontWeight: 600,
-            color: '#f8fafc',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <MapPin size={12} style={{ marginRight: '6px', color: '#3b82f6' }} />
-          THE OFFICE
-        </div>
-      </div>
-
-      {/* Canvas Container */}
-      <div
-        ref={containerRef}
-        style={{
-          flex: 1,
-          position: 'relative',
-          overflow: 'hidden',
-          cursor: isPanningRef.current ? 'grabbing' : 'grab',
-        }}
-      >
+    <section className="pixel-office-shell">
+      <div ref={containerRef} className="pixel-office-canvas-wrap">
         {loading ? (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'rgba(255,255,255,0.4)',
-              fontSize: '12px',
-            }}
-          >
+          <div className="pixel-office-loader">
             Cargando oficina virtual...
           </div>
         ) : (
-          <canvas
-            ref={canvasRef}
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'block',
-              imageRendering: 'pixelated',
-            }}
-            onWheel={handleWheel}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onContextMenu={handleContextMenu}
-          />
+          <>
+            <canvas ref={canvasRef} className="pixel-office-canvas" />
+
+            {/* Floating Toggle Button */}
+            <button 
+              className={`pet-toggle-fab ${isPetMenuOpen ? 'active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsPetMenuOpen((open) => !open)
+              }}
+              title="Gestionar Mascotas"
+              type="button"
+              aria-expanded={isPetMenuOpen}
+              aria-controls="pet-management-sidebar"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 2.61-2.84 3.94-2.85C20 2.4 22 4 22 8c0 3.33-1 6-3 9-1.07 1.6-2.2 2.4-3.48 2.87-1.12.35-2.25.13-3.02-.37-.77.5-1.9.72-3.02.37-1.28-.47-2.41-1.27-3.48-2.87-2-3-3-5.67-3-9 0-4 2-5.6 4.06-5.59 1.33.01 2.16.85 3.94 2.85.65-.17 1.33-.26 2-.26Z" />
+              </svg>
+              {petsConfig.length > 0 && <span className="fab-badge">{petsConfig.length}</span>}
+            </button>
+
+            {/* Collapsible Pet Management Panel */}
+            {isPetMenuOpen && (
+            <div id="pet-management-sidebar" className="pet-management-sidebar open">
+              <div className="pet-sidebar-header">
+                <h3>Mascotas</h3>
+                <button className="close-sidebar-inner" type="button" onClick={() => setIsPetMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="pet-sidebar-content">
+                <div className="pet-naming-section">
+                  <label>Nombre de la mascota:</label>
+                  <input 
+                    type="text" 
+                    className="pet-name-input"
+                    value={petNameInput}
+                    onChange={(e) => setPetNameInput(e.target.value)}
+                    placeholder="Ponle un nombre..."
+                  />
+                </div>
+
+                <div className="pet-add-grid-modern">
+                  <button 
+                    disabled={!petNameInput.trim()} 
+                    className="pet-add-btn-v2 cat" 
+                    type="button"
+                    onClick={() => addPet('cat')}
+                  >
+                    <span className="icon">🐱</span>
+                    <span>Añadir Gato</span>
+                  </button>
+                  <button 
+                    disabled={!petNameInput.trim()} 
+                    className="pet-add-btn-v2 dog" 
+                    type="button"
+                    onClick={() => addPet('dog')}
+                  >
+                    <span className="icon">🐶</span>
+                    <span>Añadir Perro</span>
+                  </button>
+                </div>
+
+                <div className="pet-inventory">
+                  <div className="inventory-label">En la oficina:</div>
+                  <div className="pet-scroller">
+                    {petsConfig.length === 0 ? (
+                      <div className="empty-inventory-msg">No hay mascotas acompañando hoy</div>
+                    ) : (
+                      petsConfig.map(pet => (
+                        <div key={pet.id} className="pet-inventory-item">
+                          <div className="pet-inventory-info">
+                            <span className="type-dot" style={{ backgroundColor: pet.type === 'cat' ? 'var(--accent-2)' : 'var(--accent)' }}></span>
+                            <span className="pet-name-display">{pet.name}</span>
+                          </div>
+                          <button className="pet-delete-btn" type="button" onClick={() => removePet(pet.id)}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
+          </>
         )}
       </div>
-
-      {/* Zoom Controls */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 16,
-          right: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          zIndex: 10,
-        }}
-      >
-        <button
-          onClick={() => {
-            const newZoom = Math.min(ZOOM_MAX, zoomRef.current + 1)
-            zoomRef.current = newZoom
-            setZoom(newZoom)
-          }}
-          style={{
-            background: 'rgba(15,23,42,0.85)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'white',
-            width: 28,
-            height: 28,
-            borderRadius: 4,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            fontWeight: 'bold',
-          }}
-        >
-          +
-        </button>
-        <div
-          style={{
-            background: 'rgba(15,23,42,0.7)',
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '9px',
-            textAlign: 'center',
-            padding: '2px 0',
-            borderRadius: 2,
-          }}
-        >
-          {zoom}x
-        </div>
-        <button
-          onClick={() => {
-            const newZoom = Math.max(ZOOM_MIN, zoomRef.current - 1)
-            zoomRef.current = newZoom
-            setZoom(newZoom)
-          }}
-          style={{
-            background: 'rgba(15,23,42,0.85)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'white',
-            width: 28,
-            height: 28,
-            borderRadius: 4,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            fontWeight: 'bold',
-          }}
-        >
-          -
-        </button>
-      </div>
-
-      {/* Vignette overlay for depth */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(ellipse at center, transparent 60%, rgba(10, 15, 28, 0.6) 100%)',
-          pointerEvents: 'none',
-          zIndex: 5,
-        }}
-      />
     </section>
   )
 }

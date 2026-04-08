@@ -1,24 +1,151 @@
 {
   "templates": [
-    {"id": "software_build", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"]},
-    {"id": "prototype_to_build", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"]},
-    {"id": "landing_launch", "category": "development", "primaryAgents": ["agent-0", "agent-2", "agent-3", "agent-4"]},
-    {"id": "feature_extension", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
-    {"id": "bugfix_debug", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
-    {"id": "documentation_pack", "category": "development", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
-    {"id": "security_review", "category": "security", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]},
-    {"id": "qa_hardening", "category": "security", "primaryAgents": ["agent-0", "agent-3", "agent-4"]},
-    {"id": "post_build_audit", "category": "security", "primaryAgents": ["agent-0", "agent-1", "agent-4"]},
-    {"id": "marketing_campaign", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
-    {"id": "brand_growth", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
-    {"id": "content_engine", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
-    {"id": "social_presence_audit", "category": "marketing", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
-    {"id": "business_audit_proposal", "category": "business", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"]},
-    {"id": "competitor_intelligence", "category": "business", "primaryAgents": ["agent-0", "agent-1", "agent-4"]},
-    {"id": "offer_design", "category": "business", "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"]},
-    {"id": "research_only", "category": "research", "primaryAgents": ["agent-0", "agent-1"]},
-    {"id": "monitor_and_report", "category": "operations", "primaryAgents": ["agent-0", "agent-1", "agent-4"]},
-    {"id": "launch_mode", "category": "operations", "primaryAgents": ["agent-0", "agent-2", "agent-3", "agent-4"]},
-    {"id": "maintenance_cycle", "category": "operations", "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"]}
+    {
+      "id": "general_operating_request",
+      "category": "general",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4", "agent-0"],
+      "preferredDivisions": ["strategy", "project-management", "engineering", "support", "design"],
+      "defaultSpecialistTemplates": ["project-manager-senior", "testing-reality-checker", "engineering-frontend-developer"]
+    },
+    {
+      "id": "software_build",
+      "category": "development",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"],
+      "preferredDivisions": ["engineering", "testing", "design", "product", "project-management"],
+      "defaultSpecialistTemplates": ["engineering-frontend-developer", "engineering-backend-architect", "testing-reality-checker"]
+    },
+    {
+      "id": "prototype_to_build",
+      "category": "development",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"],
+      "preferredDivisions": ["design", "engineering", "testing", "product"],
+      "defaultSpecialistTemplates": ["design-ui-designer", "engineering-rapid-prototyper", "testing-api-tester"]
+    },
+    {
+      "id": "landing_launch",
+      "category": "development",
+      "primaryAgents": ["agent-0", "agent-2", "agent-3", "agent-4"],
+      "preferredDivisions": ["design", "engineering", "marketing", "testing"],
+      "defaultSpecialistTemplates": ["design-ui-designer", "engineering-frontend-developer", "marketing-growth-hacker"]
+    },
+    {
+      "id": "feature_extension",
+      "category": "development",
+      "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"],
+      "preferredDivisions": ["engineering", "testing", "product", "design"],
+      "defaultSpecialistTemplates": ["engineering-frontend-developer", "engineering-backend-architect", "testing-api-tester"]
+    },
+    {
+      "id": "bugfix_debug",
+      "category": "development",
+      "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"],
+      "preferredDivisions": ["engineering", "testing", "support"],
+      "defaultSpecialistTemplates": ["engineering-backend-architect", "engineering-security-engineer", "testing-reality-checker"]
+    },
+    {
+      "id": "documentation_pack",
+      "category": "development",
+      "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"],
+      "preferredDivisions": ["engineering", "support", "project-management"],
+      "defaultSpecialistTemplates": ["engineering-technical-writer", "support-executive-summary-generator", "project-manager-senior"]
+    },
+    {
+      "id": "security_review",
+      "category": "security",
+      "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"],
+      "preferredDivisions": ["engineering", "testing", "support"],
+      "defaultSpecialistTemplates": ["engineering-security-engineer", "engineering-threat-detection-engineer", "testing-reality-checker"]
+    },
+    {
+      "id": "qa_hardening",
+      "category": "security",
+      "primaryAgents": ["agent-0", "agent-3", "agent-4"],
+      "preferredDivisions": ["testing", "engineering", "support"],
+      "defaultSpecialistTemplates": ["testing-api-tester", "testing-performance-benchmarker", "engineering-code-reviewer"]
+    },
+    {
+      "id": "post_build_audit",
+      "category": "security",
+      "primaryAgents": ["agent-0", "agent-1", "agent-4"],
+      "preferredDivisions": ["testing", "engineering", "support"],
+      "defaultSpecialistTemplates": ["testing-reality-checker", "engineering-security-engineer", "support-legal-compliance-checker"]
+    },
+    {
+      "id": "marketing_campaign",
+      "category": "marketing",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"],
+      "preferredDivisions": ["marketing", "paid-media", "design", "strategy"],
+      "defaultSpecialistTemplates": ["marketing-growth-hacker", "marketing-social-media-strategist", "marketing-content-creator"]
+    },
+    {
+      "id": "brand_growth",
+      "category": "marketing",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"],
+      "preferredDivisions": ["marketing", "design", "strategy", "sales"],
+      "defaultSpecialistTemplates": ["design-brand-guardian", "marketing-social-media-strategist", "marketing-linkedin-content-creator"]
+    },
+    {
+      "id": "content_engine",
+      "category": "marketing",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"],
+      "preferredDivisions": ["marketing", "design", "strategy"],
+      "defaultSpecialistTemplates": ["marketing-content-creator", "marketing-linkedin-content-creator", "design-visual-storyteller"]
+    },
+    {
+      "id": "social_presence_audit",
+      "category": "marketing",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"],
+      "preferredDivisions": ["marketing", "paid-media", "strategy"],
+      "defaultSpecialistTemplates": ["marketing-social-media-strategist", "marketing-twitter-engager", "marketing-seo-specialist"]
+    },
+    {
+      "id": "business_audit_proposal",
+      "category": "business",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-3", "agent-4"],
+      "preferredDivisions": ["strategy", "sales", "project-management", "product"],
+      "defaultSpecialistTemplates": ["project-manager-senior", "sales-proposal-strategist", "product-manager"]
+    },
+    {
+      "id": "competitor_intelligence",
+      "category": "business",
+      "primaryAgents": ["agent-0", "agent-1", "agent-4"],
+      "preferredDivisions": ["strategy", "sales", "marketing", "product"],
+      "defaultSpecialistTemplates": ["product-trend-researcher", "sales-deal-strategist", "marketing-ai-citation-strategist"]
+    },
+    {
+      "id": "offer_design",
+      "category": "business",
+      "primaryAgents": ["agent-0", "agent-1", "agent-2", "agent-4"],
+      "preferredDivisions": ["sales", "strategy", "marketing", "design"],
+      "defaultSpecialistTemplates": ["sales-outbound-strategist", "sales-proposal-strategist", "design-brand-guardian"]
+    },
+    {
+      "id": "research_only",
+      "category": "research",
+      "primaryAgents": ["agent-0", "agent-1"],
+      "preferredDivisions": ["strategy", "product", "academic", "support"],
+      "defaultSpecialistTemplates": ["product-trend-researcher", "design-ux-researcher", "support-analytics-reporter"]
+    },
+    {
+      "id": "monitor_and_report",
+      "category": "operations",
+      "primaryAgents": ["agent-0", "agent-1", "agent-4"],
+      "preferredDivisions": ["support", "project-management", "engineering"],
+      "defaultSpecialistTemplates": ["support-analytics-reporter", "support-executive-summary-generator", "project-management-experiment-tracker"]
+    },
+    {
+      "id": "launch_mode",
+      "category": "operations",
+      "primaryAgents": ["agent-0", "agent-2", "agent-3", "agent-4"],
+      "preferredDivisions": ["project-management", "support", "marketing", "engineering"],
+      "defaultSpecialistTemplates": ["project-management-studio-producer", "support-infrastructure-maintainer", "marketing-growth-hacker"]
+    },
+    {
+      "id": "maintenance_cycle",
+      "category": "operations",
+      "primaryAgents": ["agent-0", "agent-1", "agent-3", "agent-4"],
+      "preferredDivisions": ["support", "engineering", "testing", "project-management"],
+      "defaultSpecialistTemplates": ["support-infrastructure-maintainer", "engineering-sre", "testing-workflow-optimizer"]
+    }
   ]
 }
