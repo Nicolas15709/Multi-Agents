@@ -28,6 +28,23 @@ from runtime.python.repository import (
 from runtime.python.config import RuntimeConfig
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _force_simulation_mode():
+    """Force simulation mode for the entire test suite.
+
+    Prevents TaskRunner.__post_init__ from activating live LLM execution
+    even when ANTHROPIC_API_KEY is present in the environment, which would
+    cause async/background-thread behaviour that breaks deterministic tests.
+    """
+    original = os.environ.get("MISSION_CONTROL_SIMULATION_MODE")
+    os.environ["MISSION_CONTROL_SIMULATION_MODE"] = "true"
+    yield
+    if original is None:
+        os.environ.pop("MISSION_CONTROL_SIMULATION_MODE", None)
+    else:
+        os.environ["MISSION_CONTROL_SIMULATION_MODE"] = original
+
+
 @pytest.fixture
 def temp_db_path():
     """Create a temporary database path."""
@@ -129,4 +146,3 @@ def mock_config():
         base_dir.parent.parent.parent / "references" / "agency-agents"
     )
     return config
-

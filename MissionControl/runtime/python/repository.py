@@ -76,7 +76,7 @@ class MissionRepository:
         )
 
     def list_missions(self) -> List[Dict]:
-        return self.db.fetchall("SELECT * FROM missions ORDER BY created_at DESC")
+        return self.db.fetchall("SELECT * FROM missions ORDER BY created_at DESC, updated_at DESC, id DESC")
 
     def list_active_missions(self) -> List[Dict]:
         return [mission for mission in self.list_missions() if mission["status"] in self.ACTIVE_STATUSES]

@@ -66,9 +66,12 @@ class TaskRunner:
     replanner: Optional[DynamicReplanner] = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
+        import os
+        force_simulation = os.environ.get("MISSION_CONTROL_SIMULATION_MODE", "").lower() == "true"
         backend = detect_execution_backend()
+        live = backend.get("supported") and not force_simulation
         if self.execution_manager is None:
-            if backend.get("supported"):
+            if live:
                 self.execution_manager = get_execution_manager()
                 logger.info(
                     "Live task execution enabled (%s, model=%s)",
@@ -76,14 +79,20 @@ class TaskRunner:
                     backend.get("model") or "default",
                 )
             else:
-                logger.warning(
-                    "ANTHROPIC_API_KEY not set — running in simulation mode. "
-                    "Tasks will be marked done without real LLM execution."
-                )
-        if self.replanner is None and backend.get("provider") == "anthropic" and backend.get("supported"):
+                if force_simulation:
+                    logger.info(
+                        "MISSION_CONTROL_SIMULATION_MODE=true — live LLM execution disabled. "
+                        "Tasks will be marked done without real LLM execution."
+                    )
+                else:
+                    logger.warning(
+                        "ANTHROPIC_API_KEY not set — running in simulation mode. "
+                        "Tasks will be marked done without real LLM execution."
+                    )
+        if self.replanner is None and backend.get("provider") == "anthropic" and live:
             self.replanner = DynamicReplanner()
             logger.info("Dynamic replanner enabled")
-        if not backend.get("supported") and backend.get("provider"):
+        if not live and backend.get("provider") and not force_simulation:
             logger.warning(
                 "Detected %s configuration (model=%s), but the current live task execution layer still runs only with Anthropic. Runtime stays in simulation mode.",
                 backend.get("provider"),
