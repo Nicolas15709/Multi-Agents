@@ -68,6 +68,9 @@ class StartupRecoveryService:
             counts["missions_requeued"] += reconciler_result.get("fixes_applied", 0)
             # Collect details
             for detail in reconciler_result.get("details", []):
+                # Error entries only have mission_id + error (no from/to)
+                if "from" not in detail:
+                    continue
                 updates.append({
                     "mission_id": detail["mission_id"],
                     "action": "mission_status_normalized",
