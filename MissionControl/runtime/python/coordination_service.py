@@ -1,26 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
 try:
     from .models import AgentMessageRecord, MissionMemoryRecord
     from .repository import AgentMessageRepository, MissionMemoryRepository, TaskRepository
+    from .utils import dedupe as _dedupe
 except ImportError:  # pragma: no cover - runtime script compatibility
     from models import AgentMessageRecord, MissionMemoryRecord
     from repository import AgentMessageRepository, MissionMemoryRepository, TaskRepository
-
-
-def _dedupe(values: Iterable[str]) -> List[str]:
-    seen = set()
-    result: List[str] = []
-    for value in values:
-        normalized = str(value or "").strip().lower()
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        result.append(normalized)
-    return result
+    from utils import dedupe as _dedupe
 
 
 @dataclass

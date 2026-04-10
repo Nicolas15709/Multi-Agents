@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Iterable, List
 import json
 import uuid
 
@@ -13,3 +14,16 @@ def new_id(prefix: str) -> str:
 
 def to_json(data) -> str:
     return json.dumps(data, ensure_ascii=False, sort_keys=True)
+
+
+def dedupe(values: Iterable[str]) -> List[str]:
+    """Deduplicate a list of strings, normalizing to lowercase and stripping whitespace."""
+    seen: set = set()
+    result: List[str] = []
+    for value in values:
+        normalized = str(value or "").strip().lower()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(normalized)
+    return result

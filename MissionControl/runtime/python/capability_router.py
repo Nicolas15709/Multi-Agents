@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from typing import Dict, Iterable, List, Optional
 
+try:
+    from .utils import dedupe as _dedupe
+except ImportError:  # pragma: no cover - runtime script compatibility
+    from utils import dedupe as _dedupe
+
 
 CORE_AGENT_CAPABILITIES = {
     "agent-0": [
@@ -112,17 +117,6 @@ RISK_TOOL_MAP = {
     "security_sensitive": ["approval-gate", "logs", "tests"],
 }
 
-
-def _dedupe(values: Iterable[str]) -> List[str]:
-    result: List[str] = []
-    seen = set()
-    for value in values:
-        normalized = str(value or "").strip().lower()
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        result.append(normalized)
-    return result
 
 
 def normalize_capabilities(values: Optional[Iterable[str]]) -> List[str]:
